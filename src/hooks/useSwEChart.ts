@@ -64,13 +64,14 @@ export default function useSwEChart(props:SwapChartProps){
       let option: EchartsOptions = {
         grid:{
           show: false,
-          left:0,
+          left:40,
           top:20,
           right: 60
         },
         xAxis:{
           type:'category',
           data: xAxisData,
+          boundaryGap:false
         },
         tooltip:{
           show:true,

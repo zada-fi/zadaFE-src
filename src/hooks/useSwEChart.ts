@@ -1,0 +1,155 @@
+
+import { useEffect, useState } from 'react'
+import * as echarts from 'echarts/core';
+import {  TooltipComponent,
+  TooltipComponentOption,
+  GridComponent,
+  GridComponentOption
+  } from 'echarts/components'
+import { LineChart, LineSeriesOption} from 'echarts/charts';
+import { UniversalTransition } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
+
+import { BigNumber } from '@ethersproject/bignumber'
+echarts.use([
+  GridComponent, 
+  TooltipComponent,
+  LineChart,
+  CanvasRenderer,
+  UniversalTransition
+])
+
+type EchartsOptions = echarts.ComposeOption<
+| TooltipComponentOption 
+| GridComponentOption
+| LineSeriesOption
+>
+
+
+type SwapChartProps = {
+  chartId: string,
+  xAxisData: Array<string>,
+  yAxisData: Array<string> 
+}
+
+export function formateChartValue(value:number|string){
+  if(!value){
+    return value+''
+  }
+  let tempNum = BigNumber.from(value+'')
+  let mNum = BigNumber.from('1000000')
+  let kNum = BigNumber.from('1000')
+  let tempNum1 = tempNum.div(mNum)
+  let res = value+''
+  if(tempNum1.gte(BigNumber.from('1'))){
+    res = tempNum1.toNumber().toFixed(1)+'M'
+  }else {
+    tempNum1 = tempNum.div(kNum)
+    if(tempNum1.gte(BigNumber.from('1'))){
+      res = tempNum1.toNumber().toFixed(1)+'K'
+    } 
+  }
+  return `$${res}`
+}
+
+export default function useSwEChart(props:SwapChartProps){
+  let { chartId, xAxisData, yAxisData } = props
+  let [ preAxisData, setPreAxisData ] = useState<string>('')
+  let [isCreated, setIsCreated] = useState<boolean>(false)
+  let [echartInstance, setEchartInstance] = useState<echarts.ECharts|null>(null)
+  useEffect(()=>{
+    if(!isCreated){
+      let chartDom = document.getElementById(chartId)!;
+      let mychart = echarts.init(chartDom)
+      let option: EchartsOptions = {
+        grid:{
+          show: false,
+          left:0,
+          top:20,
+          right: 60
+        },
+        xAxis:{
+          type:'category',
+          data: xAxisData,
+        },
+        tooltip:{
+          show:true,
+          trigger:'axis',
+        },
+        yAxis:{
+          position: 'right',
+          type: 'value',
+          boundaryGap: [0, '100%'],
+          splitLine: {
+            show: false
+          }
+        },
+        series:[
+          {
+            data: yAxisData,
+            type:'line',
+            smooth: true
+          }
+        ]
+      }
+      setPreAxisData((xAxisData.concat(yAxisData)).join(''))
+      mychart.setOption(option)
+      setEchartInstance(mychart)
+      console.log('initChart---', echartInstance, mychart)
+      window.addEventListener('resize',()=>{
+        mychart.resize()
+      })
+      setIsCreated(true)
+    }
+    return ()=>{
+      echartInstance?.dispose()
+    }
+  },[chartId])
+
+  useEffect(()=>{
+    let nowAxisData = (xAxisData.concat(yAxisData)).join('')
+    if(preAxisData !== nowAxisData && echartInstance){
+      console.log('refreshChartData', props)
+      echartInstance.setOption<EchartsOptions>({
+        xAxis:{
+          type:'category',
+          data: xAxisData,
+          axisLabel:{
+            align: 'center'
+          },
+          splitLine: {
+            show: false
+          },
+          axisTick: {
+            show: false
+          }
+        },
+        yAxis:{
+          position: 'right',
+          type: 'log',
+          splitLine: {
+            show: false
+          },
+          // min: yAxisData[0],
+          // max: yAxisData[yAxisData.length - 1],
+          axisLabel:{
+            formatter: function(value: number){
+              return formateChartValue(value)
+            }
+          }
+        },
+        series:[
+          {
+            data: yAxisData,
+            showSymbol: false,
+            type:'line',
+            smooth: true
+          }
+        ] 
+      })
+    }
+    
+  },[echartInstance, xAxisData, yAxisData])
+
+
+}

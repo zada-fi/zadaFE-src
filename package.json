@@ -52,6 +52,7 @@
     "inter-ui": "^3.13.1",
     "jazzicon": "^1.5.0",
     "lodash.flatmap": "^4.5.0",
+    "moment": "^2.29.4",
     "multicodec": "^2.0.0",
     "multihashes": "^3.0.1",
     "polished": "^3.3.2",
@@ -107,6 +108,7 @@
   },
   "license": "GPL-3.0-or-later",
   "dependencies": {
+    "antd": "^3.26.19",
     "echarts": "^5.4.2"
   }
 }

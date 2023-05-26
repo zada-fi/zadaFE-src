@@ -96,7 +96,6 @@ export default function useSwEChart(props:SwapChartProps){
       setPreAxisData((xAxisData.concat(yAxisData)).join(''))
       mychart.setOption(option)
       setEchartInstance(mychart)
-      console.log('initChart---', echartInstance, mychart)
       window.addEventListener('resize',()=>{
         mychart.resize()
       })
@@ -110,7 +109,6 @@ export default function useSwEChart(props:SwapChartProps){
   useEffect(()=>{
     let nowAxisData = (xAxisData.concat(yAxisData)).join('')
     if(preAxisData !== nowAxisData && echartInstance){
-      console.log('refreshChartData', props)
       echartInstance.setOption<EchartsOptions>({
         xAxis:{
           type:'category',

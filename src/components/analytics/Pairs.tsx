@@ -3,15 +3,19 @@ import SwDatetimeRangePicker from "../SwDatetimeRangePicker";
 import moment from 'moment'
 import Loader from "../Loader";
 
-type PoolPairItemType = {
-  pair_name: string,
-  pair_address: string,
-  x_address: string,
-  y_address: string,
-  x_reserves: string,
-  y_reserves: string,
-  liquidity: string
-}
+import { ColumnProps } from 'antd/es/table/interface'
+import { Table } from "antd";
+import 'antd/es/table/style/index.css'
+import 'antd/es/dropdown/style/index.css'
+// type PoolPairItemType = {
+//   pair_name: string,
+//   pair_address: string,
+//   x_address: string,
+//   y_address: string,
+//   x_reserves: string,
+//   y_reserves: string,
+//   liquidity: string
+// }
 
 type TransactionItem = {
   pair_name: string,
@@ -35,11 +39,11 @@ type PairStatisticItem = {
 }
 
 type DataItem = PairStatisticItem | TransactionItem
-
+type T = any
+type ColumnType = ColumnProps<T>
 type ConfigItemType = {
-  isNeedPre: boolean,
   netUrl: string,
-  preNetUrl: string,
+  columns: ColumnType[]
 }
 type BaseConfigType = {
   pairs: ConfigItemType,
@@ -52,20 +56,69 @@ export default function Pairs(props: {
 }) {
   const baseConfig: BaseConfigType = {
     pairs: {
-      isNeedPre: true,
       netUrl: 'api/get_pair_statistic_info',
-      preNetUrl: 'api/get_all_pools',
+      columns: [
+        {
+          title:'Name',
+          dataIndex: 'pair_name',
+        },{
+          title:'Liquidity',
+          dataIndex:'Liquitity'
+        },{
+          title:'Volume(24h)',
+          dataIndex:'day_volume'
+        },{
+          title:'Volume(7d)',
+          dataIndex:'week_volume'
+        }
+      ]
     },
     transactions: {
-      preNetUrl: '',
       netUrl: 'api/get_all_transactions',
-      isNeedPre: false,
+      columns:[
+        {
+          title:'All',
+          dataIndex:'opt_type',
+          render: (text, row)=>{
+            return `${text} ${row.amount0} to ${row.amount1}`
+          },
+          filters:[
+            {
+              text:'add',
+              value:'add',
+            },
+            {
+              text:'remove',
+              value:'remove',
+            },
+            {
+              text:'swap',
+              value:'swap',
+            }
+          ]
+        },
+        {
+          title:'Token0',
+          dataIndex:'amount0'
+        },
+        {
+          title:'Token1',
+          dataIndex:'amount1'
+        },
+        {
+          title:'Account',
+          dataIndex:'user_address'
+        },
+        {
+          title:'Time',
+          dataIndex:'timestamp'
+        }
+      ]
     }
   }
   const now = moment();
   const start = moment('2022/09/18')
   let [dateValue, setDateValue] = useState<Array<moment.Moment>>([start, now]) // eslint-disable
-  let [preDatas, setPreDatas] = useState<Array<PoolPairItemType>>([])
   let [tableDatas, setTableDatas] = useState<Array<DataItem>>([])
 
   let [isFinishData, setIsFinishData] = useState<boolean>(false)
@@ -74,7 +127,7 @@ export default function Pairs(props: {
   useEffect(() => {
     console.log('dateValue changed---', dateValue, dateValue[0].format())
   }, [dateValue])
-  console.log(preDatas, tableDatas)
+  console.log(tableDatas)
 
   useEffect(() => {
     if (!isFinishData) {
@@ -89,34 +142,12 @@ export default function Pairs(props: {
     }
     setIsLoading(true)
     try {
-      if (props.skey === 'pairs') {
-        await getPreData()
-      }
       await getTableData()
     } finally {
       setIsLoading(false)
     }
   }
-  const getPreData = async() => {
-    console.log('getPreData enter--')
-    await new Promise((res) => {
-      setTimeout(() => { res(1) }, 2000)
-    })
-    console.log('preNetUrl', baseConfig.pairs.preNetUrl)
-    let tempList = [
-      {
-        pair_name: 'WBTC-ETH',
-        pair_address: 'string',
-        x_address: '0x2321321',
-        y_address: '0x2321321',
-        x_reserves: '10000',
-        y_reserves: '2000',
-        liquidity: '1000'
-      }
-    ]
-    setPreDatas(tempList)
-
-  }
+  
   const getTableData = async () => {
     await new Promise((res) => {
       setTimeout(() => { res(1); console.log('getTableData reso==') }, 2000)
@@ -133,8 +164,13 @@ export default function Pairs(props: {
         <Loader/>
       )
     }else{
+      let nowColumns:ColumnType[] = baseConfig[props.skey as keyof BaseConfigType].columns
       return (
-        <>Biaoge</>
+        <Table 
+        pagination={{position:'bottom'}}
+        columns={nowColumns}
+        dataSource={tableDatas}
+        />
       )
     }
   }
@@ -145,7 +181,7 @@ export default function Pairs(props: {
       value={dateValue}
       onChange={setDateValue}
     />
-    <TableComp/>
+    <TableComp />
 
 
   </>)

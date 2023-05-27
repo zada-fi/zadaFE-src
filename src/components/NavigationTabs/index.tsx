@@ -3,10 +3,12 @@ import styled from 'styled-components'
 import { darken } from 'polished'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Link as HistoryLink } from 'react-router-dom'
-
+import { Text } from 'rebass'
 import { ArrowLeft } from 'react-feather'
 import { RowBetween } from '../Row'
 import QuestionHelper from '../QuestionHelper'
+
+import { ButtonPrimary } from '../Button'
 
 const Tabs = styled.div`
   ${({ theme }) => theme.flexRowNoWrap}
@@ -43,6 +45,35 @@ const StyledNavLink = styled(NavLink).attrs({
   }
 `
 
+const StyledSubNavLink = styled.div`
+  ${({ theme }) => theme.flexRowNoWrap}
+  min-width: 80px;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  border-radius: 6px;
+  outline: none;
+  border: 1px solid  ${({ theme }) => theme.text3};
+  cursor: pointer;
+  text-decoration: none;
+  color: ${({ theme }) => theme.text3};
+  font-size: 14px;
+  margin: 0 4px;
+
+  &.active {
+    border-radius: 6px;
+    font-weight: 500;
+    color: ${({ theme }) => theme.text1};
+    border-color: ${({ theme }) => theme.text1};
+  }
+
+  :hover,
+  :focus {
+    color: ${({ theme }) => darken(0.1, theme.text1)};
+  }
+`
+
+
 const ActiveText = styled.div`
   font-weight: 500;
   font-size: 20px;
@@ -52,7 +83,7 @@ const StyledArrowLeft = styled(ArrowLeft)`
   color: ${({ theme }) => theme.text1};
 `
 
-export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' | 'analytics'}) {
+export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' | 'analytics' }) {
   const { t } = useTranslation()
   return (
     <Tabs style={{ marginBottom: '20px' }}>
@@ -67,6 +98,32 @@ export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' | 'analytics'
       </StyledNavLink>
     </Tabs>
   )
+}
+
+
+export function PoolSubTabs(props: {
+  active: 'Pools' | 'My pools',
+  onChangeTab: Function
+}) {
+  return (
+    <RowBetween style={{alignItems:"center", marginBottom:"20px"}}>
+      <Text fontSize={20} fontWeight={500}>Pools Overview</Text>
+      <Tabs style={{  justifyContent: "center" }}>
+        <StyledSubNavLink className={`${props.active === 'Pools' ? 'active' : ''}`} onClick={() => props.onChangeTab('Pools')}>
+          Pools
+        </StyledSubNavLink>
+        <StyledSubNavLink className={`${props.active === 'My pools' ? 'active' : ''}`} onClick={() => props.onChangeTab('My pools')}>
+          My Pools
+        </StyledSubNavLink>
+      </Tabs>
+      <ButtonPrimary id="join-pool-button" as={HistoryLink} style={{ padding: "6px 15px", width:"120px" }} to="/add/ETH">
+        <Text fontWeight={500} fontSize={14}>
+          Add Liquidity
+        </Text>
+      </ButtonPrimary>
+    </RowBetween>
+  )
+
 }
 
 export function FindPoolTabs() {

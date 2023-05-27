@@ -7,15 +7,7 @@ import { ColumnProps } from 'antd/es/table/interface'
 import { Table } from "antd";
 import 'antd/es/table/style/index.css'
 import 'antd/es/dropdown/style/index.css'
-// type PoolPairItemType = {
-//   pair_name: string,
-//   pair_address: string,
-//   x_address: string,
-//   y_address: string,
-//   x_reserves: string,
-//   y_reserves: string,
-//   liquidity: string
-// }
+
 
 type TransactionItem = {
   pair_name: string,
@@ -150,7 +142,7 @@ export default function Pairs(props: {
   
   const getTableData = async () => {
     await new Promise((res) => {
-      setTimeout(() => { res(1); console.log('getTableData reso==') }, 2000)
+      setTimeout(() => { res(1) }, 2000)
     })
     let netUrl = baseConfig[props.skey as keyof BaseConfigType].netUrl
     console.log('getTableData netUrl =', netUrl)

@@ -1,0 +1,19 @@
+.ant-calendar-picker .ant-input{
+  border:1px solid #2C2F36;
+  background: transparent;
+  color:#ffffff;
+}
+.ant-calendar-picker .ant-calendar-range-picker-input{
+  color: inherit;
+}
+.ant-calendar-picker .ant-calendar-range-picker-separator{
+  color: rgba(255,255,255,.45);
+
+}
+.ant-calendar-picker .ant-calendar-picker-icon{
+  color:inherit;
+}
+.ant-calendar-picker .ant-calendar-picker-clear{
+  background: #2C2F36;
+  color:inherit;
+}

@@ -2,6 +2,7 @@ import React from "react";
 import { DatePicker } from 'antd'
 import "antd/es/date-picker/style/index.css";
 import "antd/es/input/style/index.css";
+import './style.css'
 import moment from 'moment'
 
 import styled from "styled-components"

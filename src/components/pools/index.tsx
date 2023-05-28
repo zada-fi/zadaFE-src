@@ -121,12 +121,7 @@ export default function PoolsList() {
                 Add Liquidity
               </Text>
             </ButtonPrimary> 
-          // <Button variant={`outline`} 
-          // fontSize={14} 
-          // color="#2172E5"
-          // onClick={()=>clickHandler(record)}>
-          //   Add Liquidity
-          // </Button>
+         
         )
       }}
     />

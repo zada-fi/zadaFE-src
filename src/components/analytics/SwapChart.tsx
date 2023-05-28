@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react"
 import useSwEChart, { formateChartValue } from "../../hooks/useSwEChart"
 import styled from "styled-components"
+import FixedLoader from "../FixedLoader"
+
 
 type TvlDataItem = {
   tvl_date: string,
@@ -136,7 +138,8 @@ export default function SwapChart(props: {
     <LastValueDiv>
       {lastData === null ?'--':formateChartValue(lastData)}
     </LastValueDiv>
-    <div style={{width:'100%', height:'202px'}} id={props.idName}></div>
- 
+    <FixedLoader isLoading={isLoading}>
+      <div style={{width:'100%', height:'202px'}} id={props.idName}></div>
+    </FixedLoader>
   </Chartbody>)
 }

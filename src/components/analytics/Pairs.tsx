@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import SwDatetimeRangePicker from "../SwDatetimeRangePicker";
 import moment from 'moment'
-import Loader from "../Loader";
 
 import { ColumnProps } from 'antd/es/table/interface'
 import { Table } from "antd";
 import 'antd/es/table/style/index.css'
 import 'antd/es/dropdown/style/index.css'
+import FixedLoader from "../FixedLoader";
 
 
 type TransactionItem = {
@@ -51,59 +51,59 @@ export default function Pairs(props: {
       netUrl: 'api/get_pair_statistic_info',
       columns: [
         {
-          title:'Name',
+          title: 'Name',
           dataIndex: 'pair_name',
-        },{
-          title:'Liquidity',
-          dataIndex:'Liquitity'
-        },{
-          title:'Volume(24h)',
-          dataIndex:'day_volume'
-        },{
-          title:'Volume(7d)',
-          dataIndex:'week_volume'
+        }, {
+          title: 'Liquidity',
+          dataIndex: 'Liquitity'
+        }, {
+          title: 'Volume(24h)',
+          dataIndex: 'day_volume'
+        }, {
+          title: 'Volume(7d)',
+          dataIndex: 'week_volume'
         }
       ]
     },
     transactions: {
       netUrl: 'api/get_all_transactions',
-      columns:[
+      columns: [
         {
-          title:'All',
-          dataIndex:'opt_type',
-          render: (text, row)=>{
+          title: 'All',
+          dataIndex: 'opt_type',
+          render: (text, row) => {
             return `${text} ${row.amount0} to ${row.amount1}`
           },
-          filters:[
+          filters: [
             {
-              text:'add',
-              value:'add',
+              text: 'add',
+              value: 'add',
             },
             {
-              text:'remove',
-              value:'remove',
+              text: 'remove',
+              value: 'remove',
             },
             {
-              text:'swap',
-              value:'swap',
+              text: 'swap',
+              value: 'swap',
             }
           ]
         },
         {
-          title:'Token0',
-          dataIndex:'amount0'
+          title: 'Token0',
+          dataIndex: 'amount0'
         },
         {
-          title:'Token1',
-          dataIndex:'amount1'
+          title: 'Token1',
+          dataIndex: 'amount1'
         },
         {
-          title:'Account',
-          dataIndex:'user_address'
+          title: 'Account',
+          dataIndex: 'user_address'
         },
         {
-          title:'Time',
-          dataIndex:'timestamp'
+          title: 'Time',
+          dataIndex: 'timestamp'
         }
       ]
     }
@@ -139,7 +139,7 @@ export default function Pairs(props: {
       setIsLoading(false)
     }
   }
-  
+
   const getTableData = async () => {
     await new Promise((res) => {
       setTimeout(() => { res(1) }, 2000)
@@ -150,21 +150,17 @@ export default function Pairs(props: {
     setTableDatas(tempTableList)
   }
 
-  const TableComp = ()=>{
-    if(isLoading){
-      return (
-        <Loader/>
-      )
-    }else{
-      let nowColumns:ColumnType[] = baseConfig[props.skey as keyof BaseConfigType].columns
-      return (
-        <Table 
-        pagination={{position:'bottom'}}
-        columns={nowColumns}
-        dataSource={tableDatas}
+  const TableComp = () => {
+    let nowColumns: ColumnType[] = baseConfig[props.skey as keyof BaseConfigType].columns
+    return (
+      <FixedLoader isLoading={isLoading}>
+        <Table
+          pagination={{ position: 'bottom' }}
+          columns={nowColumns}
+          dataSource={tableDatas}
         />
-      )
-    }
+      </FixedLoader>
+    )
   }
 
   return (<>

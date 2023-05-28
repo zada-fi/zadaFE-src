@@ -66,7 +66,8 @@ export default function useSwEChart(props:SwapChartProps){
           show: false,
           left:40,
           top:20,
-          right: 60
+          right: 60,
+          bottom: 30
         },
         xAxis:{
           type:'category',

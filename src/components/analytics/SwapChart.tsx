@@ -65,6 +65,10 @@ export default function SwapChart(props: {
       return 
     }
     setIsLoading(true)
+    let url = (`${props.netDataUrl}`)
+    let response = await fetch(url)
+    let resData = await response.text()
+    console.log('chartData resData=', resData)
     await new Promise((res)=>{
       setTimeout(()=>{res(1)}, 3000)
     })

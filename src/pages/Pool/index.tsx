@@ -21,7 +21,7 @@ import { toV2LiquidityToken, useTrackedTokenPairs } from '../../state/user/hooks
 import {BodyWrapper} from '../AppBody'
 import { Dots } from '../../components/swap/styleds'
 
-import PoolsList from '../../components/pools'
+import AllPools from '../../components/pools'
 
 const PoolAppBody = styled(BodyWrapper)`
   width: 640px;
@@ -80,7 +80,7 @@ export default function Pool() {
         <SwapPoolTabs active={'pool'} />
         <PoolSubTabs active={curSubTab} onChangeTab={onChangeTab}></PoolSubTabs>
         {
-          curSubTab === 'Pools' && <PoolsList/>
+          curSubTab === 'Pools' && <AllPools key={`all-pools-table-list`}/>
         }
         {
           curSubTab === 'My pools' &&

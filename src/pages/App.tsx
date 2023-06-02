@@ -24,7 +24,9 @@ import RemoveLiquidity from './RemoveLiquidity'
 import { RedirectOldRemoveLiquidityPathStructure } from './RemoveLiquidity/redirects'
 import Swap from './Swap'
 import Analytics from './Analytics'
+
 import { RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
+import OrbiterBridage from './Orbiter/bridage'
 
 const AppWrapper = styled.div`
   display: flex;
@@ -90,6 +92,7 @@ export default function App() {
                 {/* <Route exact strict path="/docs" component={Docs} /> */}
                 <Route exact strict path="/swap" component={Swap} />
                 <Route exact strict path="/swap/:outputCurrency" component={RedirectToSwap} />
+                <Route exact strict path="/orbiter" component={OrbiterBridage}/>
                 <Route exact strict path="/send" component={RedirectPathToSwapOnly} />
                 <Route exact strict path="/find" component={PoolFinder} />
                 <Route exact strict path="/pool" component={Pool} />

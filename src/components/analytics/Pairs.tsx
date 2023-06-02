@@ -48,29 +48,34 @@ export default function Pairs(props: {
 }) {
   const baseConfig: BaseConfigType = {
     pairs: {
-      netUrl: 'api/get_pair_statistic_info',
+      netUrl: 'http://8.218.16.29:8088/get_pair_statistic_info',
       columns: [
         {
           title: 'Name',
           dataIndex: 'pair_name',
+          key: 'pair_name',
         }, {
           title: 'Liquidity',
-          dataIndex: 'Liquitity'
+          dataIndex: 'Liquitity',
+          key: 'Liquitity'
         }, {
           title: 'Volume(24h)',
-          dataIndex: 'day_volume'
+          dataIndex: 'day_volume',
+          key: 'day_volume'
         }, {
           title: 'Volume(7d)',
-          dataIndex: 'week_volume'
+          dataIndex: 'week_volume',
+          key: 'week_volume'
         }
       ]
     },
     transactions: {
-      netUrl: 'api/get_all_transactions',
+      netUrl: 'http://8.218.16.29:8088/get_all_transactions',
       columns: [
         {
           title: 'All',
           dataIndex: 'opt_type',
+          key:'opt_type',
           render: (text, row) => {
             return `${text} ${row.amount0} to ${row.amount1}`
           },
@@ -91,19 +96,23 @@ export default function Pairs(props: {
         },
         {
           title: 'Token0',
-          dataIndex: 'amount0'
+          dataIndex: 'amount0',
+          key:'amount0'
         },
         {
           title: 'Token1',
-          dataIndex: 'amount1'
+          dataIndex: 'amount1',
+          key:'amount1'
         },
         {
           title: 'Account',
-          dataIndex: 'user_address'
+          dataIndex: 'user_address',
+          key:'user_address',
         },
         {
           title: 'Time',
-          dataIndex: 'timestamp'
+          dataIndex: 'timestamp',
+          key:'timestamp'
         }
       ]
     }
@@ -146,6 +155,10 @@ export default function Pairs(props: {
     })
     let netUrl = baseConfig[props.skey as keyof BaseConfigType].netUrl
     console.log('getTableData netUrl =', netUrl)
+    let url = (`${netUrl}?pg_no=${encodeURIComponent(1)}`)
+    let response = await fetch(url)
+    let resData = await response.json()
+    console.log('get tableData res=', response, 'resData=',resData)
     let tempTableList: Array<DataItem> = []
     setTableDatas(tempTableList)
   }

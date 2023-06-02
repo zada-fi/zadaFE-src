@@ -10,14 +10,14 @@ export default function Analytics(){
     {
       idName:'swap-chart-tvl',
       title:'TVL',
-      netDataUrl:'api/get_total_tvl_by_day',
+      netDataUrl:'http://8.218.16.29:8088/get_total_tvl_by_day',
       xKey:'tvl_date',
       yKey:'tvl_value',
     },
     {
       idName:'swap-chart-volume',
       title:'Volume',
-      netDataUrl:'api/get_total_volumne_by_day',
+      netDataUrl:'http://8.218.16.29:8088/get_total_volumne_by_day',
       xKey:'volume_date',
       yKey:'volume_value',
     }

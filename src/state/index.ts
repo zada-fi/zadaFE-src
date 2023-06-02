@@ -10,6 +10,8 @@ import mint from './mint/reducer'
 import lists from './lists/reducer'
 import burn from './burn/reducer'
 import multicall from './multicall/reducer'
+import orbiter from './orbiter/reducer'
+
 
 const PERSISTED_KEYS: string[] = ['user', 'transactions', 'lists']
 
@@ -22,7 +24,8 @@ const store = configureStore({
     mint,
     burn,
     multicall,
-    lists
+    lists,
+    orbiter
   },
   middleware: [...getDefaultMiddleware({ thunk: false }), save({ states: PERSISTED_KEYS })],
   preloadedState: load({ states: PERSISTED_KEYS })

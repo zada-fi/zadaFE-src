@@ -20,7 +20,6 @@ type PoolPairItemType = {
   y_address: string,
   x_reserves: string,
   y_reserves: string,
-  liquidity: string,
   x_name: string,
   y_name: string,
 }
@@ -54,9 +53,12 @@ export default function AllPools() {
       },
     },
     {
-      title: 'Liquidity',
-      dataIndex: 'liquidity',
-      key:'liquidity'
+      title: 'x_reserves/y_reserves',
+      dataIndex: 'custom-col',
+      key:'x_reserves/y_reserves',
+      render: (text, record:any)=>{
+        return `${record.x_reserves} /  ${record.y_reserves}`
+      }
     },
     {
       title:'Add',

@@ -1,20 +1,30 @@
-import React, { useMemo, useRef } from "react"
-// import { isMobile } from 'react-device-detect'
-import useToggle from "../../hooks/useToggle"
-import { useOnClickOutside } from "../../hooks/useOnClickOutside"
-// import CurrencyLogo from "../CurrencyLogo"
-// import { useCurrency } from "../../hooks/Tokens"
-import { ObSelectPropsType, DataItem } from "./a"
+import React, { useMemo, useState } from "react"
+
+import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
+import { ObSelectPropsType, DataItem  } from "./a"
+import styled from "styled-components"
+import './style.css'
+import RaiseUpSelect from "./raiseUpSelect"
+import { isMobile } from "react-device-detect"
+import RaiseUpSelectPc from './raiseUpSelectPc'
+const StyledDropDown = styled(DropDown) <{ selected: boolean }>`
+  margin: 0 0.25rem 0 0.5rem;
+  height: 35%;
+
+  path {
+    stroke: ${({ selected, theme }) => (selected ? theme.text1 : theme.white)};
+    stroke-width: 1.5px;
+  }
+`
+
+
+
+
 export default function ObSelect(props: ObSelectPropsType) {
+  const [dialogVisible, setDialogVisible] = useState(false)
 
-  const node = useRef<HTMLDivElement>()
-
-  const [dialogVisible, toggle] = useToggle(false)
-  // let [dialogVisible, setDialogVisible] = useState<Boolean>(false)
-
-  useOnClickOutside(node, dialogVisible ? toggle : undefined)
   let dataList = useMemo((): Array<DataItem> => {
-    return props.datas.reduce((res:Array<DataItem>, v) => {
+    return props.datas.reduce((res: Array<DataItem>, v) => {
       res.push({
         ...v,
         icon: v.icon || 'tokenLogo',
@@ -28,34 +38,43 @@ export default function ObSelect(props: ObSelectPropsType) {
   let selectedItem = useMemo(() => {
     // @ts-ignore 
     return dataList.find((v) => v.value == props.value)
-  }, [dataList])
-  // @ts-ignore 
-  let onSelectItem = (item:any)=>{
-    props.onChange(item)
-    toggle()
+  }, [dataList, props.value])
+  let onShowSelect = () => {
+    let newVal = !dialogVisible
+    setDialogVisible(newVal)
   }
-  let onShowSelect = ()=>{
-     toggle()
+  let onCancel = ()=>{
+    setDialogVisible(false)
   }
-  // let currency = useCurrency(selectedItem.token)
-
-  
 
   return (<>
-<div className="ob-select-box" >
-    <div className="prefix" onClick={onShowSelect}>
-      {
-        selectedItem && (
-          <img
+    <div className="ob-select-box" onClick={onShowSelect} >
+      <div className="prefix" >
+        {
+          selectedItem && (
+            <img
               src={selectedItem.icon}
               className="select-item-icon"
               alt=""
-          />
-        )
-      }
-     {/* {currency && <CurrencyLogo currency={currency} size={'24px'} />} */}
-     <span className="selected-label">{selectedItem?selectedItem.label:''}</span>
+            />
+          )
+        }
+      </div>
+      <span className="selected-label">{selectedItem ? selectedItem.label : ''}</span>
+      <StyledDropDown selected={true}></StyledDropDown>
     </div>
-</div>
+    {isMobile ? (<RaiseUpSelect
+      isShow={dialogVisible}
+      datas={dataList}
+      value={props.value}
+      onChange={props.onChange}
+      onCancel={onCancel}
+    />) : <RaiseUpSelectPc
+      isShow={dialogVisible}
+      datas={dataList}
+      value={props.value}
+      onChange={props.onChange}
+      onCancel={onCancel} />}
+
   </>)
 }

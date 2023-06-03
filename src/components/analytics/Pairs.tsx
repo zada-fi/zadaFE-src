@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import SwDatetimeRangePicker from "../SwDatetimeRangePicker";
 import moment from 'moment'
-
+import { shortenAddress } from '../../utils'
 import { ColumnProps } from 'antd/es/table/interface'
 import { Table } from "antd";
 import 'antd/es/table/style/index.css'
@@ -12,22 +12,23 @@ import FixedLoader from "../FixedLoader";
 type TransactionItem = {
   pair_name: string,
   pair_address: string,
-  token_in_address: string,
-  token_out_address: string,
+  token_x_amount: string,
+  token_y_amount: string,
+  event_time: string,
   op_type: string,
   user_address: string,
-  amount0: string,
-  amount1: string,
-  timestamp: number,
+  x_name?:string,
+  y_name?:string
 }
 
 type PairStatisticItem = {
   pair_name: string,
   pair_address: string,
-  x_address: string,
-  y_address: string,
-  day_volume: string,
-  liquitity: string
+  token_x_address: string,
+  token_y_address: string,
+  usd_volume: string,
+  usd_volume_week: string,
+  usd_tvl: string
 }
 
 type DataItem = PairStatisticItem | TransactionItem
@@ -53,19 +54,22 @@ export default function Pairs(props: {
         {
           title: 'Name',
           dataIndex: 'pair_name',
-          key: 'pair_name',
+          key: 'pair_name-'+props.title,
         }, {
           title: 'Liquidity',
-          dataIndex: 'Liquitity',
-          key: 'Liquitity'
+          dataIndex: 'usd_tvl',
+          key: 'usd_tvl',
+          render: (text)=>{
+            return `$${text}`
+          }
         }, {
           title: 'Volume(24h)',
-          dataIndex: 'day_volume',
-          key: 'day_volume'
+          dataIndex: 'usd_volume',
+          key: 'usd_volume'
         }, {
           title: 'Volume(7d)',
-          dataIndex: 'week_volume',
-          key: 'week_volume'
+          dataIndex: 'usd_volume_week',
+          key: 'usd_volume_week'
         }
       ]
     },
@@ -74,10 +78,10 @@ export default function Pairs(props: {
       columns: [
         {
           title: 'All',
-          dataIndex: 'opt_type',
-          key:'opt_type',
+          dataIndex: 'op_type',
+          key:'op_type',
           render: (text, row) => {
-            return `${text} ${row.amount0} to ${row.amount1}`
+            return `${text} ${row.token_x_amount} ${row.x_name} to ${row.token_y_amount} ${row.y_name}`
           },
           filters: [
             {
@@ -96,23 +100,26 @@ export default function Pairs(props: {
         },
         {
           title: 'Token0',
-          dataIndex: 'amount0',
-          key:'amount0'
+          dataIndex: 'token_x_amount',
+          key:'token_x_amount'
         },
         {
           title: 'Token1',
-          dataIndex: 'amount1',
-          key:'amount1'
+          dataIndex: 'token_y_amount',
+          key:'token_y_amount'
         },
         {
           title: 'Account',
           dataIndex: 'user_address',
           key:'user_address',
+          render: (text)=>{
+            return `${shortenAddress(text)}` 
+          }
         },
         {
           title: 'Time',
-          dataIndex: 'timestamp',
-          key:'timestamp'
+          dataIndex: 'event_time',
+          key:'event_time'
         }
       ]
     }
@@ -128,7 +135,6 @@ export default function Pairs(props: {
   useEffect(() => {
     console.log('dateValue changed---', dateValue, dateValue[0].format())
   }, [dateValue])
-  console.log(tableDatas)
 
   useEffect(() => {
     if (!isFinishData) {
@@ -150,16 +156,31 @@ export default function Pairs(props: {
   }
 
   const getTableData = async () => {
-    await new Promise((res) => {
-      setTimeout(() => { res(1) }, 2000)
-    })
+    
     let netUrl = baseConfig[props.skey as keyof BaseConfigType].netUrl
-    console.log('getTableData netUrl =', netUrl)
+    // console.log('getTableData netUrl =', netUrl)
     let url = (`${netUrl}?pg_no=${encodeURIComponent(1)}`)
     let response = await fetch(url)
     let resData = await response.json()
-    console.log('get tableData res=', response, 'resData=',resData)
+    console.log('get tableData res=', props.skey, 'resData=',resData.data)
     let tempTableList: Array<DataItem> = []
+    if(props.skey === 'pairs'){
+      tempTableList = resData.data && resData.data.length? resData.data[1]:[]
+    }else {
+      tempTableList = resData.data.data && resData.data.data.length ? resData.data.data[1]:[]
+      tempTableList = tempTableList.reduce((res: DataItem[], item)=>{
+        let pairKeys = item.pair_name.split('-')
+      let x_name = pairKeys.length ? pairKeys[0].replace(/\"/ig, ''):''
+      let y_name = pairKeys.length === 2? pairKeys[1].replace(/\"/ig,''): x_name
+        res.push({
+          ...item,
+          x_name,
+          y_name
+        })
+        return res
+      },[])
+    }
+    console.log('get tableData resultData---',props.skey, tempTableList)
     setTableDatas(tempTableList)
   }
 

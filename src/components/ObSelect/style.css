@@ -1,0 +1,61 @@
+.ob-select-box {
+  border-radius: 12px;
+  width: 101px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+  border:1px solid #2C2F36;
+  margin-left: 1rem;
+}
+
+.ob-select-box .prefix .select-item-icon,
+.ob-select-box .suffix .select-item-icon,
+.ob-select-box-dialog .select-item-icon {
+  width: 20px;
+  height: 20px;
+}
+.ob-select-box-dialog{
+  position: absolute;
+}
+
+.ob-select-box .selected-label {
+  margin: 0 4px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.ob-select-box-dialog .dialog {
+  position: absolute;
+  left: 0;
+  /* top: 40px; */
+  border-radius: 12px;
+  min-width: 200px;
+  padding: 10px 0;
+  z-index: 100;
+  background: #212429;
+  box-shadow: 0 8px 30px rgba(0,0,0,.36);
+}
+
+.ob-select-box-dialog .dialog .select-item {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding-left: 18px;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.ob-select-box-dialog .dialog .select-item .select-item-icon {
+  margin-right: 4px;
+}
+
+.ob-select-box-dialog .dialog .select-item.selected,
+.ob-select-box-dialog .dialog .select-item:hover{
+  background: rgba(0,0,0,.16)
+}

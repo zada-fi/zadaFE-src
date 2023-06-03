@@ -67,42 +67,44 @@ export default function SwapChart(props: {
     setIsLoading(true)
     let url = (`${props.netDataUrl}`)
     let response = await fetch(url)
-    let resData = await response.text()
+    let resData = await response.json()
     console.log('chartData resData=', resData)
-    await new Promise((res)=>{
-      setTimeout(()=>{res(1)}, 3000)
-    })
+    // await new Promise((res)=>{
+    //   setTimeout(()=>{res(1)}, 3000)
+    // })
+    
 
     let tempList: Array<SwDataItem>
-    if(props.idName === 'swap-chart-tvl'){
-      tempList  = [{
-        tvl_date:'2023-02-23',
-        tvl_value: '50000000',
-      },{
-        tvl_date:'2023-02-24',
-        tvl_value: '1000000',
-      },{
-        tvl_date:'2023-02-25',
-        tvl_value: '300000',
-      },{
-        tvl_date:'2023-02-26',
-        tvl_value: '90000000',
-      }]
-    }else{
-      tempList  = [{
-        volume_date:'2023-02-23',
-        volume_value: '50000000',
-      },{
-        volume_date:'2023-02-24',
-        volume_value: '1000000',
-      },{
-        volume_date:'2023-02-25',
-        volume_value: '302000',
-      },{
-        volume_date:'2023-02-26',
-        volume_value: '200000',
-      }]
-    }
+    tempList = resData.data || []
+    // if(props.idName === 'swap-chart-tvl'){
+    //   tempList  = [{
+    //     tvl_date:'2023-02-23',
+    //     tvl_value: '50000000',
+    //   },{
+    //     tvl_date:'2023-02-24',
+    //     tvl_value: '1000000',
+    //   },{
+    //     tvl_date:'2023-02-25',
+    //     tvl_value: '300000',
+    //   },{
+    //     tvl_date:'2023-02-26',
+    //     tvl_value: '90000000',
+    //   }]
+    // }else{
+    //   tempList  = [{
+    //     volume_date:'2023-02-23',
+    //     volume_value: '50000000',
+    //   },{
+    //     volume_date:'2023-02-24',
+    //     volume_value: '1000000',
+    //   },{
+    //     volume_date:'2023-02-25',
+    //     volume_value: '302000',
+    //   },{
+    //     volume_date:'2023-02-26',
+    //     volume_value: '200000',
+    //   }]
+    // }
     
     if(tempList.length){
       let len = tempList.length

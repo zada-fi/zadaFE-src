@@ -8,10 +8,16 @@ const OrbiterBridageDiv = styled(BodyWrapper)`
   max-width:100%;
   padding: 24px 20px;
   ${({ theme }) => theme.mediaWidth.upToMedium`
-  padding: 24px 20px;
-  width: calc(100% - 24px);
-  position: relative;`
-};
+    padding: 24px 20px;
+    width: calc(100% - 24px);
+    position: relative;
+    animation:none;
+    box-shadow: 0 1px 10px #0093df, 0 1px 10px #0093df inset;
+    `
+  };
+
+
+
 `
 export default function OrbiterBridage(){
   let [curPageStatus, setCurPageStatus] = useState('1')//  1 transfer 2.confirm 3.proceed

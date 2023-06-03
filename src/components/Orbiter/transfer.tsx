@@ -714,11 +714,14 @@ export default function Transfer(props: TransferPropsType) {
       <Text fontSize={20} fontWeight={500}>Token</Text>
       {
         !isNewVersion && (<div>
-          <ObSelect datas={ctData.fromTokenList} value={selectFromToken} onChange={onChangeSelectFromToken} />
+          <ObSelect 
+          datas={ctData.fromTokenList} 
+          value={selectFromToken} 
+          onChange={onChangeSelectFromToken} />
         </div>)
       }
       <span>
-        {/* {JSON.stringify(ctData.fromTokenList)} */}
+        { selectFromToken }
       </span>
     </Row>
 

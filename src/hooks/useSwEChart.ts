@@ -10,7 +10,9 @@ import { LineChart, LineSeriesOption} from 'echarts/charts';
 import { UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 
-import { BigNumber } from '@ethersproject/bignumber'
+// import { BigNumber } from '@ethersproject/bignumber'
+import BigNumber from 'bignumber.js'
+
 echarts.use([
   GridComponent, 
   TooltipComponent,
@@ -36,19 +38,23 @@ export function formateChartValue(value:number|string){
   if(!value){
     return value+''
   }
-  let tempNum = BigNumber.from(value+'')
-  let mNum = BigNumber.from('1000000')
-  let kNum = BigNumber.from('1000')
-  let tempNum1 = tempNum.div(mNum)
+  if(typeof value === 'string'){
+    value = (value+'').split('.')[0]
+  }
+  let tempNum = new BigNumber(value)
+  let mNum = new BigNumber('1000000')
+  let kNum = new BigNumber('1000')
+  let tempNum1 = tempNum.dividedBy(mNum)
   let res = value+''
-  if(tempNum1.gte(BigNumber.from('1'))){
+  if(tempNum1.comparedTo(new BigNumber('1'))> -1){
     res = tempNum1.toNumber().toFixed(1)+'M'
   }else {
-    tempNum1 = tempNum.div(kNum)
-    if(tempNum1.gte(BigNumber.from('1'))){
+    tempNum1 = tempNum.dividedBy(kNum)
+    if(tempNum1.comparedTo(new BigNumber('1'))> -1){
       res = tempNum1.toNumber().toFixed(1)+'K'
     } 
   }
+  console.log(res)
   return `$${res}`
 }
 
@@ -81,7 +87,8 @@ export default function useSwEChart(props:SwapChartProps){
         yAxis:{
           position: 'right',
           type: 'value',
-          boundaryGap: [0, '100%'],
+          // boundaryGap: false,
+          // boundaryGap: [0, '100%'],
           splitLine: {
             show: false
           }
@@ -126,14 +133,14 @@ export default function useSwEChart(props:SwapChartProps){
         },
         yAxis:{
           position: 'right',
-          type: 'log',
+          // type: 'log',
           splitLine: {
             show: false
           },
           // min: yAxisData[0],
           // max: yAxisData[yAxisData.length - 1],
           axisLabel:{
-            formatter: function(value: number){
+            formatter: function(value: number|string){
               return formateChartValue(value)
             }
           }

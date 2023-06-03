@@ -3,6 +3,9 @@ import { Eth } from 'web3-eth';
 import config from '../orbiter-config'
 import { TransferDataStateType } from '../../components/Orbiter/bridge'
 import { Coin_ABI } from '../orbiter-constant/contract';
+import orbiterEnv from '../orbiter-env';
+import { notification } from 'antd'
+import 'antd/es/notification/style/index.css'
 type WalletPayLoadType = {
   walletAddress: string,
   networkId: string,
@@ -99,7 +102,7 @@ export function equalsIgnoreCase(value1: any, value2: any) {
   return value1.toUpperCase() === value2.toUpperCase()
 }
 
-export function isWhite(transferDataState: TransferDataStateType) {
+export function isWhite(transferDataState?: TransferDataStateType) {
 
   // return !(
   //   config.whiteList.length &&
@@ -220,6 +223,84 @@ export const isExecuteXVMContract = (transferDataState: TransferDataStateType) =
     isSupportXVMContract(transferDataState) &&
     (fromCurrency !== toCurrency || isCrossAddress)
   )
+}
+export function getMetaMaskNetworkId(chainId:number) {
+  // @ts-ignore 
+  return orbiterEnv.metaMaskNetworkId[chainId]
+}
+export function toHex(num:number) {
+  return '0x' + Number(num).toString(16)
+}
+ /**
+* @param {number} chainId
+*/
+export async function ensureWalletNetwork(chainId: number, connector:any) {
+ const maskNetworkId = getMetaMaskNetworkId(chainId)
+ if (!maskNetworkId) {
+   return
+ }
+ const switchParams = {
+   chainId: toHex(maskNetworkId),
+ }
+ try {
+   let provider = await connector.getProvider()//compatibleGlobalWalletConf.value.walletPayload.provider
+   await provider.request({
+     method: 'wallet_switchEthereumChain',
+     params: [switchParams],
+   })
+   return true
+ } catch (error) {
+  // @ts-ignore 
+   if (error?.code === 4902) {
+     await addEthereumChain(chainId, connector)
+   } else {
+     console.error(error)
+    //  @ts-ignore 
+     showMessage(error.message, 'error')
+   }
+   return false
+ }
+}
+
+export function showMessage(message: string, type: string) {
+  const _type = type || 'success'
+  // @ts-ignore 
+  notification[_type]({
+    message: ``,
+    description: message,
+  });
+  // Notification[_type]({
+  //   message,
+  //   dangerouslyUseHTMLString: true,
+  //   duration: 3000,
+  // })
+}
+export async function  addEthereumChain(chainId:number, connector: any) {
+  const chainInfo = getChainInfoByChainId(chainId)
+  const maskNetworkId = getMetaMaskNetworkId(chainId)
+  const params = {
+    chainId: toHex(maskNetworkId), // A 0x-prefixed hexadecimal string
+    chainName: chainInfo.name,
+    nativeCurrency: {
+      name: chainInfo.nativeCurrency.name,
+      symbol: chainInfo.nativeCurrency.symbol, // 2-6 characters long
+      decimals: chainInfo.nativeCurrency.decimals,
+    },
+    rpcUrls: chainInfo.rpc,
+    // @ts-ignore 
+    blockExplorerUrls: [orbiterEnv.networkUrl[chainId]],
+  }
+  try {
+    let provider = await connector.getProvider()
+    await provider.request({
+      method: 'wallet_addEthereumChain',
+      params: [params],
+    })
+  } catch (error) {
+    console.error(error)
+    // @ts-ignore 
+    showMessage(error.message, 'error')
+  }
 }
 
 export function getRpcList(chainId: string|number) {

@@ -15,7 +15,9 @@ import thirdapi from "../../utils/orbiter-core/thirdapi"
 import zkspace from "../../utils/orbiter-core/zkspace"
 import { IMXHelper } from "../../utils/orbiter-tool/immutablex/imx_helper"
 import { useWeb3React } from "@web3-react/core"
-
+import Web3 from 'web3'
+import { DydxHelper } from '../../utils/orbiter-tool/dydx/dydx_helper'
+import { exchangeToUsd } from '../../utils/orbiter-tool/coinbase'
 type PropsType = {
   transferDataState: TransferDataStateType
 }
@@ -419,7 +421,8 @@ export default function useTransferCalcute(props: PropsType) {
       // return await getErc20Balance(starknetAddress, tokenAddress, networkId)
     } else if (localChainID === 8 || localChainID === 88) {
       const imxHelper = new IMXHelper(localChainID)
-      const balance = await imxHelper.getBalanceBySymbol(userAddress, tokenName, connector?.getProvider())
+      let provider = await connector?.getProvider()
+      const balance = await imxHelper.getBalanceBySymbol(userAddress, tokenName, provider)
       return balance.toNumber()//Number(balance + '')
     } else if (localChainID === 9 || localChainID === 99) {
       const lpTokenInfo = await getLpTokenInfo(
@@ -437,14 +440,15 @@ export default function useTransferCalcute(props: PropsType) {
         lpTokenInfo
       )
     } else if (localChainID === 11 || localChainID === 511) {
-      // TODO ---
-      // const dydxHelper = new DydxHelper(
-      //   localChainID,
-      //   new Web3(connector?.getProvider),//compatibleGlobalWalletConf.value.walletPayload.provider
-      //   'MetaMask'
-      // )
-      // return await dydxHelper.getBalanceUsdc(userAddress, false) // Dydx only usdc
-      return 0 // for test
+      let provider = await connector?.getProvider()
+      const dydxHelper = new DydxHelper(
+        localChainID,
+        new Web3(provider),//compatibleGlobalWalletConf.value.walletPayload.provider
+        'MetaMask',
+        connector
+      )
+      let res =  await dydxHelper.getBalanceUsdc(userAddress, false) // Dydx only usdc
+      return res.toNumber() // for test
     } else if (localChainID === 12 || localChainID === 512) {
       const zkReq = {
         account: userAddress,
@@ -474,9 +478,19 @@ export default function useTransferCalcute(props: PropsType) {
     }
   }
 
+  const getTokenConvertUsd =  async (tokenName:string)=> {
+    try {
+      return (await exchangeToUsd(1, tokenName)).toNumber()
+    } catch (error) {
+      // @ts-ignore 
+      throw error.message
+    }
+  }
+
   return {
     transferSpentGas,
     getTransferBalance,
-    getTransferGasLimit
+    getTransferGasLimit,
+    getTokenConvertUsd
   }
 }

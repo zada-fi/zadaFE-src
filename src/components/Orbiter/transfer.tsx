@@ -14,11 +14,13 @@ import useInputData from "./useInputData"
 import useChainAndTokenData from "./useChainAndTokenData"
 import useTransferDataState from "./useTransferDataState"
 import useTransferCalcute from "./useTransferCalcute"
-import { exchangeToUsd } from "../../utils/orbiter-tool/coinbase"
 import useLoadingData from "./useLoadingData"
 import useBalance from "./useBalance"
 import { useHistory, useLocation } from "react-router-dom"
-import { getRates, RatesType } from '../../utils/orbiter-tool/coinbase'
+import { getRates, RatesType, exchangeToUsd } from '../../utils/orbiter-tool/coinbase'
+import { isWhite } from './../../utils/orbiter-tool'
+import ObSelect from "../ObSelect"
+
 type TransferPropsType = {
   onChangeState: Function
 }
@@ -61,7 +63,8 @@ export default function Transfer(props: TransferPropsType) {
     updateInputData,
     crossAddressReceipt,
     // @ts-ignore 
-    onInputTransferValue } = useInputData({
+
+    onInputTransferValue,onChangeSelectFromToken } = useInputData({
       transferDataState,
       rates
     })
@@ -72,7 +75,7 @@ export default function Transfer(props: TransferPropsType) {
 
   let { ctData, updateChainAndTokenData } = useChainAndTokenData()
 
-  let { transferSpentGas, getTransferBalance, getTransferGasLimit } = useTransferCalcute({
+  let { transferSpentGas, getTransferBalance, getTransferGasLimit,getTokenConvertUsd } = useTransferCalcute({
     transferDataState
   })
   // @ts-ignore 
@@ -150,7 +153,17 @@ export default function Transfer(props: TransferPropsType) {
       );
     }
     return false;
-  },[walletIsLogin, transferValue, userMinPrice, fromBalance])  
+  },[walletIsLogin, transferValue, userMinPrice, fromBalance]) 
+  let isWhiteWallet = useMemo(()=>{
+    if(walletIsLogin){
+      return isWhite()
+    }else{
+      return false
+    }
+  },[walletIsLogin])
+  let isNewVersion = useMemo(()=>{
+    return false
+  },[walletIsLogin]) 
   // @ts-ignore 
   const sendBtnInfo:SendBtnInfoType = useMemo(() => {
     const { selectMakerConfig, fromCurrency, toCurrency } = transferDataState;
@@ -260,7 +273,7 @@ export default function Transfer(props: TransferPropsType) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const isShowExchangeIcon = useMemo(() => {
-    let makerConfigs = config.v1MakerConfigs // not new version
+    let makerConfigs = isNewVersion? config.makerConfigs: config.v1MakerConfigs // not new version
     return !!makerConfigs.find(item =>
       item.fromChain.id + '' === transferDataState.toChainID &&
       item.fromChain.symbol === transferDataState.toCurrency &&
@@ -269,6 +282,10 @@ export default function Transfer(props: TransferPropsType) {
   }, [transferDataState.toChainID, transferDataState.toCurrency,
   transferDataState.fromChainID, transferDataState.fromCurrency])
 
+  
+  useEffect(()=>{
+    updateTransferInfo()
+  },[isWhiteWallet, isNewVersion])
 
   const queryParams = useMemo(() => {
     let query = getQuery()
@@ -276,7 +293,7 @@ export default function Transfer(props: TransferPropsType) {
     let { token, tokens, amount = '', fixed } = query;
     // amount = amount ? new BigNumber(amount) : '';
     tokens = !tokens ? [] : tokens.split(',');
-    const makerConfigs: any = config.v1MakerConfigs
+    const makerConfigs: any = isNewVersion? config.makerConfigs: config.v1MakerConfigs
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     let source = makerConfigs.find(item => item.fromChain.name.toLowerCase() === query?.source?.toLowerCase())?.fromChain?.id || 0;
@@ -374,9 +391,7 @@ export default function Transfer(props: TransferPropsType) {
     };
   }, [])
 
-  // const refreshConfig = ()=>{
-  //   // 更新配置
-  // }
+
   
   // @ts-ignore
   let [exchangeToUsdPrice, setExchangeToUsdPrice] = useState<number>(0)
@@ -441,7 +456,7 @@ export default function Transfer(props: TransferPropsType) {
     }
     const { tokens, source, dest } = queryParams;
     const fromTokens = tokens;
-    const makerConfigs = config.v1MakerConfigs
+    const makerConfigs = isNewVersion? config.makerConfigs: config.v1MakerConfigs
     const fromChainIdList: number[] = Array.from(new Set(
       makerConfigs.map(item => item.fromChain.id)
     )).sort(function (a, b) {
@@ -635,6 +650,7 @@ export default function Transfer(props: TransferPropsType) {
     try {
       let response = await fetch(`${process.env.REACT_APP_OPEN_API_URL}/frontend/net`);
       let res = await response.json()
+      console.log('openApiFilter--- res=', res)
       let cron = configData.cron
       if (!cron) {
         cron = setInterval(async () => {
@@ -661,8 +677,20 @@ export default function Transfer(props: TransferPropsType) {
     }
 
   }
+  const updateETHPriceI = async () => {
+    getTokenConvertUsd('ETH')
+      .then((response) => updateTransferDataState(response,'ethPrice'))
+      .catch((error) => console.warn('GetETHPriceError =', error));
+  }
+
+
   const initData = () => {
     openApiFilter()
+    updateTransferInfo()
+    updateETHPriceI()
+    updateInputData(queryParams.amount, 'transferValue')
+    updateTransferDataState(isCrossAddress, 'isCrossAddress')
+    updateTransferDataState(crossAddressReceipt, 'crossAddressReceipt')
   }
 
   useEffect(() => {
@@ -672,17 +700,26 @@ export default function Transfer(props: TransferPropsType) {
     }
     return () => {
       !!configData.cron && clearInterval(configData.cron)
+      setConfigData({
+        cron: null,
+        banList: []
+      }) 
     }
   }, [isInit])
-
-
 
 
 
   return (<>
     <Row>
       <Text fontSize={20} fontWeight={500}>Token</Text>
-
+      {
+        !isNewVersion && (<div>
+          <ObSelect datas={ctData.fromTokenList} value={selectFromToken} onChange={onChangeSelectFromToken} />
+        </div>)
+      }
+      <span>
+        {/* {JSON.stringify(ctData.fromTokenList)} */}
+      </span>
     </Row>
 
   </>)

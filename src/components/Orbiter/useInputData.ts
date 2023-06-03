@@ -3,6 +3,7 @@ import { TransferDataStateType } from "./bridge"
 import orbiterCore from "../../utils/orbiter-core";
 import BigNumber from 'bignumber.js'
 import {  RatesType } from "../../utils/orbiter-tool/coinbase";
+import { DataItem } from "../ObSelect/a";
 type PropsType = {
   transferDataState: TransferDataStateType,
   rates: RatesType
@@ -74,7 +75,7 @@ export default function useInputData(props: PropsType){
       }
       setToValue(res)
     }
-  },[props.transferDataState])
+  },[props.transferDataState, props.rates])
   const updateInputData = (value: string, key: string)=>{
     switch(key){
       case 'from':
@@ -93,6 +94,11 @@ export default function useInputData(props: PropsType){
         break
     }
   }
+  const onChangeSelectFromToken = (item:DataItem)=>{
+    if(item){
+    updateInputData(item.value||'', 'from')
+    }
+  }
   return {
     selectFromToken,
     selectToToken,
@@ -100,6 +106,8 @@ export default function useInputData(props: PropsType){
     toValue,
     crossAddressReceipt,
     updateInputData,
-    onInputTransferValue
+    onInputTransferValue,
+    onChangeSelectFromToken
+
   }
 }

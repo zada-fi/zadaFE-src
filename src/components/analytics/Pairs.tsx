@@ -17,8 +17,8 @@ type TransactionItem = {
   event_time: string,
   op_type: string,
   user_address: string,
-  x_name?:string,
-  y_name?:string
+  x_name?: string,
+  y_name?: string
 }
 
 type PairStatisticItem = {
@@ -54,12 +54,12 @@ export default function Pairs(props: {
         {
           title: 'Name',
           dataIndex: 'pair_name',
-          key: 'pair_name-'+props.title,
+          key: 'pair_name-' + props.title,
         }, {
           title: 'Liquidity',
           dataIndex: 'usd_tvl',
           key: 'usd_tvl',
-          render: (text)=>{
+          render: (text) => {
             return `$${text}`
           }
         }, {
@@ -79,7 +79,7 @@ export default function Pairs(props: {
         {
           title: 'All',
           dataIndex: 'op_type',
-          key:'op_type',
+          key: 'op_type',
           render: (text, row) => {
             return `${text} ${row.token_x_amount} ${row.x_name} to ${row.token_y_amount} ${row.y_name}`
           },
@@ -101,25 +101,25 @@ export default function Pairs(props: {
         {
           title: 'Token0',
           dataIndex: 'token_x_amount',
-          key:'token_x_amount'
+          key: 'token_x_amount'
         },
         {
           title: 'Token1',
           dataIndex: 'token_y_amount',
-          key:'token_y_amount'
+          key: 'token_y_amount'
         },
         {
           title: 'Account',
           dataIndex: 'user_address',
-          key:'user_address',
-          render: (text)=>{
-            return `${shortenAddress(text)}` 
+          key: 'user_address',
+          render: (text) => {
+            return `${shortenAddress(text)}`
           }
         },
         {
           title: 'Time',
           dataIndex: 'event_time',
-          key:'event_time'
+          key: 'event_time'
         }
       ]
     }
@@ -156,32 +156,37 @@ export default function Pairs(props: {
   }
 
   const getTableData = async () => {
-    
-    let netUrl = baseConfig[props.skey as keyof BaseConfigType].netUrl
-    // console.log('getTableData netUrl =', netUrl)
-    let url = (`${netUrl}?pg_no=${encodeURIComponent(1)}`)
-    let response = await fetch(url)
-    let resData = await response.json()
-    console.log('get tableData res=', props.skey, 'resData=',resData.data)
-    let tempTableList: Array<DataItem> = []
-    if(props.skey === 'pairs'){
-      tempTableList = resData.data && resData.data.length? resData.data[1]:[]
-    }else {
-      tempTableList = resData.data.data && resData.data.data.length ? resData.data.data[1]:[]
-      tempTableList = tempTableList.reduce((res: DataItem[], item)=>{
-        let pairKeys = item.pair_name.split('-')
-      let x_name = pairKeys.length ? pairKeys[0].replace(/\"/ig, ''):''
-      let y_name = pairKeys.length === 2? pairKeys[1].replace(/\"/ig,''): x_name
-        res.push({
-          ...item,
-          x_name,
-          y_name
-        })
-        return res
-      },[])
+    try {
+
+      let netUrl = baseConfig[props.skey as keyof BaseConfigType].netUrl
+      // console.log('getTableData netUrl =', netUrl)
+      let url = (`${netUrl}?pg_no=${encodeURIComponent(1)}`)
+      let response = await fetch(url)
+      let resData = await response.json()
+      console.log('get tableData res=', props.skey, 'resData=', resData.data)
+      let tempTableList: Array<DataItem> = []
+      if (props.skey === 'pairs') {
+        tempTableList = resData.data && resData.data.length ? resData.data[1] : []
+      } else {
+        tempTableList = resData.data.data && resData.data.data.length ? resData.data.data[1] : []
+        tempTableList = tempTableList.reduce((res: DataItem[], item) => {
+          let pairKeys = item.pair_name.split('-')
+          let x_name = pairKeys.length ? pairKeys[0].replace(/\"/ig, '') : ''
+          let y_name = pairKeys.length === 2 ? pairKeys[1].replace(/\"/ig, '') : x_name
+          res.push({
+            ...item,
+            x_name,
+            y_name
+          })
+          return res
+        }, [])
+      }
+      console.log('get tableData resultData---', props.skey, tempTableList)
+      setTableDatas(tempTableList)
+
+    } catch (error) {
+      console.log('oh there is an error here', error)
     }
-    console.log('get tableData resultData---',props.skey, tempTableList)
-    setTableDatas(tempTableList)
   }
 
   const TableComp = () => {

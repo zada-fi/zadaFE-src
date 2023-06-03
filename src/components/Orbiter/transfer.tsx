@@ -1,5 +1,9 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useContext, useEffect, useMemo, useState } from "react"
 
+import { AutoRow } from '../../components/Row'
+import { ThemeContext } from 'styled-components'
+import { ArrowWrapper } from '../../components/swap/styleds'
+import { ArrowDown, ArrowUp } from 'react-feather'
 import { Text } from 'rebass'
 import Row from "../Row"
 // import { BigNumber } from '@ethersproject/bignumber'
@@ -36,24 +40,26 @@ type SendBtnInfoType = {
 
 
 export default function Transfer(props: TransferPropsType) {
+
+  const theme = useContext(ThemeContext)
   let history = useHistory()
   let location = useLocation()
   let [rates, setRates] = useState<RatesType>(null)
-  useEffect(()=>{
+  useEffect(() => {
     let active = true
     loadRate()
-    return ()=>{
+    return () => {
       active = false
     }
-    async function loadRate(){
+    async function loadRate() {
       const exchangeRates: RatesType = await getRates('ETH');
-      if(!active){
-        return 
+      if (!active) {
+        return
       }
       setRates(exchangeRates)
     }
-  },[])
-  
+  }, [])
+
   const [isCrossAddress, setIsCrossAddress] = useState<boolean>(false)
   let { transferDataState, updateTransferDataState } = useTransferDataState({
     isCrossAddress
@@ -64,18 +70,18 @@ export default function Transfer(props: TransferPropsType) {
     crossAddressReceipt,
     // @ts-ignore 
 
-    onInputTransferValue,onChangeSelectFromToken } = useInputData({
+    onInputTransferValue, onChangeSelectFromToken } = useInputData({
       transferDataState,
       rates
     })
 
-  useEffect(()=>{
+  useEffect(() => {
     updateTransferDataState(crossAddressReceipt, 'crossAddressReceipt')
-  },[crossAddressReceipt])
+  }, [crossAddressReceipt])
 
   let { ctData, updateChainAndTokenData } = useChainAndTokenData()
 
-  let { transferSpentGas, getTransferBalance, getTransferGasLimit,getTokenConvertUsd } = useTransferCalcute({
+  let { transferSpentGas, getTransferBalance, getTransferGasLimit, getTokenConvertUsd } = useTransferCalcute({
     transferDataState
   })
   // @ts-ignore 
@@ -106,9 +112,9 @@ export default function Transfer(props: TransferPropsType) {
     cron: null,
     banList: []
   })
-  const isErrorAddress = useMemo(()=> {
+  const isErrorAddress = useMemo(() => {
     //!this.isNewVersion ||
-    if ( selectFromToken === selectToToken) {
+    if (selectFromToken === selectToToken) {
       return false;
     }
     if (!isCrossAddress || !crossAddressReceipt || !isSupportXVMContract(transferDataState)) {
@@ -125,47 +131,47 @@ export default function Transfer(props: TransferPropsType) {
     //   updateTransferInfo()
     // }
     return isCheck;
-  },[transferDataState, 
-    isCrossAddress, 
-    crossAddressReceipt, 
+  }, [transferDataState,
+    isCrossAddress,
+    crossAddressReceipt,
     selectFromToken,
     selectToToken])
-  useEffect(()=>{
-    if(true){
+  useEffect(() => {
+    if (true) {
 
     }
-  },[isErrorAddress])
-  const isShowMax = useMemo(()=> {
+  }, [isErrorAddress])
+  const isShowMax = useMemo(() => {
     return (
-            new BigNumber(transferValue).comparedTo(
-                    new BigNumber(transferDataState.selectMakerConfig?.fromChain?.maxPrice)
-            ) > 0
+      new BigNumber(transferValue).comparedTo(
+        new BigNumber(transferDataState.selectMakerConfig?.fromChain?.maxPrice)
+      ) > 0
     );
-  },[transferDataState, transferValue])
-  const isShowUnreachMinInfo = useMemo(()=>{
+  }, [transferDataState, transferValue])
+  const isShowUnreachMinInfo = useMemo(() => {
     if (walletIsLogin && transferValue) {
       let makerMin = new BigNumber(userMinPrice);
       let temp_transferValue = new BigNumber(transferValue);
       const temp_fromBalance = new BigNumber(fromBalance);
       return (
-              temp_transferValue.comparedTo(makerMin) < 0 &&
-              temp_transferValue.comparedTo(temp_fromBalance) < 0
+        temp_transferValue.comparedTo(makerMin) < 0 &&
+        temp_transferValue.comparedTo(temp_fromBalance) < 0
       );
     }
     return false;
-  },[walletIsLogin, transferValue, userMinPrice, fromBalance]) 
-  let isWhiteWallet = useMemo(()=>{
-    if(walletIsLogin){
+  }, [walletIsLogin, transferValue, userMinPrice, fromBalance])
+  let isWhiteWallet = useMemo(() => {
+    if (walletIsLogin) {
       return isWhite()
-    }else{
+    } else {
       return false
     }
-  },[walletIsLogin])
-  let isNewVersion = useMemo(()=>{
+  }, [walletIsLogin])
+  let isNewVersion = useMemo(() => {
     return false
-  },[walletIsLogin]) 
+  }, [walletIsLogin])
   // @ts-ignore 
-  const sendBtnInfo:SendBtnInfoType = useMemo(() => {
+  const sendBtnInfo: SendBtnInfoType = useMemo(() => {
     const { selectMakerConfig, fromCurrency, toCurrency } = transferDataState;
     if (!selectMakerConfig) return {
       text: 'SEND',
@@ -226,7 +232,7 @@ export default function Transfer(props: TransferPropsType) {
       }
 
       if ((fromCurrency !== toCurrency || isCrossAddress) &&
-        !isSupportXVMContract(transferDataState) && !isLoopring ) {
+        !isSupportXVMContract(transferDataState) && !isLoopring) {
         info.text = 'SEND';
         info.disabled = true// 'disabled';
         // util.log('(fromCurrency !== toCurrency || this.isCrossAddress) && !isSupportXVMContract && !this.isLoopring && !util.isStarkNet',
@@ -273,7 +279,7 @@ export default function Transfer(props: TransferPropsType) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const isShowExchangeIcon = useMemo(() => {
-    let makerConfigs = isNewVersion? config.makerConfigs: config.v1MakerConfigs // not new version
+    let makerConfigs = isNewVersion ? config.makerConfigs : config.v1MakerConfigs // not new version
     return !!makerConfigs.find(item =>
       item.fromChain.id + '' === transferDataState.toChainID &&
       item.fromChain.symbol === transferDataState.toCurrency &&
@@ -282,10 +288,10 @@ export default function Transfer(props: TransferPropsType) {
   }, [transferDataState.toChainID, transferDataState.toCurrency,
   transferDataState.fromChainID, transferDataState.fromCurrency])
 
-  
-  useEffect(()=>{
+
+  useEffect(() => {
     updateTransferInfo()
-  },[isWhiteWallet, isNewVersion])
+  }, [isWhiteWallet, isNewVersion])
 
   const queryParams = useMemo(() => {
     let query = getQuery()
@@ -293,7 +299,7 @@ export default function Transfer(props: TransferPropsType) {
     let { token, tokens, amount = '', fixed } = query;
     // amount = amount ? new BigNumber(amount) : '';
     tokens = !tokens ? [] : tokens.split(',');
-    const makerConfigs: any = isNewVersion? config.makerConfigs: config.v1MakerConfigs
+    const makerConfigs: any = isNewVersion ? config.makerConfigs : config.v1MakerConfigs
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     let source = makerConfigs.find(item => item.fromChain.name.toLowerCase() === query?.source?.toLowerCase())?.fromChain?.id || 0;
@@ -372,7 +378,7 @@ export default function Transfer(props: TransferPropsType) {
     if (!token) {
       token = tokens?.[0] || '';
     }
-    if (amount && new BigNumber(amount).comparedTo(('0'))> -1) {
+    if (amount && new BigNumber(amount).comparedTo(('0')) > -1) {
       amount = amount.toNumber().toFixed();
     } else {
       amount = '';
@@ -392,7 +398,7 @@ export default function Transfer(props: TransferPropsType) {
   }, [])
 
 
-  
+
   // @ts-ignore
   let [exchangeToUsdPrice, setExchangeToUsdPrice] = useState<number>(0)
   const getExchangeToUsdPrice = async () => {
@@ -405,18 +411,18 @@ export default function Transfer(props: TransferPropsType) {
       return 0
     }
   }
-  useEffect(()=>{
-    let flag = true 
-    const loadData = async()=>{
+  useEffect(() => {
+    let flag = true
+    const loadData = async () => {
       let res = await getExchangeToUsdPrice()
-      if(!flag)return 
+      if (!flag) return
       setExchangeToUsdPrice(res)
     }
     loadData()
-    return ()=>{
-      flag = false 
+    return () => {
+      flag = false
     }
-    
+
 
   }, [transferDataState.selectMakerConfig])
 
@@ -427,7 +433,7 @@ export default function Transfer(props: TransferPropsType) {
   // @ts-ignore
   const updateTransferInfo = async ({ fromChainID, toChainID, fromCurrency, toCurrency } = transferDataState) => {
     toCurrency = fromCurrency
-   
+
 
     const isCrossAddress = transferDataState.isCrossAddress;
     const oldFromChainID = transferDataState.fromChainID;
@@ -456,7 +462,7 @@ export default function Transfer(props: TransferPropsType) {
     }
     const { tokens, source, dest } = queryParams;
     const fromTokens = tokens;
-    const makerConfigs = isNewVersion? config.makerConfigs: config.v1MakerConfigs
+    const makerConfigs = isNewVersion ? config.makerConfigs : config.v1MakerConfigs
     const fromChainIdList: number[] = Array.from(new Set(
       makerConfigs.map(item => item.fromChain.id)
     )).sort(function (a, b) {
@@ -679,7 +685,7 @@ export default function Transfer(props: TransferPropsType) {
   }
   const updateETHPriceI = async () => {
     getTokenConvertUsd('ETH')
-      .then((response) => updateTransferDataState(response,'ethPrice'))
+      .then((response) => updateTransferDataState(response, 'ethPrice'))
       .catch((error) => console.warn('GetETHPriceError =', error));
   }
 
@@ -703,27 +709,40 @@ export default function Transfer(props: TransferPropsType) {
       setConfigData({
         cron: null,
         banList: []
-      }) 
+      })
     }
   }, [isInit])
 
 
+
+  const onChangeTransfer = () => { }
 
   return (<>
     <Row>
       <Text fontSize={20} fontWeight={500}>Token</Text>
       {
         !isNewVersion && (<div>
-          <ObSelect 
-          datas={ctData.fromTokenList} 
-          value={selectFromToken} 
-          onChange={onChangeSelectFromToken} />
+          <ObSelect
+            datas={ctData.fromTokenList}
+            value={selectFromToken}
+            onChange={onChangeSelectFromToken} />
         </div>)
       }
-      <span>
-        { selectFromToken }
-      </span>
+
     </Row>
+
+    <AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
+      <ArrowWrapper clickable onClick={onChangeTransfer}>
+        <ArrowDown
+          size="16"
+          color={transferValue ? theme.primary1 : theme.text2}
+        />
+        <ArrowUp
+          size="16"
+          color={transferValue ? theme.primary1 : theme.text2}
+        />
+      </ArrowWrapper>
+    </AutoRow>
 
   </>)
 }

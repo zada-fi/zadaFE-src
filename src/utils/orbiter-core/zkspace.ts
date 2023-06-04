@@ -1,5 +1,6 @@
+import { TransferDataStateType } from "../../components/Orbiter/bridge"
 import otherConfig from "../orbiter-config/other"
-
+import BigNumber from 'bignumber.js'
 
 type ZKspaceBalanceReq = {
   account: string,
@@ -28,4 +29,35 @@ export default {
     }
   },
  
+  getZKSpaceWithDrawGasFee: async function (localChainID:string, account:any, transferDataState: TransferDataStateType) {
+    if (!account) {
+      return
+    }
+    const ethPrice = transferDataState.ethPrice
+      ? transferDataState.ethPrice
+      : 2000
+
+    if (localChainID !== '12' && localChainID !== '512') {
+      throw new Error('getZKSpaceGasFeeError：wrongChainID')
+    }
+    const url = `${
+      localChainID === '512' ? otherConfig.ZKSpace.Rinkeby : otherConfig.ZKSpace.Mainnet
+    }/account/${account}/fee`
+    try {
+      // const response = await axios.get(url)
+      let fetchResp = await fetch(url)
+      let response = await fetchResp.json()
+      if (response.status === 200 && response.data.success) {
+        const respData = response.data
+        const gasFee = new BigNumber(respData.data.withdraw).dividedBy(
+          new BigNumber(ethPrice)
+        )
+        const gasFee_fix = gasFee.decimalPlaces(6, BigNumber.ROUND_UP)
+        return Number(gasFee_fix)
+      }
+      throw new Error('getZKSpaceWithDrawGasFee response.status not 200')
+    } catch (error) {
+      throw new Error(`getZKSpaceWithDrawGasFee error：${error}`)
+    }
+  },
 }

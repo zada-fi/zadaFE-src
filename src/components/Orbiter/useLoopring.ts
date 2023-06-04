@@ -183,9 +183,39 @@ export default function useLoopring(props: PropsType) {
       return 0
     }
   }
+  const getWithDrawFee = async (address: string, localChainID: string, tokenName: string)=> {
+    const accountResult = await accountInfo(address, localChainID)
+    if (!accountResult) {
+      return 0
+    }
+    let acc
+    if (accountResult.code) {
+      return 0
+    } else {
+      acc = accountResult.accountInfo
+    }
+    const sendAmount = props.transferDataState.transferValue
+    const GetOffchainFeeAmtRequest = {
+      accountId: acc?.accountId,
+      requestType: OffchainFeeReqType.OFFCHAIN_WITHDRAWAL,
+      tokenSymbol: tokenName,
+      amount: sendAmount,
+    }
+    const userApi = getUserAPI(localChainID)
+    const response = await userApi.getOffchainFeeAmt(
+      // @ts-ignore 
+      GetOffchainFeeAmtRequest,
+      ''
+    )
+    if (response?.fees?.ETH?.fee) {
+      return response.fees.ETH.fee
+    }
+    return 0
+  }
   return {
     getLpTokenInfo,
     getTransferFee,
-    getLoopringBalance
+    getLoopringBalance,
+    getWithDrawFee
   }
 }

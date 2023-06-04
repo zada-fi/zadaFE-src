@@ -24,6 +24,9 @@ import { useHistory, useLocation } from "react-router-dom"
 import { getRates, RatesType, exchangeToUsd } from '../../utils/orbiter-tool/coinbase'
 import { isWhite } from './../../utils/orbiter-tool'
 import ObSelect from "../ObSelect"
+import useGasData from "./useGasData"
+import Loader from "../Loader"
+import { spawn } from "child_process"
 
 type TransferPropsType = {
   onChangeState: Function
@@ -81,7 +84,7 @@ export default function Transfer(props: TransferPropsType) {
 
   let { ctData, updateChainAndTokenData } = useChainAndTokenData()
 
-  let { transferSpentGas, getTransferBalance, getTransferGasLimit, getTokenConvertUsd } = useTransferCalcute({
+  let { transferSpentGas, getTransferBalance, getTransferGasLimit, getTokenConvertUsd, transferOrginGasUsd } = useTransferCalcute({
     transferDataState
   })
   // @ts-ignore 
@@ -399,7 +402,6 @@ export default function Transfer(props: TransferPropsType) {
 
 
 
-  // @ts-ignore
   let [exchangeToUsdPrice, setExchangeToUsdPrice] = useState<number>(0)
   const getExchangeToUsdPrice = async () => {
     const { selectMakerConfig } = transferDataState;
@@ -427,6 +429,12 @@ export default function Transfer(props: TransferPropsType) {
   }, [transferDataState.selectMakerConfig])
 
 
+  let { originGasCost,
+    showSaveGas,
+    gasTradingTotal,
+    updateGasData } = useGasData({
+      exchangeToUsdPrice
+    })
 
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -599,7 +607,8 @@ export default function Transfer(props: TransferPropsType) {
       // transferCalculate.
       transferSpentGas(fromChainID, orbiterEnv.gasPriceMap, orbiterEnv.gasLimitMap)
         .then((response) => {
-          updateTransferGasFee(response);
+          // updateTransferGasFee(response);
+          updateTransferDataState(response, 'gasFee')
           setGasCostLoading(false)
         })
         .catch((error) => {
@@ -639,17 +648,44 @@ export default function Transfer(props: TransferPropsType) {
       });
     }
   }
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const specialProcessing = (oldFromChainID, oldToChainID) => { }
-  const updateOriginGasCost = () => {
-
+  const refreshGas = () => {
+    // this.refreshOrbiterTradingFee()
+    //   this.refreshGasTradingTotal()
+    //   this.refreshGasSavingMin()
+    //   this.refreshGasSavingMin()
+    //   this.refreshGasSavingMax()
+    //   this.refreshGasFeeToolTip()
   }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const updateTransferGasFee = (response) => {
+  const specialProcessing = (oldFromChainID, oldToChainID) => { }
+  const updateOriginGasCost = async () => {
 
+    // this.originGasLoading = true
+    updateLoadingData(true, 'originGasLoading')
+    const { fromChainID, toChainID, fromCurrency } = transferDataState
+
+    if (!fromChainID || !toChainID) {
+      return
+    }
+    try {
+      let temp_originGasCost = await transferOrginGasUsd(
+        fromChainID,
+        toChainID,
+        fromCurrency !== 'ETH'
+      )
+      updateGasData(temp_originGasCost, 'originGasCost')
+      refreshGas()
+    } catch (error) {
+      console.warn('updateOriginGasCost error =', error)
+      // this.$notify.error({
+      //   title: `GetOrginGasFeeError`,
+      //   desc: error,
+      //   duration: 3000,
+      // })
+    } finally {
+      updateLoadingData(false, 'originGasLoading')
+    }
   }
 
   const openApiFilter = async () => {
@@ -715,8 +751,12 @@ export default function Transfer(props: TransferPropsType) {
 
 
 
-  const onChangeTransfer = () => { }
-
+  const onChangeTransfer = () => {
+    // TODO
+  }
+  const onChangeFromChain = ()=>{
+    // TODO
+  }
   return (<>
     <Row>
       <Text fontSize={20} fontWeight={500}>Token</Text>
@@ -730,6 +770,24 @@ export default function Transfer(props: TransferPropsType) {
       }
 
     </Row>
+    <div className="from-area">
+      <div className="topItem">
+        <div className="left">From</div>
+        {
+          walletIsLogin && (
+            <div className="right">
+              Balance: { loadingDats.fromBalanceLoading? <Loader></Loader>: (<span>{fromBalance}</span>)}
+            </div>
+          )
+        }
+      </div>
+      <div className="bottomItem">
+        <div className="left" onClick={onChangeFromChain}>
+
+        </div>
+      </div>
+    
+    </div>
 
     <AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
       <ArrowWrapper clickable onClick={onChangeTransfer}>

@@ -17,7 +17,7 @@ export default function useInputData(props: PropsType) {
   let onInputTransferValue = (e: any) => {
     let value = e.target.value
     const { selectMakerConfig } = props.transferDataState;
-    if (!selectMakerConfig) return;
+    if (!selectMakerConfig || !Object.keys(selectMakerConfig).length) return;
     const { fromChain, toChain } = selectMakerConfig;
 
     if (fromChain.id === 9 || fromChain.id === 99 || toChain.id === 9 || toChain.id === 99) {
@@ -34,7 +34,7 @@ export default function useInputData(props: PropsType) {
   }
   let getToValue = async () => {
     const { fromCurrency, toCurrency, selectMakerConfig } = props.transferDataState;
-    if (!transferValue || !selectMakerConfig) {
+    if (!transferValue || !selectMakerConfig || !Object.keys(selectMakerConfig).length) {
       return 0
     }
     let amount = orbiterCore.getToAmountFromUserAmount(

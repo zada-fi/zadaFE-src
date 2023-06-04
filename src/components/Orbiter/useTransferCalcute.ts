@@ -231,7 +231,7 @@ export default function useTransferCalcute(props: PropsType) {
         fromChainID + '' === '3'
           ? zktokenList.mainnet
           : zktokenList.rinkeby
-      const tokenAddress = typeof selectMakerConfig === 'undefined' || !selectMakerConfig ? '' : selectMakerConfig.fromChain.tokenAddress
+      const tokenAddress = typeof selectMakerConfig === 'undefined' || !selectMakerConfig || !Object.keys(selectMakerConfig).length ? '' : selectMakerConfig.fromChain.tokenAddress
       const tokenList = zkTokenList.filter(
         (item: any) => item.address === tokenAddress
       )

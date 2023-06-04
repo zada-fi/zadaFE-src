@@ -17,10 +17,10 @@ export default function useLoadingData(){
     saveTimeLoading: false,
   })
   const updateLoadingData = (value: boolean, valueKey: string)=>{
-    setLoadingDats({
-      ...loadingDats,
+    setLoadingDats(prevState =>({
+      ...prevState,
       [valueKey as keyof LoadingDatsType]: value
-    })
+    }))
   }
   return {
     loadingDats,

@@ -1,7 +1,8 @@
 import React from "react";
 
 type SvgiconPropsType = {
-  iconName: string
+  iconName: string,
+  className?: string
 }
 // @ts-ignore 
 const requireAll = (requireContext: __WebpackModuleApi.requireContext) => requireContext.keys().map(requireContext)
@@ -17,7 +18,7 @@ requireAll(req3)
 
 
 export default function SvgIcon(props: SvgiconPropsType){
-  return ( <svg className="svg">
+  return ( <svg className={`svg ${props.className}`}>
   <use xlinkHref={`#${props.iconName || 'tokenLogo'}`} />
 </svg>)
 }

@@ -12,10 +12,10 @@ export default function useChainAndTokenData(){
       toTokenList:  [],
   })
   const updateChainAndTokenData = (value:CtItemDataType, valueKey: string)=>{
-    setCtData({
-      ...ctData,
-      [valueKey]: value
-    })
+    setCtData(prevState=>({
+      ...prevState,
+      [valueKey as keyof CtItemDataType]: value
+    }))
   } 
   return {
     ctData,

@@ -23,7 +23,7 @@ import useLoadingData from "./useLoadingData"
 import useBalance from "./useBalance"
 import { useHistory, useLocation } from "react-router-dom"
 import { getRates, RatesType, exchangeToUsd } from '../../utils/orbiter-tool/coinbase'
-import { isWhite } from './../../utils/orbiter-tool'
+import { isWhite, chainName } from './../../utils/orbiter-tool'
 import ObSelect from "../ObSelect"
 import useGasData from "./useGasData"
 import Loader from "../Loader"
@@ -42,6 +42,12 @@ type SendBtnInfoType = {
   disabled: boolean
 }
 
+const StyledSvgIcon = styled(SvgIcon)`
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+
+`
 const StyledDropDown = styled(DropDown) <{ selected: boolean }>`
   margin: 0 0.25rem 0 0.5rem;
   height: 35%;
@@ -112,7 +118,7 @@ export default function Transfer(props: TransferPropsType) {
       getTransferBalance,
       rates
     })
-
+  // console.log('transfer transferDataState=', transferDataState)
   const [isInit, setIsInit] = useState(false)
   // const fromTokenList = []
   // const toTokenList = [];
@@ -154,33 +160,32 @@ export default function Transfer(props: TransferPropsType) {
     }
   }, [isErrorAddress])
   const fromChainObj = useMemo(() => {
-    const localChainID = +transferDataState.fromChainID
-    if(!localChainID){
+    const localChainID = transferDataState.fromChainID
+    console.log('from chainobj localchainid', localChainID)
+    if (!localChainID) {
       return {
-        icon:'pglogo',
-        name:''
+        icon: '',
+        name: ''
       }
     }
     return {
       // @ts-ignore 
       icon: orbiterEnv.chainIcon[localChainID],
-      // @ts-ignore 
-      name: orbiterEnv.chainName[localChainID]
+      name: chainName(localChainID)
     }
   }, [transferDataState])
   const toChainObj = useMemo(() => {
-    const localChainID = +transferDataState.toChainID
-    if(!localChainID){
+    const localChainID = transferDataState.toChainID
+    if (!localChainID) {
       return {
-        icon:'',
-        name:''
+        icon: '',
+        name: ''
       }
     }
     return {
       // @ts-ignore 
       icon: orbiterEnv.chainIcon[localChainID],
-      // @ts-ignore 
-      name: orbiterEnv.chainName[localChainID]
+      name: chainName(localChainID)
     }
   }, [transferDataState])
 
@@ -217,12 +222,14 @@ export default function Transfer(props: TransferPropsType) {
   // @ts-ignore 
   const sendBtnInfo: SendBtnInfoType = useMemo(() => {
     const { selectMakerConfig, fromCurrency, toCurrency } = transferDataState;
-    if (!selectMakerConfig) return {
+    if (!selectMakerConfig || !Object.keys(selectMakerConfig).length) return {
       text: 'SEND',
       disable: true
     };
+    console.log('sendBtnInfo useMemo=', selectMakerConfig)
     const { fromChain } = selectMakerConfig;
-    const availableDigit = fromChain.decimals === 18 ? 6 : 2;
+
+    const availableDigit = fromChain&&fromChain.decimals === 18 ? 6 : 2;
     let opBalance = 10 ** -availableDigit;
     let useBalance = new BigNumber(fromBalance)
       .minus(new BigNumber(selectMakerConfig.tradingFee))
@@ -446,7 +453,7 @@ export default function Transfer(props: TransferPropsType) {
   let [exchangeToUsdPrice, setExchangeToUsdPrice] = useState<number>(0)
   const getExchangeToUsdPrice = async () => {
     const { selectMakerConfig } = transferDataState;
-    if (!selectMakerConfig) return 0;
+    if (!selectMakerConfig||!Object.keys(selectMakerConfig).length) return 0;
     const price = (await exchangeToUsd(1, selectMakerConfig.fromChain.symbol)).toNumber();
     if (price > 0) {
       return price;
@@ -518,6 +525,7 @@ export default function Transfer(props: TransferPropsType) {
     fromChainID = fromChainID || (source && fromChainIdList.find(item => item === +source) ?
       (+source) + '' :
       fromChainIdList[0] + '');
+
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     let toChainIdList: number[] = Array.from(new Set(
@@ -630,6 +638,9 @@ export default function Transfer(props: TransferPropsType) {
     if (ctData.fromTokenList !== fromTokenList) {
       updateChainAndTokenData(fromTokenList, 'fromTokenList')
     }
+
+    console.log('updateInfo', fromChainID, '---',oldFromChainID)
+
     updateTransferDataState(fromChainID, 'fromChainID');
     updateTransferDataState(toChainID, 'toChainID');
     updateTransferDataState(fromCurrency, 'fromCurrency');
@@ -656,25 +667,32 @@ export default function Transfer(props: TransferPropsType) {
     }
 
     await refreshUserBalance()
-
-    updateRoutes(oldFromChainID, oldToChainID);
+    console.log('updateRoutes Before', transferDataState)
+    // updateRoutes(oldFromChainID, oldToChainID);
   }
 
+  useEffect(()=>{
+    console.log('useEffect---', transferDataState)
+    updateRoutes()
+  },[ transferDataState.selectMakerConfig])
 
-  const updateRoutes = (oldFromChainID: string, oldToChainID: string) => {
-    const { fromChainID, toChainID, selectMakerConfig } = transferDataState;
+
+  const updateRoutes = () => {
+    const {  selectMakerConfig } = transferDataState;
     // const { path, query } = this.$route;
     let path = location.pathname
     let query = getQuery()
+    console.log('updateRoutes--start', transferDataState, query)
     const changeQuery = {};
-    if (fromChainID !== oldFromChainID && query?.source !== selectMakerConfig.fromChain.name) {
+    if ( query?.source !== ((selectMakerConfig||{}).fromChain||{}).name) {
       // @ts-ignore 
       changeQuery.source = selectMakerConfig.fromChain.name;
     }
-    if (toChainID !== oldToChainID && query?.dest !== selectMakerConfig.toChain.name) {
+    if ( query?.dest !== ((selectMakerConfig||{}).toChain||{}).name) {
       // @ts-ignore 
       changeQuery.dest = selectMakerConfig.toChain.name;
     }
+    console.log('updateRoutes-after--', changeQuery)
     if (Object.keys(changeQuery).length) {
       const newQuery = JSON.parse(JSON.stringify(query));
       Object.assign(newQuery, changeQuery);
@@ -730,12 +748,12 @@ export default function Transfer(props: TransferPropsType) {
     try {
       let response = await fetch(`${process.env.REACT_APP_OPEN_API_URL}/frontend/net`);
       let res = await response.json()
-      console.log('openApiFilter--- res=', res)
+      console.log('openApiFilter--- res=', res, configData.cron)
       let cron = configData.cron
       if (!cron) {
         cron = setInterval(async () => {
           await openApiFilter()
-        }, 30000)
+        }, 3000000)
       }
       if (res.code + '' === '0') {
         setConfigData({
@@ -765,6 +783,7 @@ export default function Transfer(props: TransferPropsType) {
 
 
   const initData = () => {
+    console.log('initData---')
     openApiFilter()
     updateTransferInfo()
     updateETHPriceI()
@@ -790,7 +809,11 @@ export default function Transfer(props: TransferPropsType) {
 
 
   const onChangeTransfer = () => {
-    // TODO
+    const { fromChainID, toChainID, fromCurrency, toCurrency} = transferDataState
+    updateTransferDataState(toChainID, 'fromChainID')
+    updateTransferDataState(fromChainID, 'toChainID')
+    updateInputData(toCurrency||'','from')
+    updateInputData(fromCurrency||'', 'to')
   }
   const onChangeFromChain = () => {
     // TODO
@@ -824,38 +847,46 @@ export default function Transfer(props: TransferPropsType) {
       </div>
       <div className="bottomItem">
         <div className="left" onClick={onChangeFromChain}>
-          <SvgIcon
+          <StyledSvgIcon
             iconName={fromChainObj.icon}
           />
           <span>{fromChainObj.name}</span>
           <StyledDropDown selected={true}></StyledDropDown>
-          {/* style={ {width: '24px', height: '24px', marginRight: '4px'}} */}
         </div>
         <div className="right"></div>
       </div>
 
     </div>
+    {isShowExchangeIcon && <AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
+      <span onClick={onChangeTransfer}>
+        <StyledSvgIcon
+          iconName={'exchange'}
+          className="exchange-icon"
+        />
+      </span>
+    </AutoRow>}
+
+
     <div className="to-area">
       <div className="topItem">
         <div className="left">To</div>
         {
           walletIsLogin && (
-             <div className="right">
+            <div className="right">
               Balance: {loadingDats.toBalanceLoading ? <Loader></Loader> : (<span>{toBalance}</span>)}
-            </div> 
+            </div>
           )
         }
       </div>
       <div className="bottomItem">
-      <div className="left" onClick={onChangeToChain}>
-          <SvgIcon
+        <div className="left" onClick={onChangeToChain}>
+          <StyledSvgIcon
             iconName={toChainObj.icon}
           />
           <span>{toChainObj.name}</span>
           <StyledDropDown selected={true}></StyledDropDown>
-          {/* style={ {width: '24px', height: '24px', marginRight: '4px'}} */}
         </div>
-        <div className="right"></div> 
+        <div className="right"></div>
       </div>
     </div>
 

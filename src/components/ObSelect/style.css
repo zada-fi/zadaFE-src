@@ -9,6 +9,7 @@
   position: relative;
   border:1px solid #2C2F36;
   margin-left: 1rem;
+  position: relative;
 }
 
 .ob-select-box .prefix .select-item-icon,
@@ -19,6 +20,8 @@
 }
 .ob-select-box-dialog{
   position: absolute;
+  left: 0;
+  top: 40px;
 }
 
 .ob-select-box .selected-label {
@@ -26,6 +29,7 @@
   font-weight: 700;
   font-size: 16px;
   line-height: 24px;
+  user-select: none;
 }
 
 .ob-select-box-dialog .dialog {

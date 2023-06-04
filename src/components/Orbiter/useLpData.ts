@@ -40,10 +40,10 @@ export default function useLpData() {
     } else if (valueKey === 'lpApiKey') {
       setLpApiKey(value)
     } else if (valueKey === 'web3State') {
-      setWeb3State({
-        ...web3State,
+      setWeb3State(prevState=>({
+        ...prevState,
         [valueKey as keyof Web3StateType]: value
-      })
+      }))
     }
   }
   return {

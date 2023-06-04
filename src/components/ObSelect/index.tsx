@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react"
+import React, { useMemo, useState, useRef } from "react"
 
 import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
 import { ObSelectPropsType, DataItem  } from "./a"
@@ -39,16 +39,20 @@ export default function ObSelect(props: ObSelectPropsType) {
     // @ts-ignore 
     return dataList.find((v) => v.value == props.value)
   }, [dataList, props.value])
-  let onShowSelect = () => {
-    let newVal = !dialogVisible
-    setDialogVisible(newVal)
+  let onShowSelect = (value  = false) => {
+    let newVal = !value
+    console.log('onShowSelect--', dialogVisible, newVal)
+    if(newVal !== dialogVisible){
+      setDialogVisible(newVal)
+    }
   }
   let onCancel = ()=>{
     setDialogVisible(false)
   }
+  let node = useRef(null)
 
   return (<>
-    <div className="ob-select-box" onClick={onShowSelect} >
+    <div ref={node} className="ob-select-box" onClick={()=>onShowSelect(dialogVisible)} >
       <div className="prefix" >
         {
           selectedItem && (
@@ -62,6 +66,13 @@ export default function ObSelect(props: ObSelectPropsType) {
       </div>
       <span className="selected-label">{selectedItem ? selectedItem.label : ''}</span>
       <StyledDropDown selected={true}></StyledDropDown>
+      {isMobile?null: <RaiseUpSelectPc
+      isShow={dialogVisible}
+      datas={dataList}
+      node={node}
+      value={props.value}
+      onChange={props.onChange}
+      onCancel={onCancel} />}
     </div>
     {isMobile ? (<RaiseUpSelect
       isShow={dialogVisible}
@@ -69,12 +80,7 @@ export default function ObSelect(props: ObSelectPropsType) {
       value={props.value}
       onChange={props.onChange}
       onCancel={onCancel}
-    />) : <RaiseUpSelectPc
-      isShow={dialogVisible}
-      datas={dataList}
-      value={props.value}
-      onChange={props.onChange}
-      onCancel={onCancel} />}
+    />) :null}
 
   </>)
 }

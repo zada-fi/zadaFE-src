@@ -275,6 +275,22 @@ export function showMessage(message: string, type: string) {
   //   duration: 3000,
   // })
 }
+export function getChainInfoByNetworkId(networkId: string|number) {
+  const info = config.chainConfig.find(
+    (item) => +item.networkId === +networkId
+  )
+  if (!info) return null
+  return JSON.parse(JSON.stringify(info))
+}
+export function netWorkName(networkId: string|number) {
+  return getChainInfoByNetworkId(networkId)?.name || 'unknown'
+}
+export function chainName(chainId:string|number) {
+  return getChainInfoByChainId(chainId)?.name || 'unknown'
+}
+export function chainNetWorkId(chainId: string|number) {
+  return getChainInfoByChainId(chainId)?.chainId
+}
 export async function  addEthereumChain(chainId:number, connector: any) {
   const chainInfo = getChainInfoByChainId(chainId)
   const maskNetworkId = getMetaMaskNetworkId(chainId)

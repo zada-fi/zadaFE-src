@@ -23,13 +23,13 @@ export default function useTransferDataState(props: PropsType) {
   })
   const updateTransferDataState = (value: any, valueKey: string) => {
     let preValue = transferDataState[valueKey as keyof TransferDataStateType]
-    if (preValue + '' === '' + value) {
+    if (preValue + '' === '' + value && valueKey !== 'selectMakerConfig') {
       return
     }
-    setTransferDataState({
-      ...transferDataState,
-      [valueKey]: value
-    })
+    setTransferDataState(prevState => ({
+      ...prevState,
+      [valueKey as keyof TransferDataStateType]: value
+    }))
   }
 
   const makerConfigInfo = useMemo(() => {
@@ -40,7 +40,6 @@ export default function useTransferDataState(props: PropsType) {
       item.fromChain.symbol === transferDataState.fromCurrency &&
       item.toChain.symbol === transferDataState.toCurrency
     );
-    console.log('makerConfig---', makerConfigs,makerConfig)
     const tempmakerConfigInfo = makerConfig ? JSON.parse(JSON.stringify(makerConfig)):{};
     if (transferDataState.fromCurrency === transferDataState.toCurrency
       && props.isCrossAddress && tempmakerConfigInfo.crossAddress?.recipient) {
@@ -49,6 +48,7 @@ export default function useTransferDataState(props: PropsType) {
       tempmakerConfigInfo.tradingFee = tempmakerConfigInfo.crossAddress?.tradingFee;
       tempmakerConfigInfo.gasFee = tempmakerConfigInfo.crossAddress?.gasFee;
     }
+
     return tempmakerConfigInfo
   }, [transferDataState.toChainID,
   transferDataState.toCurrency,

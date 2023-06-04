@@ -42,7 +42,7 @@ export default function useBalance(props: PropsType) {
 
   async function getMakerMaxBalance() {
     const { selectMakerConfig } = props.transferDataState;
-    if (!selectMakerConfig) return;
+    if (!selectMakerConfig || !Object.keys(selectMakerConfig).length) return;
     const { toChain } = selectMakerConfig;
     // dYdX can't get maker's balance, don't check it
     if (toChain.id === 11 || toChain.id === 511) {
@@ -103,7 +103,7 @@ export default function useBalance(props: PropsType) {
 
   const updateUserMaxPrice = async () => {
     const { selectMakerConfig } = props.transferDataState;
-    if (!selectMakerConfig) return '0';
+    if (!selectMakerConfig||!Object.keys(selectMakerConfig).length) return '0';
     const { fromChain, toChain } = selectMakerConfig;
     if (!walletIsLogin) {
       return fromChain.maxPrice;
@@ -154,7 +154,7 @@ export default function useBalance(props: PropsType) {
     props.updateLoadingData(true, 'toBalanceLoading')
     // @ts-ignore 
     const { fromChainID, toChainID, selectMakerConfig } = props.transferDataState;
-    if (!selectMakerConfig) return;
+    if (!selectMakerConfig || !Object.keys(selectMakerConfig).length) return;
     const { fromChain, toChain } = selectMakerConfig;
 
     let address = account //compatibleGlobalWalletConf.value.walletPayload.walletAddress;

@@ -1,11 +1,12 @@
 import React, { useContext, useEffect, useMemo, useState } from "react"
-
+import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg'
 import { AutoRow } from '../../components/Row'
-import { ThemeContext } from 'styled-components'
+import styled, { ThemeContext } from 'styled-components'
 import { ArrowWrapper } from '../../components/swap/styleds'
 import { ArrowDown, ArrowUp } from 'react-feather'
 import { Text } from 'rebass'
 import Row from "../Row"
+
 // import { BigNumber } from '@ethersproject/bignumber'
 import BigNumber from 'bignumber.js'
 import { notification } from 'antd'
@@ -26,7 +27,7 @@ import { isWhite } from './../../utils/orbiter-tool'
 import ObSelect from "../ObSelect"
 import useGasData from "./useGasData"
 import Loader from "../Loader"
-import { spawn } from "child_process"
+import SvgIcon from "../SvgIcon"
 
 type TransferPropsType = {
   onChangeState: Function
@@ -41,7 +42,15 @@ type SendBtnInfoType = {
   disabled: boolean
 }
 
+const StyledDropDown = styled(DropDown) <{ selected: boolean }>`
+  margin: 0 0.25rem 0 0.5rem;
+  height: 35%;
 
+  path {
+    stroke: ${({ selected, theme }) => (selected ? theme.text1 : theme.white)};
+    stroke-width: 1.5px;
+  }
+`
 export default function Transfer(props: TransferPropsType) {
 
   const theme = useContext(ThemeContext)
@@ -144,6 +153,38 @@ export default function Transfer(props: TransferPropsType) {
 
     }
   }, [isErrorAddress])
+  const fromChainObj = useMemo(() => {
+    const localChainID = +transferDataState.fromChainID
+    if(!localChainID){
+      return {
+        icon:'pglogo',
+        name:''
+      }
+    }
+    return {
+      // @ts-ignore 
+      icon: orbiterEnv.chainIcon[localChainID],
+      // @ts-ignore 
+      name: orbiterEnv.chainName[localChainID]
+    }
+  }, [transferDataState])
+  const toChainObj = useMemo(() => {
+    const localChainID = +transferDataState.toChainID
+    if(!localChainID){
+      return {
+        icon:'',
+        name:''
+      }
+    }
+    return {
+      // @ts-ignore 
+      icon: orbiterEnv.chainIcon[localChainID],
+      // @ts-ignore 
+      name: orbiterEnv.chainName[localChainID]
+    }
+  }, [transferDataState])
+
+
   const isShowMax = useMemo(() => {
     return (
       new BigNumber(transferValue).comparedTo(
@@ -428,13 +469,10 @@ export default function Transfer(props: TransferPropsType) {
 
   }, [transferDataState.selectMakerConfig])
 
-
-  let { originGasCost,
-    showSaveGas,
-    gasTradingTotal,
-    updateGasData } = useGasData({
-      exchangeToUsdPrice
-    })
+  // @ts-ignore 
+  let { originGasCost, showSaveGas, gasTradingTotal, updateGasData } = useGasData({
+    exchangeToUsdPrice
+  })
 
 
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -754,7 +792,10 @@ export default function Transfer(props: TransferPropsType) {
   const onChangeTransfer = () => {
     // TODO
   }
-  const onChangeFromChain = ()=>{
+  const onChangeFromChain = () => {
+    // TODO
+  }
+  const onChangeToChain = () => {
     // TODO
   }
   return (<>
@@ -776,17 +817,46 @@ export default function Transfer(props: TransferPropsType) {
         {
           walletIsLogin && (
             <div className="right">
-              Balance: { loadingDats.fromBalanceLoading? <Loader></Loader>: (<span>{fromBalance}</span>)}
+              Balance: {loadingDats.fromBalanceLoading ? <Loader></Loader> : (<span>{fromBalance}</span>)}
             </div>
           )
         }
       </div>
       <div className="bottomItem">
         <div className="left" onClick={onChangeFromChain}>
-
+          <SvgIcon
+            iconName={fromChainObj.icon}
+          />
+          <span>{fromChainObj.name}</span>
+          <StyledDropDown selected={true}></StyledDropDown>
+          {/* style={ {width: '24px', height: '24px', marginRight: '4px'}} */}
         </div>
+        <div className="right"></div>
       </div>
-    
+
+    </div>
+    <div className="to-area">
+      <div className="topItem">
+        <div className="left">To</div>
+        {
+          walletIsLogin && (
+             <div className="right">
+              Balance: {loadingDats.toBalanceLoading ? <Loader></Loader> : (<span>{toBalance}</span>)}
+            </div> 
+          )
+        }
+      </div>
+      <div className="bottomItem">
+      <div className="left" onClick={onChangeToChain}>
+          <SvgIcon
+            iconName={toChainObj.icon}
+          />
+          <span>{toChainObj.name}</span>
+          <StyledDropDown selected={true}></StyledDropDown>
+          {/* style={ {width: '24px', height: '24px', marginRight: '4px'}} */}
+        </div>
+        <div className="right"></div> 
+      </div>
     </div>
 
     <AutoRow justify={'center'} style={{ padding: '0 1rem' }}>

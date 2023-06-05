@@ -2,7 +2,8 @@ import React, { useState } from "react"
 import styled from "styled-components"
 import { BodyWrapper } from "../../AppBody"
 import Transfer from "../../../components/Orbiter/transfer"
-
+import Confirm from "../../../components/Orbiter/Confirm"
+import Proceed from "../../../components/Orbiter/Proceed"
 const OrbiterBridageDiv = styled(BodyWrapper)`
   width: 480px;
   max-width:100%;
@@ -15,9 +16,6 @@ const OrbiterBridageDiv = styled(BodyWrapper)`
     box-shadow: 0 1px 10px #0093df, 0 1px 10px #0093df inset;
     `
   };
-
-
-
 `
 export default function OrbiterBridage(){
   let [curPageStatus, setCurPageStatus] = useState('1')//  1 transfer 2.confirm 3.proceed
@@ -26,7 +24,9 @@ export default function OrbiterBridage(){
   }
   return (
     <OrbiterBridageDiv>
-      {curPageStatus === '1'&& <Transfer onChangeState={onChangeState}></Transfer>}
+      { curPageStatus === '1' && <Transfer onChangeState={onChangeState}></Transfer>}
+      { curPageStatus === '2' && <Confirm onChangeState={onChangeState}></Confirm>}
+      { curPageStatus === '3' &&<Proceed onChangeState={onChangeState}></Proceed>}
     </OrbiterBridageDiv>
   )
 }

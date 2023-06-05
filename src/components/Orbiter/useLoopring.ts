@@ -1,5 +1,5 @@
 
-import { ExchangeAPI,UserAPI,OffchainFeeReqType, sleep } from '@loopring-web/loopring-sdk'
+import { ExchangeAPI,UserAPI,OffchainFeeReqType, sleep, GetNextStorageIdRequest } from '@loopring-web/loopring-sdk'
 import { useSelector } from "react-redux"
 import { AppState } from "../../state"
 import useLpData from './useLpData'
@@ -91,6 +91,40 @@ export default function useLoopring(props: PropsType) {
     } catch (error) {
       console.warn(`get lp accountInfo error:${error}`)
       return null
+    }
+  }
+
+
+  const getAccountStorageID = async function (address: string, localChainID:number, tokenID:number) {
+    try {
+      const accountResult = await accountInfo(address, localChainID+'')
+      if (!accountResult) {
+        return 0
+      }
+      let acc
+      if (accountResult.code) {
+        return 0
+      } else {
+        acc = accountResult.accountInfo
+      }
+
+      const userApi = getUserAPI(localChainID+'')
+
+      const temp_GetNextStorageIdRequest: GetNextStorageIdRequest = {
+        accountId: acc?.accountId || 0,
+        sellTokenId: tokenID,
+      }
+      const storageId = await userApi.getNextStorageId(
+        temp_GetNextStorageIdRequest,
+        ''// TODO
+        // localChainID == 9
+        //   ? process.env.VUE_APP_LP_MK_KEY
+        //   : process.env.VUE_APP_LP_MKTEST_KEY
+      )
+      return storageId
+    } catch (error) {
+      console.warn('getLoopringNonceError =', error)
+      return 0
     }
   }
 
@@ -216,6 +250,7 @@ export default function useLoopring(props: PropsType) {
     getLpTokenInfo,
     getTransferFee,
     getLoopringBalance,
+    getAccountStorageID,
     getWithDrawFee
   }
 }

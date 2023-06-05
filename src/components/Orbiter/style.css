@@ -1,0 +1,290 @@
+.app .transfer-box .btn {
+  width: 440px;
+}
+
+.app-mobile .transfer-box .btn {
+  width: 100%;
+}
+
+.transfer-box .symbol {
+  position: absolute;
+  left: 80px;
+}
+
+.transfer-box .top-area {
+  display: flex;
+  align-items: center;
+}
+
+.transfer-box .top-area .title {
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 20px;
+  margin-right: 10px;
+}
+
+.transfer-box .from-area,
+.transfer-box .to-area {
+  margin-top: 20px;
+  height: 96px;
+  border-radius: 20px;
+  position: relative;
+  padding: 20px;
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.transfer-box .from-area .topItem,
+.transfer-box .to-area .topItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Inter Regular';
+}
+
+.transfer-box .from-area .bottomItem,
+.transfer-box .to-area .bottomItem {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.transfer-box .from-area .bottomItem .left,
+.transfer-box .to-area .bottomItem .left {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.transfer-box .from-area .bottomItem .right,
+.transfer-box .to-area .bottomItem .right {
+  width: 100%;
+  text-align: right;
+  border: 0;
+  outline: 0px;
+  appearance: none;
+  background-color: transparent;
+  transition: all 0.2s ease 0s;
+  flex-direction: row-reverse;
+}
+
+.transfer-box .from-area .bottomItem .right-value,
+.transfer-box .to-area .bottomItem .right-value {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.transfer-box .from-area .bottomItem input,
+.transfer-box .to-area .bottomItem input {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.transfer-box .from-area .bottomItem input::placeholder,
+.transfer-box .to-area .bottomItem input::placeholder {
+  color: rgba(51, 51, 51, 0.2);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.transfer-box .from-area .bottomItem .maxBtn,
+.transfer-box .to-area .bottomItem .maxBtn {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  text-align: right;
+  padding: 0;
+  margin-left: 8px;
+  font-family: 'Inter Regular';
+}
+
+.transfer-box .from-area {
+  margin-bottom: 8px;
+}
+
+.transfer-box .exchange-icon {
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.transfer-box .btn {
+  margin-top: 32px;
+  height: 50px;
+  display: inline-block;
+  line-height: 34px;
+  margin-bottom: 20px;
+  background: linear-gradient(90.46deg, #eb382d 4.07%, #bc3035 98.55%);
+}
+
+.transfer-box .info-box {
+  font-family: 'Inter Regular';
+  margin-left: 20px;
+}
+
+.transfer-box .info-box .info-item {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.transfer-box .info-box .info-item .border {
+  margin-right: 8px;
+  padding-right: 8px;
+}
+
+.transfer-box .info-box .info-icon {
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+}
+
+.transfer-box .red {
+  color: #df2e2d;
+}
+
+.transfer-box .warn {
+  color: #e2989a;
+}
+
+.transfer-box .starknet-tips {
+  font-family: 'Inter Regular';
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.transfer-box .cross-addr-box input {
+  border: 0;
+  outline: none;
+  background-color: rgba(0, 0, 0, 0);
+  width: 100%;
+  height: 40px;
+}
+
+.dialog {
+  width: 100%;
+}
+
+.dialog .dialog-box {
+  position: relative;
+  background-color: #ffffff;
+  color: #161616;
+  border-radius: 40px;
+  width: 100%;
+  padding: 10px;
+  font-family: 'Inter Regular';
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.dialog .dialog-box .icon {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  cursor: pointer;
+}
+
+.dialog .dialog-box .title {
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.dialog .dialog-box .content {
+  margin-bottom: 10px;
+  font-weight: lighter;
+  font-size: 15px;
+}
+
+.dialog .dialog-box .bottom {
+  height: 30px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog .dialog-box .bottom .btn {
+  width: 350px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  border-radius: 30px;
+  cursor: pointer;
+  color: #ffffff;
+  height: 40px;
+  display: inline-block;
+  line-height: 40px;
+  background: linear-gradient(90.46deg, #eb382d 4.07%, #bc3035 98.55%);
+}
+
+.dark-theme .dialog {
+  width: 100%;
+}
+
+.dark-theme .dialog .dialog-box {
+  position: relative;
+  background-color: #3f415b;
+  color: #ffffff;
+  border-radius: 40px;
+  width: 100%;
+  padding: 10px;
+  font-family: 'Inter Regular';
+  box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme .dialog .dialog-box .icon {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  cursor: pointer;
+}
+
+.dark-theme .dialog .dialog-box .title {
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.dark-theme .dialog .dialog-box .content {
+  margin-bottom: 10px;
+  font-weight: lighter;
+  font-size: 15px;
+}
+
+.dark-theme .dialog .dialog-box .bottom {
+  height: 30px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dark-theme .dialog .dialog-box .bottom .btn {
+  display: inline-block;
+  width: 350px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 30px;
+  height: 30px;
+  border-radius: 30px;
+  cursor: pointer;
+  background: linear-gradient(to right, #d93e28, #a6453e);
+  color: #ffffff;
+}

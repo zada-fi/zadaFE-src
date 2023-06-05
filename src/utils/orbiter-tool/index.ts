@@ -5,6 +5,7 @@ import { TransferDataStateType } from '../../components/Orbiter/bridge'
 import { Coin_ABI } from '../orbiter-constant/contract';
 import orbiterEnv from '../orbiter-env';
 import { notification } from 'antd'
+import { ArgsProps } from 'antd/lib/notification/index'
 import 'antd/es/notification/style/index.css'
 type WalletPayLoadType = {
   walletAddress: string,
@@ -16,6 +17,14 @@ export type GlobalSelectWalletConfType = {
   walletType: string,
   walletPayload: WalletPayLoadType,
   loginSuccess: false
+}
+export function shortAddress(address: string) {
+  if (address && address.length > 5) {
+    var subStr1 = address.substr(0, 4)
+    var subStr2 = address.substr(address.length - 4, 4)
+    return subStr1 + '...' + subStr2
+  }
+  return ''
 }
 
 export const getChainInfoByChainId = (chainId: string|number) => {
@@ -261,7 +270,10 @@ export async function ensureWalletNetwork(chainId: number, connector:any) {
    return false
  }
 }
-
+export function showNotifiy(options: ArgsProps, type: string){
+  // @ts-ignore 
+  notification[type||'info'](options)
+}
 export function showMessage(message: string, type: string) {
   const _type = type || 'success'
   // @ts-ignore 
@@ -374,6 +386,25 @@ export const objParseQuery = (
   }
   return paramStr;
 }
+export async function isLegalAddress(transferDataState: TransferDataStateType, account:string|null|undefined) {
+  const { fromChainID } = transferDataState;
+  const supportContractWallet = [1, 2, 6, 7, 10, 13, 14, 15, 16, 17];
+  if (!supportContractWallet.find(item => item === Number(fromChainID))) {
+    return true;
+  }
+  const rpc = stableRpc(fromChainID);
+  if (rpc && account) {
+    const web3 = new Web3(rpc);
+    const walletAddress = account //compatibleGlobalWalletConf.value.walletPayload.walletAddress;
+    const code = await web3.eth.getCode(walletAddress);
+    if (code && code !== "0x") {
+      return false;
+    }
+  }
+  return true;
+}
+
+
 export const getQuery = (url = window.location.href) => {
   const arrList = url.split("#");
 

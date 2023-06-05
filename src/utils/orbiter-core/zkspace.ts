@@ -29,6 +29,54 @@ export default {
     }
   },
  
+  /**
+   *
+   * @param {localChianID,account} req
+   * @returns
+   */
+  getZKAccountInfo: function (localChainID:number, account:string) {
+    return new Promise((resolve, reject) => {
+      if (localChainID !== 12 && localChainID !== 512) {
+        reject({
+          errorCode: 1,
+          errMsg: 'getZKSpaceAccountInfoError_wrongChainID',
+        })
+      }
+      const url =
+        (localChainID === 512
+          ? otherConfig.ZKSpace.Rinkeby
+          : otherConfig.ZKSpace.Mainnet) +
+        '/account/' +
+        account +
+        '/' +
+        'info'
+      // axios
+      //   .get(url)
+       fetch(url).then(res=>res.json())
+        .then(function (response) {
+          if (response.status === 200) {
+            const respData = response.data
+            if (respData.success == true) {
+              resolve(respData.data)
+            } else {
+              reject(respData.data)
+            }
+          } else {
+            reject({
+              errorCode: 1,
+              errMsg: 'NetWorkError',
+            })
+          }
+        })
+        .catch(function (error) {
+          reject({
+            errorCode: 2,
+            errMsg: error,
+          })
+        })
+    })
+  },
+  
   getZKSpaceWithDrawGasFee: async function (localChainID:string, account:any, transferDataState: TransferDataStateType) {
     if (!account) {
       return

@@ -3,6 +3,9 @@ import { createSlice } from "@reduxjs/toolkit";
 export const orbiterSlice = createSlice({
   name:'orbiter',
   initialState:{
+    confirmData: {
+      routeDescInfo: [],
+    },
     zktokenList: {
       rinkeby: [],
       mainnet: [],
@@ -17,6 +20,9 @@ export const orbiterSlice = createSlice({
     },
   },
   reducers:{
+    updateConfirmRouteDescInfo(state, action) {
+      state.confirmData.routeDescInfo = action.payload
+    },
     updateLpTokenList(state, action) {
       if (action.payload.chainID+'' === '9') {
         state.lpTokenList.mainnet = action.payload.tokenList
@@ -46,5 +52,5 @@ export const orbiterSlice = createSlice({
 
 })
 
-export const { updateZKTokenList,updateLpTokenList,updateZksTokenList } = orbiterSlice.actions
+export const { updateZKTokenList,updateLpTokenList,updateZksTokenList,updateConfirmRouteDescInfo } = orbiterSlice.actions
 export default orbiterSlice.reducer

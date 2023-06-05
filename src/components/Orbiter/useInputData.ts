@@ -9,7 +9,10 @@ type PropsType = {
   rates: RatesType
 }
 export default function useInputData(props: PropsType) {
+  let [isShowFromSel, setIsShowFromSel] = useState<boolean>(false)
+  let [isShowToSel, setIsShowToSel] = useState<boolean>(false)
   let [selectFromToken, setSelectFromToken] = useState<string>('ETH')
+
   let [selectToToken, setSelectToToken] = useState<string>('ETH')
   let [transferValue, setTransferValue] = useState<string>('') // 
   let [crossAddressReceipt, setCrossAddressReceipt] = useState<string>('')
@@ -76,19 +79,25 @@ export default function useInputData(props: PropsType) {
       setToValue(res)
     }
   }, [props.transferDataState, props.rates])
-  const updateInputData = (value: string, key: string) => {
+  const updateInputData = (value: string|boolean, key: string) => {
     switch (key) {
       case 'from':
-        setSelectFromToken(value);
+        setSelectFromToken(value as string);
         break
       case 'to':
-        setSelectToToken(value);
+        setSelectToToken(value as string);
         break;
       case 'transferValue':
-        setTransferValue(value);
+        setTransferValue(value as string);
         break
       case 'crossAddressReceipt':
-        setCrossAddressReceipt(value)
+        setCrossAddressReceipt(value as string)
+        break
+      case 'isShowFromSel':
+        setIsShowFromSel(value as boolean)
+        break
+      case 'isShowToSel':
+        setIsShowToSel(value as boolean)
         break
       default:
         break
@@ -100,7 +109,14 @@ export default function useInputData(props: PropsType) {
       updateInputData(item.value || '', 'from')
     }
   }
+  const onChangeSelectToToken = (item: DataItem)=>{
+    if(item){
+      updateInputData(item.value || '', 'to') 
+    }
+  }
   return {
+    isShowFromSel,
+    isShowToSel,
     selectFromToken,
     selectToToken,
     transferValue,
@@ -108,7 +124,8 @@ export default function useInputData(props: PropsType) {
     crossAddressReceipt,
     updateInputData,
     onInputTransferValue,
-    onChangeSelectFromToken
+    onChangeSelectFromToken,
+    onChangeSelectToToken
 
   }
 }

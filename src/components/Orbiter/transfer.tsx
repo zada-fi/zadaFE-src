@@ -6,15 +6,17 @@ import { ArrowWrapper } from '../../components/swap/styleds'
 import { ArrowDown, ArrowUp } from 'react-feather'
 import { Text } from 'rebass'
 import Row from "../Row"
-
+import { SUPPORTED_WALLETS } from '../../constants'
+import { injected } from '../../connectors'
+import nonceUtil from "../../utils/orbiter-core/nonce"
 // import { BigNumber } from '@ethersproject/bignumber'
 import BigNumber from 'bignumber.js'
 import { notification } from 'antd'
 import 'antd/es/notification/style/index.css'
 import config from './../../utils/orbiter-config'
 import orbiterEnv from "../../utils/orbiter-env"
-import { TokenItemType } from "./bridge"
-import { isExecuteXVMContract, equalsIgnoreCase, getQuery, objParseQuery, getTokenIcon, isSupportXVMContract } from '../../utils/orbiter-tool'
+import { TokenItemType, ComPropsType } from "./bridge"
+import { isExecuteXVMContract, equalsIgnoreCase, getQuery, objParseQuery, getTokenIcon, isSupportXVMContract, showMessage, isLegalAddress, getMetaMaskNetworkId, ensureWalletNetwork,getChainInfoByChainId, shortAddress } from '../../utils/orbiter-tool'
 import useInputData from "./useInputData"
 import useChainAndTokenData from "./useChainAndTokenData"
 import useTransferDataState from "./useTransferDataState"
@@ -28,10 +30,18 @@ import ObSelect from "../ObSelect"
 import useGasData from "./useGasData"
 import Loader from "../Loader"
 import SvgIcon from "../SvgIcon"
+import CommonDialog from "../CommDialog"
+import './style.css'
+import QuestionHelper from "../QuestionHelper"
+import { ButtonConfirmed, ButtonLight } from "../Button"
+import { useWalletModalToggle } from "../../state/application/hooks"
+import { useWeb3React } from "@web3-react/core"
+import { IMXHelper } from "../../utils/orbiter-tool/immutablex/imx_helper"
+import useLoopring from "./useLoopring"
+import { useDispatch } from "react-redux"
+import { updateConfirmRouteDescInfo } from "../../state/orbiter/reducer"
 
-type TransferPropsType = {
-  onChangeState: Function
-}
+
 
 type CronConfigType = {
   cron: any,
@@ -41,6 +51,12 @@ type SendBtnInfoType = {
   text: string,
   disabled: boolean
 }
+
+const TipSvgIcon = styled(SvgIcon)`
+  width: 1rem; 
+  height: 1rem;
+  margin-right: 0.2rem
+`
 
 const StyledSvgIcon = styled(SvgIcon)`
   width: 24px;
@@ -57,8 +73,41 @@ const StyledDropDown = styled(DropDown) <{ selected: boolean }>`
     stroke-width: 1.5px;
   }
 `
-export default function Transfer(props: TransferPropsType) {
+type SubmitBtnPropType = {
+  btnInfo: SendBtnInfoType,
+  other:{
+    className: string,
+    style: object
+  },
+  onClick: ()=>void
+}
+const SubmitBtn = (props: SubmitBtnPropType )=>{
 
+  // toggle wallet when disconnected
+  const toggleWalletModal = useWalletModalToggle()
+  const { account } = useWeb3React()
+  if(!account){
+    return (<ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>)
+  }else if(props.btnInfo.disabled){
+    return (<ButtonLight  className={props.other.className} style={props.other.style}>
+      {props.btnInfo.text}
+    </ButtonLight>)
+  }else{
+    return  (<ButtonConfirmed
+    onClick={props.onClick}
+    className={props.other.className} 
+    style={props.other.style}>
+    {props.btnInfo.text}
+    </ButtonConfirmed>)
+  }
+}
+
+export default function Transfer(props: ComPropsType) {
+ 
+  const { connector, account, chainId } = useWeb3React()
+
+  const dispatch = useDispatch()
+  
   const theme = useContext(ThemeContext)
   let history = useHistory()
   let location = useLocation()
@@ -82,13 +131,17 @@ export default function Transfer(props: TransferPropsType) {
   let { transferDataState, updateTransferDataState } = useTransferDataState({
     isCrossAddress
   })
+  const { getAccountStorageID } = useLoopring({
+    transferDataState
+  })
   const { selectFromToken, selectToToken, transferValue,
+    isShowFromSel,
+    isShowToSel,
     toValue,
     updateInputData,
     crossAddressReceipt,
     // @ts-ignore 
-
-    onInputTransferValue, onChangeSelectFromToken } = useInputData({
+    onInputTransferValue, onChangeSelectFromToken, onChangeSelectToToken } = useInputData({
       transferDataState,
       rates
     })
@@ -130,6 +183,19 @@ export default function Transfer(props: TransferPropsType) {
     cron: null,
     banList: []
   })
+
+  const useWalletType = useMemo(()=>{
+    const { ethereum } = window
+    const isMetaMask = !!(ethereum && ethereum.isMetaMask)
+    const name = Object.keys(SUPPORTED_WALLETS)
+      .filter(
+        k =>
+          SUPPORTED_WALLETS[k].connector === connector && (connector !== injected || isMetaMask === (k === 'METAMASK'))
+      )
+      .map(k => SUPPORTED_WALLETS[k].name)[0]
+    return name
+  },[connector])
+
   const isErrorAddress = useMemo(() => {
     //!this.isNewVersion ||
     if (selectFromToken === selectToToken) {
@@ -154,11 +220,7 @@ export default function Transfer(props: TransferPropsType) {
     crossAddressReceipt,
     selectFromToken,
     selectToToken])
-  useEffect(() => {
-    if (true) {
-
-    }
-  }, [isErrorAddress])
+  
   const fromChainObj = useMemo(() => {
     const localChainID = transferDataState.fromChainID
     console.log('from chainobj localchainid', localChainID)
@@ -173,7 +235,7 @@ export default function Transfer(props: TransferPropsType) {
       icon: orbiterEnv.chainIcon[localChainID],
       name: chainName(localChainID)
     }
-  }, [transferDataState])
+  }, [transferDataState.fromChainID])
   const toChainObj = useMemo(() => {
     const localChainID = transferDataState.toChainID
     if (!localChainID) {
@@ -187,7 +249,7 @@ export default function Transfer(props: TransferPropsType) {
       icon: orbiterEnv.chainIcon[localChainID],
       name: chainName(localChainID)
     }
-  }, [transferDataState])
+  }, [transferDataState.toChainID])
 
 
   const isShowMax = useMemo(() => {
@@ -229,7 +291,7 @@ export default function Transfer(props: TransferPropsType) {
     console.log('sendBtnInfo useMemo=', selectMakerConfig)
     const { fromChain } = selectMakerConfig;
 
-    const availableDigit = fromChain&&fromChain.decimals === 18 ? 6 : 2;
+    const availableDigit = fromChain && fromChain.decimals === 18 ? 6 : 2;
     let opBalance = 10 ** -availableDigit;
     let useBalance = new BigNumber(fromBalance)
       .minus(new BigNumber(selectMakerConfig.tradingFee))
@@ -286,8 +348,8 @@ export default function Transfer(props: TransferPropsType) {
         !isSupportXVMContract(transferDataState) && !isLoopring) {
         info.text = 'SEND';
         info.disabled = true// 'disabled';
-        // util.log('(fromCurrency !== toCurrency || this.isCrossAddress) && !isSupportXVMContract && !this.isLoopring && !util.isStarkNet',
-        //   fromCurrency !== toCurrency, this.isCrossAddress, !util.isSupportXVMContract(), !this.isLoopring, !util.isStarkNet());
+        // util.log('(fromCurrency !== toCurrency || isCrossAddress) && !isSupportXVMContract && !this.isLoopring && !util.isStarkNet',
+        //   fromCurrency !== toCurrency, isCrossAddress, !util.isSupportXVMContract(), !this.isLoopring, !util.isStarkNet());
       }
 
       if (isSupportXVMContract(transferDataState) && isCrossAddress && (!crossAddressReceipt || isErrorAddress)) {
@@ -447,13 +509,44 @@ export default function Transfer(props: TransferPropsType) {
       dests,
     };
   }, [])
+  const refererUpper = useMemo(() => {
+    const href = window.location.href
+    const match = href.match(/referer=(\w*)/i)
+    if (match?.[1]) {
+      return match[1].toUpperCase()
+    }
+    return ''
+  }, [])
+  const isStarknet = useMemo(() => {
+    return refererUpper === 'STARKNET'
+  }, [refererUpper])
+  const isSupportXVM = useMemo(()=>{
+    return isSupportXVMContract(transferDataState)
+  },[transferDataState])
+  const isHiddenChangeAccount = useMemo(()=>{
+    return  (!isNewVersion || 
+      selectFromToken === selectToToken ||
+       !isSupportXVM) &&
+    !isLoopring
+  },[isNewVersion, selectFromToken, selectToToken, isSupportXVM, isLoopring])
+  const crossAddressInputDisable = useMemo(()=>{
+    const toChainID = transferDataState.toChainID
+      return (
+        toChainID === '4' ||
+        toChainID === '44' ||
+        toChainID === '11' ||
+        toChainID === '511'
+      )
+  },[transferDataState.toChainID])
 
-
-
+  const cu_chainName = useMemo(()=>{
+    return chainName(transferDataState.toChainID)
+  },[transferDataState.toChainID])
+  
   let [exchangeToUsdPrice, setExchangeToUsdPrice] = useState<number>(0)
   const getExchangeToUsdPrice = async () => {
     const { selectMakerConfig } = transferDataState;
-    if (!selectMakerConfig||!Object.keys(selectMakerConfig).length) return 0;
+    if (!selectMakerConfig || !Object.keys(selectMakerConfig).length) return 0;
     const price = (await exchangeToUsd(1, selectMakerConfig.fromChain.symbol)).toNumber();
     if (price > 0) {
       return price;
@@ -482,8 +575,7 @@ export default function Transfer(props: TransferPropsType) {
   })
 
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
+  
   const updateTransferInfo = async ({ fromChainID, toChainID, fromCurrency, toCurrency } = transferDataState) => {
     toCurrency = fromCurrency
 
@@ -639,7 +731,7 @@ export default function Transfer(props: TransferPropsType) {
       updateChainAndTokenData(fromTokenList, 'fromTokenList')
     }
 
-    console.log('updateInfo', fromChainID, '---',oldFromChainID)
+    console.log('updateInfo', fromChainID, '---', oldFromChainID)
 
     updateTransferDataState(fromChainID, 'fromChainID');
     updateTransferDataState(toChainID, 'toChainID');
@@ -671,24 +763,24 @@ export default function Transfer(props: TransferPropsType) {
     // updateRoutes(oldFromChainID, oldToChainID);
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log('useEffect---', transferDataState)
     updateRoutes()
-  },[ transferDataState.selectMakerConfig])
+  }, [transferDataState.selectMakerConfig])
 
 
   const updateRoutes = () => {
-    const {  selectMakerConfig } = transferDataState;
+    const { selectMakerConfig } = transferDataState;
     // const { path, query } = this.$route;
     let path = location.pathname
     let query = getQuery()
     console.log('updateRoutes--start', transferDataState, query)
     const changeQuery = {};
-    if ( query?.source !== ((selectMakerConfig||{}).fromChain||{}).name) {
+    if (((selectMakerConfig || {}).fromChain || {}).name && query?.source !== ((selectMakerConfig || {}).fromChain || {}).name) {
       // @ts-ignore 
       changeQuery.source = selectMakerConfig.fromChain.name;
     }
-    if ( query?.dest !== ((selectMakerConfig||{}).toChain||{}).name) {
+    if (((selectMakerConfig || {}).toChain || {}).name && query?.dest !== ((selectMakerConfig || {}).toChain || {}).name) {
       // @ts-ignore 
       changeQuery.dest = selectMakerConfig.toChain.name;
     }
@@ -714,7 +806,70 @@ export default function Transfer(props: TransferPropsType) {
   }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  const specialProcessing = (oldFromChainID, oldToChainID) => { }
+  const specialProcessing = async (oldFromChainID, oldToChainID) => {
+    const { fromChainID, toChainID } = transferDataState;
+    if (toChainID !== oldToChainID && oldToChainID === 4 || oldToChainID === 44 || oldToChainID === 11 || oldToChainID === 511) {
+      if (isCrossAddress){
+        setIsCrossAddress(false)
+      } 
+
+      if (crossAddressReceipt){
+        updateInputData('', crossAddressReceipt)
+      }
+    }
+    if (+fromChainID === 4 || +fromChainID === 44 || +toChainID === 4 || +toChainID === 44) {
+      // const { starkNetIsConnect, starkNetAddress } = web3State.starkNet;
+      // if (!starkNetIsConnect || !starkNetAddress) {
+      //   await connectStarkNetWallet();
+      //   if (!web3State.starkNet.starkIsConnected && !web3State.starkNet.starkNetAddress) {
+      //     const makerConfig = makerConfigs[0];
+      //     this.updateTransferInfo({ fromChainID: makerConfig.fromChain.id });
+      //     return;
+      //   }
+      // }
+      // if (toChainID === 4 || toChainID === 44) {
+      //   isCrossAddress = true;
+      //   this.crossAddressReceipt = web3State.starkNet.starkNetAddress;
+      //   updateTransferExt({
+      //     fromAddress: this.currentWalletAddress,
+      //     ext: {
+      //       type: '0x03',
+      //       value: web3State.starkNet.starkNetAddress,
+      //     }
+      //   });
+      // }
+    }
+    if (+fromChainID === 9 || +fromChainID === 99 || +toChainID === 9 || +toChainID === 99) {
+      if (walletIsLogin) {
+        // this.inputTransferValue();
+        onInputTransferValue({
+          target:{
+            value: transferValue
+          }
+        })
+
+      }
+    }
+    if (oldFromChainID !== fromChainID && (+fromChainID === 9 || +fromChainID === 99)) {
+      // isCrossAddress = true;
+      setIsCrossAddress(true)
+    }
+    if (toChainID !== oldToChainID && (+toChainID === 11 || +toChainID === 511)) {
+      if (!isCrossAddress){
+        setIsCrossAddress(true)
+      } 
+      // isCrossAddress = true;
+      if (crossAddressReceipt !== account){
+        // setTimeout(() => {
+        //   self.crossAddressReceipt = account;
+        // }, 500);
+        updateInputData(account||'', 'crossAddressReceipt')
+      }
+    }
+    
+
+   }
+
   const updateOriginGasCost = async () => {
 
     // this.originGasLoading = true
@@ -741,6 +896,313 @@ export default function Transfer(props: TransferPropsType) {
       // })
     } finally {
       updateLoadingData(false, 'originGasLoading')
+    }
+  }
+
+  const settingfromMax = () => {
+    if (!walletIsLogin) {
+      // this.transferValue = '0'
+      updateInputData('0', 'transferValue')
+      return
+    }
+    const { selectMakerConfig } = transferDataState
+    if (!selectMakerConfig) return
+    // util.log('userMaxPrice', this.userMaxPrice)
+    // this.transferValue = this.userMaxPrice
+    updateInputData(userMaxPrice, 'transferValue')
+    updateTransferInfo()
+  }
+
+  const [curWalletProvider, setCurWalletProvider] = useState<any>(null)
+  useEffect(() => {
+    let flag = true 
+    if(connector){
+      getPData()
+    }
+    return ()=>{
+      flag= false
+    }
+    async function getPData(){
+      let res = await connector?.getProvider()
+      if(!flag){
+        return 
+      }
+      setCurWalletProvider(res)
+    }
+  },[connector])
+
+  const sendTransfer = async() => {
+    console.log('sendTransfer---')
+    
+    if (curWalletProvider.isBitKeep) {
+      // this.$notify.error({
+      //   title: `Bitkeep is not supported and please try another wallet.`,
+      //   duration: 3000,
+      // })
+      showMessage('Bitkeep is not supported and please try another wallet.','error')
+      return
+    }
+    if (sendBtnInfo && sendBtnInfo.disabled === true) {
+      return
+    }
+    if (!(await isLegalAddress(transferDataState, account))) {
+      // this.$notify.error({
+      //   title: `Contract address is not supported, please use EVM address.`,
+      //   duration: 3000,
+      // })
+      showMessage(`Contract address is not supported, please use EVM address.`,'error')
+      return
+    }
+    const { fromChainID, toChainID, fromCurrency, selectMakerConfig } =
+      transferDataState
+    if (configData.banList) {
+      for (const ban of configData.banList) {
+        if (ban.source && ban.dest) {
+          if (fromChainID === ban.source && toChainID === ban.dest) {
+            // this.$notify.error({
+            //   title: `The ${selectMakerConfig.fromChain.name}-${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`,
+            //   duration: 3000,
+            // })
+            showMessage(`The ${selectMakerConfig.fromChain.name}-${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`,'error')
+            return
+          }
+          continue
+        }
+        if (ban.source) {
+          if (fromChainID === ban.source) {
+            // this.$notify.error({
+            //   title: `The ${selectMakerConfig.fromChain.name} network transaction maintenance, please try again later`,
+            //   duration: 3000,
+            // })
+            showMessage(`The ${selectMakerConfig.fromChain.name} network transaction maintenance, please try again later`,'error')
+            return
+          }
+          continue
+        }
+        if (ban.dest) {
+          if (toChainID === ban.dest) {
+            // this.$notify.error({
+            //   title: `The ${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`,
+            //   duration: 3000,
+            // })
+            showMessage(`The ${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`, 'error')
+            return
+          }
+        }
+      }
+    }
+    // if unlogin  login first
+   
+    
+    {
+      let checkPriceRs =  /^(?!0$|0\.$|0\.0$|0\.00$)(?![1-9]\d*\.$)(0?|[1-9]\d*)(\.\d{0,6})?$/.test(transferValue)
+      if (!checkPriceRs) {
+        // this.$notify.error({
+        //   title: `The format of input amount is incorrect`,
+        //   duration: 3000,
+        // })
+        showMessage(`The format of input amount is incorrect`,'error')
+        return
+      }
+      if (fromBalance === null) {
+        // this.$notify.error({
+        //   title: `Waiting for account balance to be obtained`,
+        //   duration: 3000,
+        // })
+        showMessage(`Waiting for account balance to be obtained`, 'error')
+        return
+      }
+      if (!selectMakerConfig) return
+      if(!account){
+        return 
+      }
+      const { fromChain } = selectMakerConfig
+      let nonce = await nonceUtil.getNonce(
+        fromChain.id,
+        fromChain.tokenAddress,
+        fromChain.symbol,
+        account, //compatibleGlobalWalletConf.value.walletPayload.walletAddress
+        getAccountStorageID
+      )
+      // if (toChainID === 4 || toChainID === 44) {
+      //   this.$notify.error({
+      //     title: `The StarkNet network transaction maintenance, please try again later`,
+      //     duration: 6000,
+      //   });
+      //   return;
+      // }
+      if (toChainID === '4' && fromChain.symbol == 'DAI') {
+        // this.$notify.error({
+        //   title: `The StarkNet network transaction maintenance, please try again later`,
+        //   duration: 6000,
+        // })
+        showMessage(`The StarkNet network transaction maintenance, please try again later`,'error')
+        return
+      }
+      // if (fromChainID === 7 && toChainID === 4) {
+      //   this.$notify.error({
+      //       title: `The optimism-starkNet network transaction maintenance, please try again later`,
+      //       duration: 3000,
+      //   });
+      //   return;
+      // }
+      // if (toChainID === 14 || fromChainID === 14) {
+      //   this.$notify.error({
+      //     title: `The Zksync Era network transaction maintenance, please try again later`,
+      //     duration: 6000,
+      //   });
+      //   return;
+      // }
+
+      if (nonce > 8999) {
+        // this.$notify.error({
+        //   title: `Address with the nonce over 9000 are not supported by Orbiter`,
+        //   duration: 3000,
+        // })
+        showMessage(`Address with the nonce over 9000 are not supported by Orbiter`, 'error')
+        return
+      }
+
+      if (
+        !transferValue ||
+        new BigNumber(transferValue).comparedTo(
+          new BigNumber(userMaxPrice)
+        ) > 0 ||
+        new BigNumber(transferValue).comparedTo(
+          new BigNumber(userMinPrice)
+        ) < 0
+      ) {
+        // TAG: prod test
+        // this.$notify.error({
+        //   title: `Orbiter can only support minimum of ${ this.userMinPrice } and maximum of ${ this.maxPrice } ${ fromCurrency } on transfers.`,
+        //   duration: 3000,
+        // });
+        // return;
+      }
+
+      // Ensure immutablex's registered
+      if (toChainID === '8' || toChainID === '88') {
+        const imxHelper = new IMXHelper(+toChainID)
+        const walletAddress = account
+          //compatibleGlobalWalletConf.value.walletPayload.walletAddress
+        walletAddress && (await imxHelper.ensureUser(walletAddress, curWalletProvider))
+      }
+
+      if (
+        fromChainID === '4' ||
+        fromChainID === '44' ||
+        toChainID === '4' ||
+        toChainID === '44'
+      ) {
+        // let { starkChain } = web3State.starkNet
+        // starkChain = +starkChain ? +starkChain : starkChain
+        // if (!starkChain || starkChain === 'unlogin') {
+        //   util.showMessage('please connect Starknet Wallet', 'error')
+        //   return
+        // }
+       
+        // if (
+        //   (fromChainID === 4 || toChainID === 4) &&
+        //   (starkChain === 44 || starkChain === 'localhost')
+        // ) {
+        //   util.showMessage(
+        //     'please switch Starknet Wallet to mainnet',
+        //     'error'
+        //   )
+        //   return
+        // }
+        // if (
+        //   (fromChainID === 44 || toChainID === 44) &&
+        //   (starkChain === 4 || starkChain === 'localhost')
+        // ) {
+        //   util.showMessage(
+        //     'please switch Starknet Wallet to testNet',
+        //     'error'
+        //   )
+        //   return
+        // }
+      } else {
+        let temp_networkID = (chainId)//+compatibleGlobalWalletConf.value.walletPayload.networkId 
+        if(typeof chainId === 'undefined'){
+          return 
+        }
+        if (
+          temp_networkID !==
+          getMetaMaskNetworkId(+fromChainID)
+        ) {
+          if (useWalletType === 'MetaMask') {
+            try {
+              if (!(await ensureWalletNetwork(+fromChainID, connector))) {
+                return
+              }
+            } catch (err) {
+              // @ts-ignore 
+              showMessage(err.message, 'error')
+              return
+            }
+          } else {
+            // TODO 
+            // const matchSwitchChainDispatcher =
+            //   walletDispatchersOnSwitchChain[
+            //     compatibleGlobalWalletConf.value.walletType
+            //   ]
+            // if (matchSwitchChainDispatcher) {
+            //   const successCallback = () => this.$emit('stateChanged', '2')
+            //   matchSwitchChainDispatcher(
+            //     compatibleGlobalWalletConf.value.walletPayload.provider,
+            //     () => {
+            //       this.$emit('stateChanged', '2')
+            //     }
+            //   )
+            //   return
+            // }
+          }
+        }
+      }
+      const chainInfo = getChainInfoByChainId(fromChainID)
+      const toAddressAll = (
+        isExecuteXVMContract(transferDataState)
+          ? chainInfo.xvmList[0]
+          : selectMakerConfig.recipient
+      ).toLowerCase()
+      const senderAddress = (
+        isExecuteXVMContract(transferDataState)
+          ? chainInfo.xvmList[0]
+          : selectMakerConfig.sender
+      ).toLowerCase()
+      const toAddress = shortAddress(toAddressAll)
+      const senderShortAddress = shortAddress(senderAddress)
+      const { isCrossAddress, crossAddressReceipt } = transferDataState
+      const walletAddress = (
+        isCrossAddress || toChainID === '44' || toChainID === '4'
+          ? (crossAddressReceipt||'')
+          : (account||'')
+      ).toLowerCase()
+      // sendTransfer
+      dispatch(updateConfirmRouteDescInfo( [
+        {
+          no: 1,
+          from:
+            new BigNumber(transferValue).plus(
+              new BigNumber(selectMakerConfig.tradingFee)
+            ) + (fromCurrency||''),
+          to: toAddress,
+          fromTip: '',
+          toTip: toAddressAll,
+          icon: isExecuteXVMContract(transferDataState) ? 'contract' : 'wallet',
+        },
+        {
+          no: 2,
+          from: senderShortAddress,
+          to: shortAddress(walletAddress),
+          fromTip: senderAddress,
+          toTip: walletAddress,
+          icon: 'wallet',
+        },
+      ]))
+
+      // this.$emit('stateChanged', '2')
+      props.onChangeState('2')
     }
   }
 
@@ -806,22 +1268,36 @@ export default function Transfer(props: TransferPropsType) {
     }
   }, [isInit])
 
+  const fromTransferPlaceholder = useMemo(() => {
+    return userMinPrice
+      ? new BigNumber(userMinPrice).comparedTo(new BigNumber(fromBalance)) === 1 || new BigNumber(userMinPrice).comparedTo(new BigNumber(userMaxPrice)) > -1
+        ? `at least ${userMinPrice}`
+        : `${userMinPrice}~${userMaxPrice}`
+      : '0'
+  }, [userMinPrice, fromBalance, userMaxPrice])
 
 
   const onChangeTransfer = () => {
-    const { fromChainID, toChainID, fromCurrency, toCurrency} = transferDataState
+    const { fromChainID, toChainID, fromCurrency, toCurrency } = transferDataState
     updateTransferDataState(toChainID, 'fromChainID')
     updateTransferDataState(fromChainID, 'toChainID')
-    updateInputData(toCurrency||'','from')
-    updateInputData(fromCurrency||'', 'to')
+    updateInputData(toCurrency || '', 'from')
+    updateInputData(fromCurrency || '', 'to')
   }
-  const onChangeFromChain = () => {
-    // TODO
+
+  const onChangeFromChain = (item: any) => {
+    console.log('onChangeFromChain--', item)
+    if (item.localID + '' !== transferDataState.fromChainID) {
+      updateTransferDataState(item.localID + '', 'fromChainID')
+    }
   }
-  const onChangeToChain = () => {
-    // TODO
+  const onChangeToChain = (item: any) => {
+    console.log('onChangeToChain--', item)
+    if (item.localID + '' !== transferDataState.toChainID) {
+      updateTransferDataState(item.localID + '', 'toChainID')
+    }
   }
-  return (<>
+  return (<div className="transfer-box">
     <Row>
       <Text fontSize={20} fontWeight={500}>Token</Text>
       {
@@ -846,25 +1322,76 @@ export default function Transfer(props: TransferPropsType) {
         }
       </div>
       <div className="bottomItem">
-        <div className="left" onClick={onChangeFromChain}>
+        <div className="left" onClick={() => updateInputData(true, 'isShowFromSel')}>
           <StyledSvgIcon
             iconName={fromChainObj.icon}
           />
           <span>{fromChainObj.name}</span>
           <StyledDropDown selected={true}></StyledDropDown>
         </div>
-        <div className="right"></div>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '30px'
+        }}>
+          <input
+            style={{ minWidth: '50px' }}
+            type="text"
+            value={transferValue}
+            onChange={onInputTransferValue}
+            className="right"
+            placeholder={fromTransferPlaceholder}
+          />
+          <button className="maxBtn" onClick={settingfromMax} >Max</button>
+          {
+            isNewVersion && (<div>
+              <ObSelect
+                datas={ctData.fromTokenList}
+                value={selectFromToken}
+                onChange={onChangeSelectFromToken} />
+            </div>)
+          }
+        </div>
       </div>
 
     </div>
-    {isShowExchangeIcon && <AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
+    {/* {isShowExchangeIcon && <AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
       <span onClick={onChangeTransfer}>
         <StyledSvgIcon
           iconName={'exchange'}
           className="exchange-icon"
         />
       </span>
-    </AutoRow>}
+    </AutoRow>} */}
+
+    {
+      isShowExchangeIcon && (<AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
+      <ArrowWrapper clickable onClick={onChangeTransfer}>
+        <ArrowDown
+          size="16"
+          color={transferValue ? theme.primary1 : theme.text2}
+        />
+        <ArrowUp
+          size="16"
+          color={transferValue ? theme.primary1 : theme.text2}
+        />
+      </ArrowWrapper>
+    </AutoRow>)
+    }
+
+    <CommonDialog
+      isShow={isShowFromSel}
+      datas={ctData.fromChainIdList}
+      onChange={onChangeFromChain}
+      onCancel={() => updateInputData(false, 'isShowFromSel')}
+    />
+    <CommonDialog
+      isShow={isShowToSel}
+      datas={ctData.toChainIdList}
+      onChange={onChangeToChain}
+      onCancel={() => updateInputData(false, 'isShowToSel')}
+    />
 
 
     <div className="to-area">
@@ -879,29 +1406,116 @@ export default function Transfer(props: TransferPropsType) {
         }
       </div>
       <div className="bottomItem">
-        <div className="left" onClick={onChangeToChain}>
+        <div className="left" onClick={() => updateInputData(true, 'isShowToSel')}>
           <StyledSvgIcon
             iconName={toChainObj.icon}
           />
           <span>{toChainObj.name}</span>
           <StyledDropDown selected={true}></StyledDropDown>
         </div>
-        <div className="right"></div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            height: '30px'
+          }}
+          className="right">
+          {
+            isNewVersion && ctData.toTokenList && (<div style={{ marginLeft: '4px' }}>
+              <ObSelect
+                datas={ctData.toTokenList}
+                value={selectToToken}
+                onChange={onChangeSelectToToken} />
+            </div>)
+          }
+          <QuestionHelper text={toValueToolTip} />
+          <div className="right-value">{ toValue }</div>
+        </div>
       </div>
     </div>
 
-    <AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
-      <ArrowWrapper clickable onClick={onChangeTransfer}>
-        <ArrowDown
-          size="16"
-          color={transferValue ? theme.primary1 : theme.text2}
-        />
-        <ArrowUp
-          size="16"
-          color={transferValue ? theme.primary1 : theme.text2}
-        />
-      </ArrowWrapper>
-    </AutoRow>
+    {
+      isStarknet && (<div
+        style={{
+          fontSize: '12px',
+          color: '#78797d',
+          marginTop: '10px',
+          textAlign: 'left'
+        }}>
+        <TipSvgIcon
+          iconName="tips"
+        ></TipSvgIcon>
+        Centralized transfer is provided currently and trustless transfer will be
+        launched soon.
+        <a
+          style={{textDecoration: 'underline'}}
+          href="https://docs.orbiter.finance/"
+          target="__blank"
+        >More</a>
 
-  </>)
+      </div>)
+    }
+
+    {
+      !isHiddenChangeAccount &&
+      (<div>
+      <label
+        style={{
+          textAlign: 'left',
+          marginTop: '10px',
+          paddingLeft: '20px',
+          fontSize: '16px'
+        }
+        }
+      >
+        <input
+          type="checkbox"
+          style={{marginRight: '5px'}}
+          id="checkbox"
+          disabled={crossAddressInputDisable}
+          checked={isCrossAddress}
+          onChange={e=>setIsCrossAddress(!isCrossAddress)}
+        />
+        <span> Change Account </span>
+      </label>
+      {
+        isCrossAddress && (
+      <div
+        className="cross-addr-box to-area"
+        style={{marginTop: '10px'}}
+        v-if="isCrossAddress"
+      >
+        <div data-v-59545920="" className="topItem">
+          <div className="left">Recipient's Address</div>
+        </div>
+        <input
+          type="text"
+          value={crossAddressReceipt}
+          onChange={(e)=>updateInputData(e.target.value, 'crossAddressReceipt')}
+          v-model="crossAddressReceipt"
+          placeholder={`Recipient's ${cu_chainName} Address`}
+        />
+      </div>
+        )
+      }
+      
+    </div>)
+    }
+
+    <SubmitBtn 
+    onClick={sendTransfer}
+    btnInfo={sendBtnInfo}
+    other={
+      {
+        className: 'tbtn',
+        style: {
+          borderRadius:'40px',
+        }
+      }
+    }/>
+
+
+    
+
+  </div>)
 }

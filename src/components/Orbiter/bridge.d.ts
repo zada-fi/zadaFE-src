@@ -1,4 +1,8 @@
 import { MakerConfigType } from "../../utils/orbiter-config"
+export type ComPropsType = {
+  onChangeState: Function
+}
+
 export type TokenItemType = {
   icon: any,
   token: string,

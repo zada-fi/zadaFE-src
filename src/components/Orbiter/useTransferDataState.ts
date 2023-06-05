@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from "react"
 import { TransferDataStateType } from "./bridge"
 
+import { updateStoreTransferDataState } from '../../state/orbiter/reducer'
 
 import config from "../../utils/orbiter-config"
+import { useDispatch } from "react-redux"
 type PropsType = {
   isCrossAddress: boolean
 }
 export default function useTransferDataState(props: PropsType) {
+  let dispatch = useDispatch()
   const [transferDataState, setTransferDataState] = useState<TransferDataStateType>({
     fromChainID: '',
     toChainID: '',
@@ -55,6 +58,10 @@ export default function useTransferDataState(props: PropsType) {
   transferDataState.fromChainID,
   transferDataState.fromCurrency,
   props.isCrossAddress])
+
+  useEffect(()=>{
+    dispatch(updateStoreTransferDataState(transferDataState))
+  },[transferDataState])
 
   useEffect(()=>{
     updateTransferDataState(makerConfigInfo, 'selectMakerConfig')

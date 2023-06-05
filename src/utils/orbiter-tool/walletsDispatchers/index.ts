@@ -32,3 +32,5 @@
 // export default isMobileEnv()
 //   ? dispatchersInEachDeviceEnv[MOBILE_APP]
 //   : dispatchersInEachDeviceEnv[PC_BROWSER]
+
+export default {}

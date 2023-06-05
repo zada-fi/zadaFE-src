@@ -87,7 +87,14 @@ const SubmitBtn = (props: SubmitBtnPropType )=>{
   const toggleWalletModal = useWalletModalToggle()
   const { account } = useWeb3React()
   if(!account){
-    return (<ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>)
+    return (<><ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
+    <ButtonConfirmed
+    onClick={props.onClick}
+    className={props.other.className} 
+    style={props.other.style}>
+    {props.btnInfo.text}
+    </ButtonConfirmed></>)
+
   }else if(props.btnInfo.disabled){
     return (<ButtonLight  className={props.other.className} style={props.other.style}>
       {props.btnInfo.text}
@@ -933,7 +940,12 @@ export default function Transfer(props: ComPropsType) {
 
   const sendTransfer = async() => {
     console.log('sendTransfer---')
-    
+    // 测试
+    props.onChangeState('2')
+    // @ts-ignore 
+    if(true){
+      return 
+    }
     if (curWalletProvider.isBitKeep) {
       // this.$notify.error({
       //   title: `Bitkeep is not supported and please try another wallet.`,
@@ -1021,6 +1033,7 @@ export default function Transfer(props: ComPropsType) {
         fromChain.id,
         fromChain.tokenAddress,
         fromChain.symbol,
+        // @ts-ignore 
         account, //compatibleGlobalWalletConf.value.walletPayload.walletAddress
         getAccountStorageID
       )
@@ -1083,7 +1096,7 @@ export default function Transfer(props: ComPropsType) {
       // Ensure immutablex's registered
       if (toChainID === '8' || toChainID === '88') {
         const imxHelper = new IMXHelper(+toChainID)
-        const walletAddress = account
+        const walletAddress = account ||''
           //compatibleGlobalWalletConf.value.walletPayload.walletAddress
         walletAddress && (await imxHelper.ensureUser(walletAddress, curWalletProvider))
       }

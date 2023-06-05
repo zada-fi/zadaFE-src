@@ -3,6 +3,20 @@ import { createSlice } from "@reduxjs/toolkit";
 export const orbiterSlice = createSlice({
   name:'orbiter',
   initialState:{
+    storeTransferDataState:{
+      fromChainID: '',
+      toChainID: '',
+      transferValue: 0,
+      gasFee: 0,
+      ethPrice: 0,
+      // @ts-ignore
+      selectMakerConfig: null,
+      fromCurrency: undefined,
+      toCurrency: undefined,
+      isCrossAddress: undefined,
+      crossAddressReceipt: undefined,
+      transferExt: undefined
+    },
     confirmData: {
       routeDescInfo: [],
     },
@@ -20,6 +34,9 @@ export const orbiterSlice = createSlice({
     },
   },
   reducers:{
+    updateStoreTransferDataState(state, action){
+      state.storeTransferDataState = action.payload
+    },
     updateConfirmRouteDescInfo(state, action) {
       state.confirmData.routeDescInfo = action.payload
     },
@@ -52,5 +69,5 @@ export const orbiterSlice = createSlice({
 
 })
 
-export const { updateZKTokenList,updateLpTokenList,updateZksTokenList,updateConfirmRouteDescInfo } = orbiterSlice.actions
+export const { updateZKTokenList,updateLpTokenList,updateZksTokenList,updateConfirmRouteDescInfo,updateStoreTransferDataState } = orbiterSlice.actions
 export default orbiterSlice.reducer

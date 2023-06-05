@@ -1,5 +1,5 @@
 // import Web3 from 'web3'
-// // import { store } from '../../../store'
+// //import { store } from '../../../store'
 // import pollWeb3 from './pollWeb3'
 // import { findMatchWeb3ProviderByWalletType } from '../../walletsDispatchers/utils'
 // import { METAMASK } from '../../walletsDispatchers'
@@ -85,3 +85,5 @@
 //   showMessage('User denied account access', 'error')
 
 // export { installWeb3, getWeb3, showMessage, userDeniedMessage }
+
+export default {}

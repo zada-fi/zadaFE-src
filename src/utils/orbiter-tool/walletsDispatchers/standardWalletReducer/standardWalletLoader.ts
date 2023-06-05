@@ -52,3 +52,5 @@
 // }
 
 // export default standardWalletLoader
+
+export default {}

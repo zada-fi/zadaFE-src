@@ -32,3 +32,5 @@
 // export const updateSelectWalletAddress = (newAddress) => {
 //   globalSelectWalletConf.walletPayload.walletAddress = newAddress
 // }
+
+export default {}

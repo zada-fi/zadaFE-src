@@ -238,3 +238,5 @@
 //   // console.log('walletConnectDispatcherOnAddChain:', result);
 //   showMessage('You must Change Networks on your wallet app', 'error')
 // }
+
+export default {}

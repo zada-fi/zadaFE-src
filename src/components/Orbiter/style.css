@@ -33,6 +33,9 @@
   font-weight: 400;
   font-size: 12px;
   line-height: 20px;
+  border-radius: 20px;
+  border: 1px solid #2C2F36;
+  background-color: #212429;
 }
 
 .transfer-box .from-area .topItem,
@@ -85,21 +88,23 @@
 .transfer-box .from-area .bottomItem input,
 .transfer-box .to-area .bottomItem input {
   font-weight: 700;
-  font-size: 16px;
-  line-height: 24px;
+  font-size: 24px;
+  line-height: 30px;
+  color:#ffffff;
 }
 
 .transfer-box .from-area .bottomItem input::placeholder,
 .transfer-box .to-area .bottomItem input::placeholder {
-  color: rgba(51, 51, 51, 0.2);
+  color: #565A69;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 24px;
+  line-height:30px;
 }
 
 .transfer-box .from-area .bottomItem .maxBtn,
 .transfer-box .to-area .bottomItem .maxBtn {
   font-weight: 400;
-  font-size: 14px;
+  font-size: 20px;
   line-height: 20px;
   cursor: pointer;
   border: none;
@@ -108,6 +113,7 @@
   padding: 0;
   margin-left: 8px;
   font-family: 'Inter Regular';
+  color: #3183ff;
 }
 
 .transfer-box .from-area {
@@ -152,6 +158,14 @@
   width: 16px;
   height: 16px;
   margin-right: 6px;
+}
+
+.transfer-box .info-box .info-item .sm-icon{
+  width: 16px;
+  height: 16px;
+  color: #ffffff;
+  fill: #ffffff;
+  stroke: currentColor;
 }
 
 .transfer-box .red {

@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 //import { Info, BookOpen, Code, PieChart, MessageCircle } from 'react-feather'
-import { Info, BookOpen, Code, MessageCircle } from 'react-feather'
+import { Info, BookOpen, Code } from 'react-feather'
 import { NavLink } from 'react-router-dom'
 import styled from 'styled-components'
 import { ReactComponent as MenuIcon } from '../../assets/images/menu.svg'
@@ -119,10 +119,15 @@ export default function Menu() {
             <Info size={14} />
             Faucet
           </MenuItem>
-          <MenuItem id={`swap-nav-link`} to={'/swap'}>
+          {/* <MenuItem id={`swap-nav-link`} to={'/swap'}>
             <MessageCircle size={14} />
             Swap
-          </MenuItem>
+          </MenuItem> */}
+          <MenuItemLast id={`swap-nav-link`} href={`${location.origin}/swap`}>
+            <Code size={14} />
+            Swap
+          </MenuItemLast>
+
           <MenuItemLast id={`l1bridge-nav-link`} href="https://scroll.io/alpha/bridge">
             <Code size={14} />
             L1 Bridge

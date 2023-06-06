@@ -79,13 +79,17 @@ export function HomeTabs() {
       <StyledNavLink id={`faucet-nav-link`} exact={true}  to={'/'}>
         Faucet
       </StyledNavLink>
-      <StyledNavLink id={`swap-nav-link`} to={'/swap'} >
+      {/* <StyledNavLink id={`swap-nav-link`} to={'/swap'} >
         Swap
-      </StyledNavLink>
+      </StyledNavLink> */}
+      <DocuA href={`${window.location.origin}/swap`} target="_blank" rel="noopener noreferrer" >
+        Swap
+      </DocuA>
       <DocuA href="https://scroll.io/alpha/bridge" target="_blank" rel="noopener noreferrer" >
        L1 Bridge
       </DocuA>
-      <DocuA href="https://rinkeby.orbiter.finance/" target="_blank" rel="noopener noreferrer" >
+      {/* "https://rinkeby.orbiter.finance/" */}
+      <DocuA href={`${window.location.origin}/orbiter`} target="_blank" rel="noopener noreferrer" >
         L2 Bridge
       </DocuA>
       <DocuA href="https://zadafinance.gitbook.io/99009900/" target="_blank" rel="noopener noreferrer">

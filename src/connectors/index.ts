@@ -29,10 +29,22 @@ export function getNetworkLibrary(): Web3Provider {
   return (networkLibrary = networkLibrary ?? new Web3Provider(network.provider as any))
 }
 
-export const injected = new InjectedConnector({
-  //supportedChainIds: [1, 3, 4, 5, 42, 534353]
-  supportedChainIds: [ChainId.SCROLL_ALPHA]
-})
+export const injected = (()=>{
+console.log('injected---',window.location.href);
+let a = window.location.href;
+if (a.indexOf('orbiter') > -1){
+  return  new InjectedConnector({
+    supportedChainIds: [ChainId.SCROLL_ALPHA,ChainId.MAINNET,ChainId.GÖRLI]
+    // supportedChainIds: [ChainId.SCROLL_ALPHA]
+  })
+}else {
+  return  new InjectedConnector({
+    // supportedChainIds: [ChainId.SCROLL_ALPHA,ChainId.MAINNET,ChainId.GÖRLI]
+    supportedChainIds: [ChainId.SCROLL_ALPHA]
+  })
+}
+
+})() 
 
 // mainnet only
 export const walletconnect = new WalletConnectConnector({

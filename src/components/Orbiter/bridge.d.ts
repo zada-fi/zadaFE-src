@@ -22,7 +22,7 @@ export type TransferDataStateType = {
   gasFee: number,
   ethPrice: number,
 
-  selectMakerConfig: MakerConfigType,
+  selectMakerConfig: MakerConfigType | null,
   fromCurrency: string | undefined,
   toCurrency: string | undefined,
   isCrossAddress: boolean | undefined,

@@ -66,7 +66,7 @@ export default function useBalance(props: PropsType) {
     tokenName: string,
     precision: number) => {
     const { fromCurrency, selectMakerConfig } = props.transferDataState;
-    const sender = selectMakerConfig.sender;
+    const sender = selectMakerConfig?.sender;
     try {
       if (!sender) {
         return '0';
@@ -150,35 +150,32 @@ export default function useBalance(props: PropsType) {
   }
 
   const refreshUserBalance = async () => {
-    props.updateLoadingData(true, 'fromBalanceLoading')
-    props.updateLoadingData(true, 'toBalanceLoading')
+    
     // @ts-ignore 
     const { fromChainID, toChainID, selectMakerConfig } = props.transferDataState;
     if (!selectMakerConfig || !Object.keys(selectMakerConfig).length) return;
     const { fromChain, toChain } = selectMakerConfig;
+    props.updateLoadingData(true, 'fromBalanceLoading')
+    props.updateLoadingData(true, 'toBalanceLoading')
 
     let address = account //compatibleGlobalWalletConf.value.walletPayload.walletAddress;
     // if (fromChainID === 4 || fromChainID === 44) {
     //   address = web3State.starkNet.starkNetAddress;
     // }
     if (address && address !== '0x') {
-      await props.getTransferBalance(fromChain.id, fromChain.tokenAddress, fromChain.symbol, address, false)
-        .then(async (response) => {
-          const balance = response ? (response / 10 ** fromChain.decimals).toFixed(6) : '0';
-          // self.addBalance(fromChain.id, fromChain.symbol, balance, address);
-          // self.fromBalance = balance;
-          setFromBalance(balance)
-          await updateUserMaxPrice();
-        })
-        .catch((error) => {
-          console.warn(error);
-        }).finally(() => {
-          // self.fromBalanceLoading = false;
-          props.updateLoadingData(false, 'fromBalanceLoading')
-        });
-      await updateUserMaxPrice();
-
-
+      try{
+        let response = await props.getTransferBalance(fromChain.id, fromChain.tokenAddress, fromChain.symbol, address, false) 
+        const balance = response ? (response / 10 ** fromChain.decimals).toFixed(6) : '0';
+        // self.addBalance(fromChain.id, fromChain.symbol, balance, address);
+        // self.fromBalance = balance;
+        setFromBalance(balance)
+        await updateUserMaxPrice(); 
+      }catch(error){
+        console.warn(error);
+      }finally{
+        props.updateLoadingData(false, 'fromBalanceLoading')
+      }
+      
     } else {
       // self.fromBalanceLoading = false;
       props.updateLoadingData(false, 'fromBalanceLoading')
@@ -189,19 +186,16 @@ export default function useBalance(props: PropsType) {
     //   address = web3State.starkNet.starkNetAddress;
     // }
     if (address && address !== '0x') {
-      await props.getTransferBalance(toChain.id, toChain.tokenAddress, toChain.symbol, address, false)
-        .then((response) => {
-          const balance = response ? (response / 10 ** toChain.decimals).toFixed(6) : '0';
-          // self.addBalance(toChain.id, toChain.symbol, balance, address);
-          // self.toBalance = balance;
-          setToBalance(balance)
-        })
-        .catch((error) => {
-          console.warn(error);
-        }).finally(() => {
-          // self.toBalanceLoading = false;
-          props.updateLoadingData(false, 'toBalanceLoading')
-        });
+      try{
+        let response = await props.getTransferBalance(toChain.id, toChain.tokenAddress, toChain.symbol, address, false)
+        const balance = response ? (response / 10 ** toChain.decimals).toFixed(6) : '0';
+        setToBalance(balance)
+      }catch(error) {
+        console.warn(error);
+      }finally{
+        // self.toBalanceLoading = false;
+        props.updateLoadingData(false, 'toBalanceLoading')
+      };
 
     } else {
       // self.toBalanceLoading = false;

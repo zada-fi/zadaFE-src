@@ -143,6 +143,9 @@ export default function useTransferCalcute(props: PropsType) {
       .attach(predeploys.WETH9)
       .connect(provider)
     // Arbitrary recipient address.
+    if(!props.transferDataState.selectMakerConfig || Object.keys(props.transferDataState.selectMakerConfig).length===0){
+      return 0
+    }
     const to = props.transferDataState.selectMakerConfig.recipient
 
     // Small amount of WETH to send (in wei).
@@ -198,6 +201,10 @@ export default function useTransferCalcute(props: PropsType) {
   const realTransferAmount = () => {
     const { selectMakerConfig, transferValue, fromChainID, toChainID } =
       props.transferDataState
+
+    if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+      return 0
+    }
     const userValue = new BigNumber(transferValue).multipliedBy(
       new BigNumber(selectMakerConfig.tradingFee)
     ).toNumber()
@@ -239,6 +246,9 @@ export default function useTransferCalcute(props: PropsType) {
       if (!resultToken) {
         return null
       }
+      if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+        return '0'
+      }
 
       const fee: any = await syncHttpProvider.getTransactionFee(
         'Transfer',
@@ -248,6 +258,9 @@ export default function useTransferCalcute(props: PropsType) {
       return (fee.totalFee / 10 ** resultToken.decimals).toFixed(6)
     }
     if (fromChainID + '' === '9' || fromChainID + '' === '99') {
+      if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+        return '0'
+      }
       const tokenAddress = selectMakerConfig.fromChain.tokenAddress
       const lpTokenInfo = await getLpTokenInfo(
         fromChainID,
@@ -263,6 +276,9 @@ export default function useTransferCalcute(props: PropsType) {
     }
     if (fromChainID + '' === '12' || fromChainID + '' === '512') {
       let transferFee = 0
+      if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+        return '0'
+      }
       try {
         transferFee = await getZKSpaceTransferGasFee(
           fromChainID,
@@ -337,7 +353,7 @@ export default function useTransferCalcute(props: PropsType) {
         fromChainID === 3
           ? zktokenList.mainnet
           : zktokenList.rinkeby
-      const tokenAddress = selectMakerConfig.fromChain.tokenAddress
+      const tokenAddress = selectMakerConfig?.fromChain.tokenAddress
       // @ts-ignore 
       const tokenList = zkTokenList.filter((item) => item.address === tokenAddress)
       const resultToken = tokenList.length > 0 ? tokenList[0] : null
@@ -475,6 +491,9 @@ export default function useTransferCalcute(props: PropsType) {
     isMaker = false
   ): Promise<number|undefined> =>  {
     const { selectMakerConfig } = props.transferDataState
+    if(!selectMakerConfig || !Object.keys(selectMakerConfig).length){
+      return undefined
+    }
     if (localChainID === 3 || localChainID === 33) {
       const req = {
         account: userAddress,
@@ -579,6 +598,9 @@ export default function useTransferCalcute(props: PropsType) {
     let metisGas = 0
     let bscGas = 0
     const { selectMakerConfig } = props.transferDataState
+    if(!selectMakerConfig || !Object.keys(selectMakerConfig).length){
+      return 0
+    }
 
     // withdraw
     if (fromChainID === '2' || fromChainID === '22') {
@@ -969,12 +991,19 @@ export default function useTransferCalcute(props: PropsType) {
     return usd.toNumber()
   }
 
+  const   realTransferOPID = ()=> {
+    const toChainID = props.transferDataState.toChainID
+    return 9000 + Number(toChainID) + ''
+  }
+
 
   return {
     transferSpentGas,
     getTransferBalance,
     getTransferGasLimit,
     getTokenConvertUsd,
-    transferOrginGasUsd
+    transferOrginGasUsd,
+    realTransferAmount,
+    realTransferOPID
   }
 }

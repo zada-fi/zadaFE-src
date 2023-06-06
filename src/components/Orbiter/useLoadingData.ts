@@ -16,6 +16,7 @@ export default function useLoadingData(){
     toBalanceLoading: false,
     saveTimeLoading: false,
   })
+  
   const updateLoadingData = (value: boolean, valueKey: string)=>{
     setLoadingDats(prevState =>({
       ...prevState,

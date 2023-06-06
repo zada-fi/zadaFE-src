@@ -16,7 +16,7 @@ import 'antd/es/notification/style/index.css'
 import config from './../../utils/orbiter-config'
 import orbiterEnv from "../../utils/orbiter-env"
 import { TokenItemType, ComPropsType } from "./bridge"
-import { isExecuteXVMContract, equalsIgnoreCase, getQuery, objParseQuery, getTokenIcon, isSupportXVMContract, showMessage, isLegalAddress, getMetaMaskNetworkId, ensureWalletNetwork,getChainInfoByChainId, shortAddress } from '../../utils/orbiter-tool'
+import { isExecuteXVMContract, equalsIgnoreCase, getQuery, objParseQuery, getTokenIcon, isSupportXVMContract, showMessage, isLegalAddress, getMetaMaskNetworkId, ensureWalletNetwork, getChainInfoByChainId, shortAddress } from '../../utils/orbiter-tool'
 import useInputData from "./useInputData"
 import useChainAndTokenData from "./useChainAndTokenData"
 import useTransferDataState from "./useTransferDataState"
@@ -24,7 +24,7 @@ import useTransferCalcute from "./useTransferCalcute"
 import useLoadingData from "./useLoadingData"
 import useBalance from "./useBalance"
 import { useHistory, useLocation } from "react-router-dom"
-import { getRates, RatesType, exchangeToUsd } from '../../utils/orbiter-tool/coinbase'
+import { getRates, RatesType, exchangeToUsd, asyncGetExchangeToUsdRate } from '../../utils/orbiter-tool/coinbase'
 import { isWhite, chainName } from './../../utils/orbiter-tool'
 import ObSelect from "../ObSelect"
 import useGasData from "./useGasData"
@@ -40,6 +40,8 @@ import { IMXHelper } from "../../utils/orbiter-tool/immutablex/imx_helper"
 import useLoopring from "./useLoopring"
 import { useDispatch } from "react-redux"
 import { updateConfirmRouteDescInfo } from "../../state/orbiter/reducer"
+import orbiterCore from "../../utils/orbiter-core"
+import TransferInfoBox from "./info"
 
 
 
@@ -75,49 +77,45 @@ const StyledDropDown = styled(DropDown) <{ selected: boolean }>`
 `
 type SubmitBtnPropType = {
   btnInfo: SendBtnInfoType,
-  other:{
+  other: {
     className: string,
     style: object
   },
-  onClick: ()=>void
+  onClick: () => void
 }
-const SubmitBtn = (props: SubmitBtnPropType )=>{
+const SubmitBtn = (props: SubmitBtnPropType) => {
 
   // toggle wallet when disconnected
   const toggleWalletModal = useWalletModalToggle()
   const { account } = useWeb3React()
-  if(!account){
+  if (!account) {
     return (<><ButtonLight onClick={toggleWalletModal}>Connect Wallet</ButtonLight>
-    <ButtonConfirmed
-    onClick={props.onClick}
-    className={props.other.className} 
-    style={props.other.style}>
-    {props.btnInfo.text}
-    </ButtonConfirmed></>)
+    </>)
 
-  }else if(props.btnInfo.disabled){
-    return (<ButtonLight  className={props.other.className} style={props.other.style}>
+  } else if (props.btnInfo.disabled) {
+    return (<ButtonLight className={props.other.className} style={props.other.style}>
       {props.btnInfo.text}
     </ButtonLight>)
-  }else{
-    return  (<ButtonConfirmed
-    onClick={props.onClick}
-    className={props.other.className} 
-    style={props.other.style}>
-    {props.btnInfo.text}
+  } else {
+    return (<ButtonConfirmed
+      onClick={props.onClick}
+      className={props.other.className}
+      style={props.other.style}>
+      {props.btnInfo.text}
     </ButtonConfirmed>)
   }
 }
 
 export default function Transfer(props: ComPropsType) {
- 
+
   const { connector, account, chainId } = useWeb3React()
 
   const dispatch = useDispatch()
-  
+
   const theme = useContext(ThemeContext)
   let history = useHistory()
   let location = useLocation()
+
   let [rates, setRates] = useState<RatesType>(null)
   useEffect(() => {
     let active = true
@@ -190,8 +188,9 @@ export default function Transfer(props: ComPropsType) {
     cron: null,
     banList: []
   })
+  const [orbiterTradingFee, setOrbiterTradingFee] = useState<string>('0')
 
-  const useWalletType = useMemo(()=>{
+  const userWalletType = useMemo(() => {
     const { ethereum } = window
     const isMetaMask = !!(ethereum && ethereum.isMetaMask)
     const name = Object.keys(SUPPORTED_WALLETS)
@@ -201,8 +200,224 @@ export default function Transfer(props: ComPropsType) {
       )
       .map(k => SUPPORTED_WALLETS[k].name)[0]
     return name
-  },[connector])
+  }, [connector])
 
+
+  const originTimeSpent = useMemo(() => {
+    let fromChainID = +transferDataState.fromChainID
+    let toChainID = +transferDataState.toChainID
+    if (fromChainID === 2 || fromChainID === 22) {
+      return '~7 days'
+    }
+    if (fromChainID === 4 || fromChainID === 44) {
+      return '~24 hours'
+    }
+    if (fromChainID === 16 || fromChainID === 516) {
+      return '~7 days'
+    }
+    if (
+      fromChainID === 3 ||
+      fromChainID === 33 ||
+      fromChainID === 12 ||
+      fromChainID === 512 ||
+      fromChainID === 14 ||
+      fromChainID === 514
+    ) {
+      return '~4 hours'
+    }
+    // https://docs.polygon.technology/docs/develop/ethereum-polygon/getting-started/
+    if (fromChainID === 6 || fromChainID === 66) {
+      return '~3 hours'
+    }
+    if (fromChainID === 7 || fromChainID === 77) {
+      return '~7 days'
+    }
+    if (fromChainID === 8 || fromChainID === 88) {
+      return '~5 hours'
+    }
+    if (fromChainID === 9 || fromChainID === 99) {
+      return '~4 hours'
+    }
+    if (fromChainID === 10 || fromChainID === 510) {
+      return '~7 days'
+    }
+    if (fromChainID === 13 || fromChainID === 513) {
+      return '~7 days'
+    }
+    if (fromChainID === 15 || fromChainID === 515) {
+      return '~15min'
+    }
+    if (fromChainID === 518 && toChainID === 519) {
+      return '~2min'
+    }
+    if (fromChainID === 519 && toChainID === 518) {
+      return '~10min'
+    }
+
+    if (fromChainID === 1 || fromChainID === 5) {
+      if (toChainID === 2 || toChainID === 22) {
+        //  eth ->  ar
+        return '~10min'
+      }
+      if (toChainID === 4 || toChainID === 44) {
+        //  eth ->  ar
+        return '~10min'
+      }
+      if (
+        toChainID === 3 ||
+        toChainID === 33 ||
+        toChainID === 12 ||
+        toChainID === 512 ||
+        toChainID === 14 ||
+        toChainID === 514
+      ) {
+        // eth -> zk
+        return '~10min'
+      }
+      if (toChainID === 6 || toChainID === 66) {
+        // eth -> polygon
+        return '~5min'
+      }
+      if (toChainID === 7 || toChainID === 77) {
+        // eth -> optimistic
+        return '~5min'
+      }
+      if (toChainID === 8 || toChainID === 88) {
+        // eth -> immutablex
+        return '~20min'
+      }
+      if (toChainID === 9 || toChainID === 99) {
+        return '~10min'
+      }
+      if (toChainID === 10 || toChainID === 510) {
+        // eth -> metis
+        return '~5min'
+      }
+      if (toChainID === 11 || toChainID === 511) {
+        return '~20min'
+      }
+      if (toChainID === 13 || toChainID === 513) {
+        return '~10min'
+      }
+      if (toChainID === 15 || toChainID === 515) {
+        return '~15min'
+      }
+      if (toChainID === 16 || toChainID === 516) {
+        return '~10min'
+      }
+    }
+  }, [transferDataState.fromChainID, transferDataState.toChainID])
+  const timeSpent = useMemo(() => {
+    let fromChainID = +transferDataState.fromChainID
+    let toChainID = +transferDataState.toChainID
+    let timeSpent = 0
+    if (fromChainID === 1 || fromChainID === 4 || fromChainID === 5) {
+      timeSpent = 30
+    }
+    if (fromChainID === 2 || fromChainID === 22) {
+      timeSpent = 15
+    }
+    if (fromChainID === 10 || fromChainID === 510) {
+      timeSpent = 15
+    }
+    if (
+      fromChainID === 3 ||
+      fromChainID === 33 ||
+      fromChainID === 12 ||
+      fromChainID === 512
+    ) {
+      timeSpent = 5
+    }
+    if (fromChainID === 6 || fromChainID === 66) {
+      timeSpent = 15
+    }
+    if (fromChainID === 7 || fromChainID === 77) {
+      timeSpent = 15
+    }
+    if (fromChainID === 8 || fromChainID === 88) {
+      timeSpent = 5
+    }
+    if (fromChainID === 9 || fromChainID === 99) {
+      timeSpent = 15
+    }
+    if (fromChainID === 13 || fromChainID === 513) {
+      timeSpent = 20
+    }
+    if (fromChainID === 16 || fromChainID === 516) {
+      timeSpent = 30
+    }
+    if (fromChainID === 4 || fromChainID === 44) {
+      timeSpent = 180
+    }
+    if (fromChainID === 518) {
+      timeSpent = 15
+    }
+    if (fromChainID === 519) {
+      timeSpent = 6.828
+    }
+    if (toChainID === 4 || toChainID === 44) {
+      timeSpent = 180
+    }
+    if (toChainID === 1 || toChainID === 5) {
+      timeSpent += 30
+    }
+    if (toChainID === 16 || toChainID === 516) {
+      timeSpent += 30
+    }
+    if (toChainID === 2 || toChainID === 22) {
+      timeSpent += 15
+    }
+    if (
+      toChainID === 3 ||
+      toChainID === 33 ||
+      toChainID === 12 ||
+      toChainID === 512
+    ) {
+      timeSpent += 5
+    }
+    if (toChainID === 6 || toChainID === 66) {
+      timeSpent += 15
+    }
+    if (toChainID === 7 || toChainID === 77) {
+      timeSpent += 15
+    }
+    if (toChainID === 8 || toChainID === 88) {
+      timeSpent += 5
+    }
+    if (toChainID === 9 || toChainID === 99) {
+      timeSpent += 15
+    }
+    if (toChainID === 10 || toChainID === 510) {
+      timeSpent += 15
+    }
+    if (toChainID === 11 || toChainID === 511) {
+      timeSpent += 5
+    }
+    if (toChainID === 13 || toChainID === 513) {
+      timeSpent += 20
+    }
+    if (toChainID === 14 || toChainID === 514) {
+      timeSpent += 15
+    }
+    if (toChainID === 518) {
+      timeSpent += 15
+    }
+    if (toChainID === 519) {
+      timeSpent += 6.828
+    }
+    const timeSpentStr = timeSpent + 's'
+    return timeSpentStr
+  }, [transferDataState.fromChainID, transferDataState.toChainID])
+  const timeSpenToolTip = useMemo(() => {
+    return `It takes about ${originTimeSpent
+        ? originTimeSpent.replace('~', '')
+        : originTimeSpent
+      } moving funds using the native bridge, and it only takes about ${timeSpent ? timeSpent.replace('~', '') : timeSpent
+      } using Orbiter.`;
+  }, [timeSpent, originTimeSpent])
+  const transferSavingTime = useMemo(()=>{
+    return originTimeSpent?.replace('~', '')||'';
+  },[originTimeSpent])
   const isErrorAddress = useMemo(() => {
     //!this.isNewVersion ||
     if (selectFromToken === selectToToken) {
@@ -227,7 +442,7 @@ export default function Transfer(props: ComPropsType) {
     crossAddressReceipt,
     selectFromToken,
     selectToToken])
-  
+
   const fromChainObj = useMemo(() => {
     const localChainID = transferDataState.fromChainID
     console.log('from chainobj localchainid', localChainID)
@@ -262,7 +477,7 @@ export default function Transfer(props: ComPropsType) {
   const isShowMax = useMemo(() => {
     return (
       new BigNumber(transferValue).comparedTo(
-        new BigNumber(transferDataState.selectMakerConfig?.fromChain?.maxPrice)
+        new BigNumber(transferDataState.selectMakerConfig?.fromChain?.maxPrice||'0')
       ) > 0
     );
   }, [transferDataState, transferValue])
@@ -387,6 +602,11 @@ export default function Transfer(props: ComPropsType) {
     transferDataState.fromCurrency,
     transferDataState.toCurrency
   ])
+
+  const maxPrice = useMemo(() => {
+    return transferDataState.selectMakerConfig?.fromChain?.maxPrice;
+  }, [transferDataState.selectMakerConfig])
+
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const toValueToolTip = useMemo(() => {
@@ -527,29 +747,31 @@ export default function Transfer(props: ComPropsType) {
   const isStarknet = useMemo(() => {
     return refererUpper === 'STARKNET'
   }, [refererUpper])
-  const isSupportXVM = useMemo(()=>{
+  const isSupportXVM = useMemo(() => {
     return isSupportXVMContract(transferDataState)
-  },[transferDataState])
-  const isHiddenChangeAccount = useMemo(()=>{
-    return  (!isNewVersion || 
+  }, [transferDataState])
+  const isHiddenChangeAccount = useMemo(() => {
+    return (!isNewVersion ||
       selectFromToken === selectToToken ||
-       !isSupportXVM) &&
-    !isLoopring
-  },[isNewVersion, selectFromToken, selectToToken, isSupportXVM, isLoopring])
-  const crossAddressInputDisable = useMemo(()=>{
+      !isSupportXVM) &&
+      !isLoopring
+  }, [isNewVersion, selectFromToken, selectToToken, isSupportXVM, isLoopring])
+  const crossAddressInputDisable = useMemo(() => {
     const toChainID = transferDataState.toChainID
-      return (
-        toChainID === '4' ||
-        toChainID === '44' ||
-        toChainID === '11' ||
-        toChainID === '511'
-      )
-  },[transferDataState.toChainID])
+    return (
+      toChainID === '4' ||
+      toChainID === '44' ||
+      toChainID === '11' ||
+      toChainID === '511'
+    )
+  }, [transferDataState.toChainID])
 
-  const cu_chainName = useMemo(()=>{
+  const cu_chainName = useMemo(() => {
     return chainName(transferDataState.toChainID)
-  },[transferDataState.toChainID])
-  
+  }, [transferDataState.toChainID])
+
+
+
   let [exchangeToUsdPrice, setExchangeToUsdPrice] = useState<number>(0)
   const getExchangeToUsdPrice = async () => {
     const { selectMakerConfig } = transferDataState;
@@ -577,12 +799,12 @@ export default function Transfer(props: ComPropsType) {
   }, [transferDataState.selectMakerConfig])
 
   // @ts-ignore 
-  let { originGasCost, showSaveGas, gasTradingTotal, updateGasData } = useGasData({
+  let { originGasCost, showSaveGas, gasTradingTotal, gasSavingMin, gasSavingMax, gasFeeToolTip, updateGasData } = useGasData({
     exchangeToUsdPrice
   })
 
 
-  
+
   const updateTransferInfo = async ({ fromChainID, toChainID, fromCurrency, toCurrency } = transferDataState) => {
     toCurrency = fromCurrency
 
@@ -803,24 +1025,115 @@ export default function Transfer(props: ComPropsType) {
       });
     }
   }
+
+  const gasCost = () => {
+    const { fromChainID, selectMakerConfig } = transferDataState;
+    if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+      return 0
+    }
+    if (
+      +fromChainID === 3 ||
+      +fromChainID === 33 ||
+      +fromChainID === 9 ||
+      +fromChainID === 99
+    ) {
+      let transferGasFee = transferDataState.gasFee;
+      const selectTokenRate = asyncGetExchangeToUsdRate(selectMakerConfig.fromChain.symbol);
+      if (selectTokenRate > 0) {
+        // switch to usd
+        transferGasFee = transferGasFee / selectTokenRate;
+      }
+      return Math.ceil(Number(transferGasFee * 10)) / 10;
+    }
+    return (
+      Math.ceil(transferDataState.gasFee * transferDataState.ethPrice * 10) /
+      10
+    );
+  }
+
+
+
+  const refreshGasSavingMin = () => {
+    const temp_gasCost = gasCost();
+    let savingValue = (new BigNumber(originGasCost).minus(
+      new BigNumber(gasTradingTotal).multipliedBy(exchangeToUsdPrice)
+    ).minus(temp_gasCost)).toNumber() || 0;
+
+
+    if (savingValue < 0) {
+      savingValue = 0;
+    }
+    let savingTokenName = '$';
+    updateGasData(savingTokenName + savingValue.toFixed(2).toString(), 'gasSavingMin')
+  }
+  const refreshGasTradingTotal = () => {
+    const { selectMakerConfig } = transferDataState;
+    if (!selectMakerConfig) return "0.000000";
+    let gasFee = new BigNumber(selectMakerConfig.tradingFee);
+    updateGasData(gasFee.plus(orbiterTradingFee).toFixed(6), 'gasTradingTotal')
+  }
+
+  const refreshOrbiterTradingFee = () => {
+    const { selectMakerConfig } = transferDataState;
+    if (!selectMakerConfig) return;
+    const { fromChain } = selectMakerConfig;
+    let tradingFee = new BigNumber(
+      transferValue ? transferValue : 0
+    )
+      .multipliedBy(new BigNumber(selectMakerConfig.gasFee))
+      .dividedBy(new BigNumber(1000));
+    let digit = orbiterCore.getDigitByPrecision(fromChain.decimals);
+    setOrbiterTradingFee(tradingFee.decimalPlaces(digit, BigNumber.ROUND_UP).toNumber().toString())
+  }
+  const refreshGasSavingMax = () => {
+    let savingValue = (new BigNumber(originGasCost).minus(new BigNumber(gasTradingTotal).multipliedBy(exchangeToUsdPrice))).toNumber() || 0;
+    if (savingValue < 0) {
+      savingValue = 0;
+    }
+    let savingTokenName = '$';
+    updateGasData(savingTokenName + savingValue.toFixed(2).toString(), 'gasSavingMax');
+  }
+
+  const refreshGasFeeToolTip = () => {
+    const { selectMakerConfig } = transferDataState;
+    const gasFee = `<b>Fees using the native bridge costs around:</b><br />Gas Fee: $${originGasCost.toFixed(
+      2
+    )}<br />`;
+    const tradingFee = ` <br /><b>Fees using Orbiter costs:</b><br />Trading Fee: $${(
+      new BigNumber(orbiterTradingFee).multipliedBy(new BigNumber(exchangeToUsdPrice))
+    ).toFixed(2)}`;
+    const withholdingGasFee = `<br />Withholding Fee: $${selectMakerConfig
+      ? (
+        new BigNumber(selectMakerConfig.tradingFee).multipliedBy(new BigNumber(exchangeToUsdPrice)).toNumber()
+      ).toFixed(2)
+      : 0
+      }`;
+    const total = `<br /><br /><b>Total: $${(
+      new BigNumber(gasTradingTotal).multipliedBy(new BigNumber(exchangeToUsdPrice))
+    ).toFixed(2)}</b>`;
+
+    let tempToolTip = gasFee + tradingFee + withholdingGasFee + total;
+    updateGasData(tempToolTip, 'gasFeeToolTip')
+  }
+
+
   const refreshGas = () => {
-    // this.refreshOrbiterTradingFee()
-    //   this.refreshGasTradingTotal()
-    //   this.refreshGasSavingMin()
-    //   this.refreshGasSavingMin()
-    //   this.refreshGasSavingMax()
-    //   this.refreshGasFeeToolTip()
+    refreshOrbiterTradingFee()
+    refreshGasTradingTotal()
+    refreshGasSavingMin()
+    refreshGasSavingMax()
+    refreshGasFeeToolTip()
   }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const specialProcessing = async (oldFromChainID, oldToChainID) => {
     const { fromChainID, toChainID } = transferDataState;
     if (toChainID !== oldToChainID && oldToChainID === 4 || oldToChainID === 44 || oldToChainID === 11 || oldToChainID === 511) {
-      if (isCrossAddress){
+      if (isCrossAddress) {
         setIsCrossAddress(false)
-      } 
+      }
 
-      if (crossAddressReceipt){
+      if (crossAddressReceipt) {
         updateInputData('', crossAddressReceipt)
       }
     }
@@ -850,7 +1163,7 @@ export default function Transfer(props: ComPropsType) {
       if (walletIsLogin) {
         // this.inputTransferValue();
         onInputTransferValue({
-          target:{
+          target: {
             value: transferValue
           }
         })
@@ -862,20 +1175,20 @@ export default function Transfer(props: ComPropsType) {
       setIsCrossAddress(true)
     }
     if (toChainID !== oldToChainID && (+toChainID === 11 || +toChainID === 511)) {
-      if (!isCrossAddress){
+      if (!isCrossAddress) {
         setIsCrossAddress(true)
-      } 
+      }
       // isCrossAddress = true;
-      if (crossAddressReceipt !== account){
+      if (crossAddressReceipt !== account) {
         // setTimeout(() => {
         //   self.crossAddressReceipt = account;
         // }, 500);
-        updateInputData(account||'', 'crossAddressReceipt')
+        updateInputData(account || '', 'crossAddressReceipt')
       }
     }
-    
 
-   }
+
+  }
 
   const updateOriginGasCost = async () => {
 
@@ -907,6 +1220,9 @@ export default function Transfer(props: ComPropsType) {
   }
 
   const settingfromMax = () => {
+    if(loadingDats.fromBalanceLoading){
+      return 
+    }
     if (!walletIsLogin) {
       // this.transferValue = '0'
       updateInputData('0', 'transferValue')
@@ -922,81 +1238,58 @@ export default function Transfer(props: ComPropsType) {
 
   const [curWalletProvider, setCurWalletProvider] = useState<any>(null)
   useEffect(() => {
-    let flag = true 
-    if(connector){
+    let flag = true
+    if (connector) {
       getPData()
     }
-    return ()=>{
-      flag= false
+    return () => {
+      flag = false
     }
-    async function getPData(){
+    async function getPData() {
       let res = await connector?.getProvider()
-      if(!flag){
-        return 
+      if (!flag) {
+        return
       }
       setCurWalletProvider(res)
     }
-  },[connector])
+  }, [connector])
 
-  const sendTransfer = async() => {
-    console.log('sendTransfer---')
-    // 测试
-    props.onChangeState('2')
-    // @ts-ignore 
-    if(true){
-      return 
-    }
+  const sendTransfer = async () => {
+    console.log('sendTransfer---', transferDataState, sendBtnInfo)
     if (curWalletProvider.isBitKeep) {
-      // this.$notify.error({
-      //   title: `Bitkeep is not supported and please try another wallet.`,
-      //   duration: 3000,
-      // })
-      showMessage('Bitkeep is not supported and please try another wallet.','error')
+      showMessage('Bitkeep is not supported and please try another wallet.', 'error')
       return
     }
     if (sendBtnInfo && sendBtnInfo.disabled === true) {
       return
     }
     if (!(await isLegalAddress(transferDataState, account))) {
-      // this.$notify.error({
-      //   title: `Contract address is not supported, please use EVM address.`,
-      //   duration: 3000,
-      // })
-      showMessage(`Contract address is not supported, please use EVM address.`,'error')
+      showMessage(`Contract address is not supported, please use EVM address.`, 'error')
       return
     }
     const { fromChainID, toChainID, fromCurrency, selectMakerConfig } =
       transferDataState
-    if (configData.banList) {
+      if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+        return 
+      }
+    if (configData.banList&& configData.banList.length) {
       for (const ban of configData.banList) {
         if (ban.source && ban.dest) {
           if (fromChainID === ban.source && toChainID === ban.dest) {
-            // this.$notify.error({
-            //   title: `The ${selectMakerConfig.fromChain.name}-${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`,
-            //   duration: 3000,
-            // })
-            showMessage(`The ${selectMakerConfig.fromChain.name}-${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`,'error')
+            showMessage(`The ${selectMakerConfig.fromChain.name}-${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`, 'error')
             return
           }
           continue
         }
         if (ban.source) {
           if (fromChainID === ban.source) {
-            // this.$notify.error({
-            //   title: `The ${selectMakerConfig.fromChain.name} network transaction maintenance, please try again later`,
-            //   duration: 3000,
-            // })
-            showMessage(`The ${selectMakerConfig.fromChain.name} network transaction maintenance, please try again later`,'error')
+            showMessage(`The ${selectMakerConfig.fromChain.name} network transaction maintenance, please try again later`, 'error')
             return
           }
           continue
         }
         if (ban.dest) {
           if (toChainID === ban.dest) {
-            // this.$notify.error({
-            //   title: `The ${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`,
-            //   duration: 3000,
-            // })
             showMessage(`The ${selectMakerConfig.toChain.name} network transaction maintenance, please try again later`, 'error')
             return
           }
@@ -1004,29 +1297,21 @@ export default function Transfer(props: ComPropsType) {
       }
     }
     // if unlogin  login first
-   
-    
+
+
     {
-      let checkPriceRs =  /^(?!0$|0\.$|0\.0$|0\.00$)(?![1-9]\d*\.$)(0?|[1-9]\d*)(\.\d{0,6})?$/.test(transferValue)
+      let checkPriceRs = /^(?!0$|0\.$|0\.0$|0\.00$)(?![1-9]\d*\.$)(0?|[1-9]\d*)(\.\d{0,6})?$/.test(transferValue)
       if (!checkPriceRs) {
-        // this.$notify.error({
-        //   title: `The format of input amount is incorrect`,
-        //   duration: 3000,
-        // })
-        showMessage(`The format of input amount is incorrect`,'error')
+        showMessage(`The format of input amount is incorrect`, 'error')
         return
       }
       if (fromBalance === null) {
-        // this.$notify.error({
-        //   title: `Waiting for account balance to be obtained`,
-        //   duration: 3000,
-        // })
         showMessage(`Waiting for account balance to be obtained`, 'error')
         return
       }
       if (!selectMakerConfig) return
-      if(!account){
-        return 
+      if (!account) {
+        return
       }
       const { fromChain } = selectMakerConfig
       let nonce = await nonceUtil.getNonce(
@@ -1045,33 +1330,11 @@ export default function Transfer(props: ComPropsType) {
       //   return;
       // }
       if (toChainID === '4' && fromChain.symbol == 'DAI') {
-        // this.$notify.error({
-        //   title: `The StarkNet network transaction maintenance, please try again later`,
-        //   duration: 6000,
-        // })
-        showMessage(`The StarkNet network transaction maintenance, please try again later`,'error')
+        showMessage(`The StarkNet network transaction maintenance, please try again later`, 'error')
         return
       }
-      // if (fromChainID === 7 && toChainID === 4) {
-      //   this.$notify.error({
-      //       title: `The optimism-starkNet network transaction maintenance, please try again later`,
-      //       duration: 3000,
-      //   });
-      //   return;
-      // }
-      // if (toChainID === 14 || fromChainID === 14) {
-      //   this.$notify.error({
-      //     title: `The Zksync Era network transaction maintenance, please try again later`,
-      //     duration: 6000,
-      //   });
-      //   return;
-      // }
 
       if (nonce > 8999) {
-        // this.$notify.error({
-        //   title: `Address with the nonce over 9000 are not supported by Orbiter`,
-        //   duration: 3000,
-        // })
         showMessage(`Address with the nonce over 9000 are not supported by Orbiter`, 'error')
         return
       }
@@ -1096,8 +1359,8 @@ export default function Transfer(props: ComPropsType) {
       // Ensure immutablex's registered
       if (toChainID === '8' || toChainID === '88') {
         const imxHelper = new IMXHelper(+toChainID)
-        const walletAddress = account ||''
-          //compatibleGlobalWalletConf.value.walletPayload.walletAddress
+        const walletAddress = account || ''
+        //compatibleGlobalWalletConf.value.walletPayload.walletAddress
         walletAddress && (await imxHelper.ensureUser(walletAddress, curWalletProvider))
       }
 
@@ -1113,7 +1376,7 @@ export default function Transfer(props: ComPropsType) {
         //   util.showMessage('please connect Starknet Wallet', 'error')
         //   return
         // }
-       
+
         // if (
         //   (fromChainID === 4 || toChainID === 4) &&
         //   (starkChain === 44 || starkChain === 'localhost')
@@ -1136,14 +1399,14 @@ export default function Transfer(props: ComPropsType) {
         // }
       } else {
         let temp_networkID = (chainId)//+compatibleGlobalWalletConf.value.walletPayload.networkId 
-        if(typeof chainId === 'undefined'){
-          return 
+        if (typeof chainId === 'undefined') {
+          return
         }
         if (
           temp_networkID !==
           getMetaMaskNetworkId(+fromChainID)
         ) {
-          if (useWalletType === 'MetaMask') {
+          if (userWalletType === 'MetaMask') {
             try {
               if (!(await ensureWalletNetwork(+fromChainID, connector))) {
                 return
@@ -1188,17 +1451,17 @@ export default function Transfer(props: ComPropsType) {
       const { isCrossAddress, crossAddressReceipt } = transferDataState
       const walletAddress = (
         isCrossAddress || toChainID === '44' || toChainID === '4'
-          ? (crossAddressReceipt||'')
-          : (account||'')
+          ? (crossAddressReceipt || '')
+          : (account || '')
       ).toLowerCase()
       // sendTransfer
-      dispatch(updateConfirmRouteDescInfo( [
+      dispatch(updateConfirmRouteDescInfo([
         {
           no: 1,
           from:
             new BigNumber(transferValue).plus(
               new BigNumber(selectMakerConfig.tradingFee)
-            ) + (fromCurrency||''),
+            ) + (fromCurrency || ''),
           to: toAddress,
           fromTip: '',
           toTip: toAddressAll,
@@ -1356,7 +1619,8 @@ export default function Transfer(props: ComPropsType) {
             className="right"
             placeholder={fromTransferPlaceholder}
           />
-          <button className="maxBtn" onClick={settingfromMax} >Max</button>
+          
+          <button className={`maxBtn ${loadingDats.fromBalanceLoading?'disable':''}`} onClick={settingfromMax}>Max</button>
           {
             isNewVersion && (<div>
               <ObSelect
@@ -1380,17 +1644,17 @@ export default function Transfer(props: ComPropsType) {
 
     {
       isShowExchangeIcon && (<AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
-      <ArrowWrapper clickable onClick={onChangeTransfer}>
-        <ArrowDown
-          size="16"
-          color={transferValue ? theme.primary1 : theme.text2}
-        />
-        <ArrowUp
-          size="16"
-          color={transferValue ? theme.primary1 : theme.text2}
-        />
-      </ArrowWrapper>
-    </AutoRow>)
+        <ArrowWrapper clickable onClick={onChangeTransfer}>
+          <ArrowDown
+            size="16"
+            color={transferValue ? theme.primary1 : theme.text2}
+          />
+          <ArrowUp
+            size="16"
+            color={transferValue ? theme.primary1 : theme.text2}
+          />
+        </ArrowWrapper>
+      </AutoRow>)
     }
 
     <CommonDialog
@@ -1442,7 +1706,7 @@ export default function Transfer(props: ComPropsType) {
             </div>)
           }
           <QuestionHelper text={toValueToolTip} />
-          <div className="right-value">{ toValue }</div>
+          <div className="right-value">{toValue}</div>
         </div>
       </div>
     </div>
@@ -1461,7 +1725,7 @@ export default function Transfer(props: ComPropsType) {
         Centralized transfer is provided currently and trustless transfer will be
         launched soon.
         <a
-          style={{textDecoration: 'underline'}}
+          style={{ textDecoration: 'underline' }}
           href="https://docs.orbiter.finance/"
           target="__blank"
         >More</a>
@@ -1472,63 +1736,85 @@ export default function Transfer(props: ComPropsType) {
     {
       !isHiddenChangeAccount &&
       (<div>
-      <label
-        style={{
-          textAlign: 'left',
-          marginTop: '10px',
-          paddingLeft: '20px',
-          fontSize: '16px'
+        <label
+          style={{
+            textAlign: 'left',
+            marginTop: '10px',
+            paddingLeft: '20px',
+            fontSize: '16px'
+          }
+          }
+        >
+          <input
+            type="checkbox"
+            style={{ marginRight: '5px' }}
+            id="checkbox"
+            disabled={crossAddressInputDisable}
+            checked={isCrossAddress}
+            onChange={e => setIsCrossAddress(!isCrossAddress)}
+          />
+          <span> Change Account </span>
+        </label>
+        {
+          isCrossAddress && (
+            <div
+              className="cross-addr-box to-area"
+              style={{ marginTop: '10px' }}
+              v-if="isCrossAddress"
+            >
+              <div data-v-59545920="" className="topItem">
+                <div className="left">Recipient's Address</div>
+              </div>
+              <input
+                type="text"
+                value={crossAddressReceipt}
+                onChange={(e) => updateInputData(e.target.value, 'crossAddressReceipt')}
+                v-model="crossAddressReceipt"
+                placeholder={`Recipient's ${cu_chainName} Address`}
+              />
+            </div>
+          )
         }
-        }
-      >
-        <input
-          type="checkbox"
-          style={{marginRight: '5px'}}
-          id="checkbox"
-          disabled={crossAddressInputDisable}
-          checked={isCrossAddress}
-          onChange={e=>setIsCrossAddress(!isCrossAddress)}
-        />
-        <span> Change Account </span>
-      </label>
-      {
-        isCrossAddress && (
-      <div
-        className="cross-addr-box to-area"
-        style={{marginTop: '10px'}}
-        v-if="isCrossAddress"
-      >
-        <div data-v-59545920="" className="topItem">
-          <div className="left">Recipient's Address</div>
-        </div>
-        <input
-          type="text"
-          value={crossAddressReceipt}
-          onChange={(e)=>updateInputData(e.target.value, 'crossAddressReceipt')}
-          v-model="crossAddressReceipt"
-          placeholder={`Recipient's ${cu_chainName} Address`}
-        />
-      </div>
-        )
-      }
-      
-    </div>)
+
+      </div>)
     }
 
-    <SubmitBtn 
-    onClick={sendTransfer}
-    btnInfo={sendBtnInfo}
-    other={
-      {
-        className: 'tbtn',
-        style: {
-          borderRadius:'40px',
+    <div style={{height:'30px'}}></div>
+
+    <SubmitBtn
+      onClick={sendTransfer}
+      btnInfo={sendBtnInfo}
+      other={
+        {
+          className: 'tbtn',
+          style: {
+            borderRadius: '40px',
+          }
         }
-      }
-    }/>
+      } />
+
+    <TransferInfoBox
+      isCurrentAddress={isCrossAddress}
+      isErrorAddres={isErrorAddress}
+      isShowUnreachMinInfo={isShowExchangeIcon}
+      isShowMax={isShowMax}
+      showSaveGas={showSaveGas}
+      maxPrice={maxPrice}
+      selectFromToken={selectFromToken}
+      originGasLoading={loadingDats.originGasLoading}
+      gasSavingMax={gasSavingMax}
+      gasSavingMin={gasSavingMin}
+      gasFeeToolTip={gasFeeToolTip}
+      timeSpenLoading={loadingDats.timeSpenLoading}
+      timeSpent={timeSpent}
+      timeSpenToolTip={timeSpenToolTip}
+      saveTimeLoading={loadingDats.saveTimeLoading}
+      transferSavingTime={transferSavingTime}
+
+    />
 
 
-    
+
 
   </div>)
 }

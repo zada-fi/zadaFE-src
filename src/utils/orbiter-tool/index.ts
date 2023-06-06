@@ -4,9 +4,12 @@ import config from '../orbiter-config'
 import { TransferDataStateType } from '../../components/Orbiter/bridge'
 import { Coin_ABI } from '../orbiter-constant/contract';
 import orbiterEnv from '../orbiter-env';
-import { notification } from 'antd'
+import { exchangeToCoin, RatesType } from './coinbase';
+import { notification, message } from 'antd'
 import { ArgsProps } from 'antd/lib/notification/index'
 import 'antd/es/notification/style/index.css'
+import 'antd/es/message/style/index.css'
+import BigNumber from 'bignumber.js'
 type WalletPayLoadType = {
   walletAddress: string,
   networkId: string,
@@ -240,6 +243,19 @@ export function getMetaMaskNetworkId(chainId:number) {
 export function toHex(num:number) {
   return '0x' + Number(num).toString(16)
 }
+ 
+// the actual transfer amount
+export function getRealTransferValue(transferDataState: TransferDataStateType) {
+  const { selectMakerConfig, transferValue } = transferDataState
+  if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+    return ''
+  }
+  return new BigNumber(transferValue)
+    .plus(new BigNumber(selectMakerConfig.tradingFee))
+    .multipliedBy(new BigNumber(10 ** selectMakerConfig.fromChain.decimals))
+    .toFixed()
+}
+
  /**
 * @param {number} chainId
 */
@@ -270,6 +286,45 @@ export async function ensureWalletNetwork(chainId: number, connector:any) {
    return false
  }
 }
+
+export function showLoadingMessage(msg: string){
+  return message.loading(msg, 0)
+}
+
+ 
+// Get expected received amount
+export async function getExpectValue(transferDataState: TransferDataStateType,
+  rates: RatesType) {
+  const { selectMakerConfig, transferValue, fromCurrency, toCurrency } =
+    transferDataState
+  const value = new BigNumber(transferValue)
+  if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+    return ''
+  }
+
+  const gasFee = value
+    .multipliedBy(new BigNumber(selectMakerConfig.gasFee))
+    .dividedBy(new BigNumber(1000))
+  const gasFee_fix = gasFee.decimalPlaces(
+    selectMakerConfig.fromChain.decimals === 18 ? 5 : 2,
+    BigNumber.ROUND_UP
+  )
+
+  const toAmount = value.minus(gasFee_fix)
+  const expectValue = toAmount.multipliedBy(
+    10 ** selectMakerConfig.toChain.decimals
+  ).toNumber()
+
+  if (fromCurrency !== toCurrency) {
+    return (
+      await exchangeToCoin(expectValue, fromCurrency, toCurrency||'', rates)
+    ).toFixed(0)
+  } else {
+    return expectValue.toFixed(0)
+  }
+}
+
+
 export function showNotifiy(options: ArgsProps, type: string){
   // @ts-ignore 
   notification[type||'info'](options)
@@ -435,3 +490,6 @@ export const getQuery = (url = window.location.href) => {
   return paramData;
 }
 
+export function stableWeb3(chainId: number) {
+  return new Web3(stableRpc(chainId))
+}

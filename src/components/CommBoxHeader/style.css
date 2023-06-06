@@ -1,0 +1,24 @@
+.comm-box-header {
+  height: 60px;
+  line-height: 60px;
+  padding: 0 25px;
+  text-align: center;
+  overflow: hidden;
+  font-weight: 700;
+  font-size: 16px;
+  font-family: 'Inter Bold';
+}
+
+.comm-box-header .header-left {
+  float: left;
+}
+
+.comm-box-header .header-right {
+  float: right;
+}
+
+.comm-box-header .header-left,
+.comm-box-header .header-right {
+  cursor: pointer;
+  margin-top: 22px;
+}

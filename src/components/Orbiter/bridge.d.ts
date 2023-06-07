@@ -29,3 +29,44 @@ export type TransferDataStateType = {
   crossAddressReceipt: string | undefined,
   transferExt: string | undefined
 }
+
+export type HistoryPanelStateType = {
+  isLoading: boolean,
+  transactionListInfo: {
+    current: number,
+    size: number,
+    total: number,
+    pages: number,
+  },
+  transactionList: any,
+  historyInfo: any,
+  isShowHistory: boolean,
+}
+
+type GlobalSelectWalletConfType = {
+  walletType: string,
+  walletPayload: {
+    walletAddress: string,
+    networkId: string,
+    connector: any
+    // provider: any, // ethereum node match this wallet type
+  },
+  loginSuccess: boolean,
+}
+
+type OrWeb3StateType = {
+  isInstallMeta: boolean,
+  isInjected: boolean,
+  web3Instance: any,
+  networkId: any,
+  coinbase: any,
+  error: any,
+  localLogin: boolean,
+  starkNet: {
+    starkNetAddress: string,
+    starkNetWalletName:string,
+    starkWalletIcon: string,
+    starkIsConnected: boolean,
+    starkChain: string,
+  },
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react"
 import * as ethers from 'ethers'
+import Web3 from 'web3'
 import { ComPropsType } from './bridge'
 import { useDispatch, useSelector } from "react-redux"
 import { AppState } from "../../state"
@@ -10,6 +11,7 @@ import QuestionHelper from "../QuestionHelper"
 import { MouseoverTooltip } from "../Tooltip"
 import { ButtonConfirmed } from "../Button"
 import Loader from "../Loader"
+import './confirm.css'
 import { SUPPORTED_WALLETS } from '../../constants'
 import { injected } from '../../connectors'
 import { useWeb3React } from "@web3-react/core"
@@ -17,27 +19,55 @@ import { NetworkContextName } from "../../constants"
 import {
   isLegalAddress, showMessage, getMetaMaskNetworkId,
   ensureWalletNetwork, isExecuteXVMContract, getRealTransferValue,
-  getChainInfoByChainId, isEthTokenAddress, stableWeb3
+  getChainInfoByChainId, isEthTokenAddress, stableWeb3, testStore,
+  getCompatibleGlobalWalletConf
 } from "../../utils/orbiter-tool"
+import zkspace from "../../utils/orbiter-core/zkspace"
 import { useWalletModalToggle } from "../../state/application/hooks"
 import { CrossAddress } from "../../utils/orbiter-tool/cross_address"
 import { XVMSwap } from "../../utils/orbiter-constant/xvm"
 import { RatesType, getRates } from '../../utils/orbiter-tool/coinbase'
-import { updateProceedState,
-updateProceedTxID,
-updateProceedingMakerTransfer,
-updateProceedingUserTransfer } from "../../state/orbiter/reducer"
+import walletsDispatchers from "../../utils/orbiter-tool/walletsDispatchers"
+import {
+  updateProceedState,
+  updateProceedTxID,
+  updateProceedingMakerTransfer,
+  updateProceedingUserTransfer
+} from "../../state/orbiter/reducer"
+import BigNumber from 'bignumber.js'
+import { getTransferContract, getTransferGasLimit } from "../../utils/orbiter-constant/getContract"
+import { Coin_ABI } from "../../utils/orbiter-constant/contract"
 import orbiterCore from "../../utils/orbiter-core"
-
+import { DydxHelper } from "../../utils/orbiter-tool/dydx/dydx_helper"
+import * as zksync from 'zksync'
+import otherConfig from "../../utils/orbiter-config/other"
+import { getZkSyncProvider } from "../../utils/orbiter-tool/zkysnc_helper"
+import { providers } from 'ethers'
+import { IMXHelper } from "../../utils/orbiter-tool/immutablex/imx_helper"
+import { ERC20TokenType, ETHTokenType } from '@imtbl/imx-sdk'
+import { utils } from 'zksync'
+import { exchangeToCoin } from "../../utils/orbiter-tool/coinbase"
+import { submitSignedTransactionsBatch } from 'zksync/build/wallet'
+const {
+  walletDispatchersOnSignature,
+  walletDispatchersOnSwitchChain,
+  // @ts-ignore 
+  walletConnectSendTransaction,
+} = walletsDispatchers
 
 export default function Confirm(props: ComPropsType) {
+  let zksTokenList = useSelector((state: AppState) => state.orbiter.zksTokenList)
   // @ts-ignore 
   let [transferLoading, setTransferLoading] = useState<boolean>(false)
   // @ts-ignore 
   let [expectValue, setExpectValue] = useState('')
+  let [isInit, setIsInit] = useState(false)
   let storeConfirmData = useSelector((state: AppState) => state.orbiter.confirmData)
   let transferDataState = useSelector((state: AppState) => state.orbiter.storeTransferDataState)
   let { realTransferAmount, realTransferOPID } = useTransferCalcute({
+    transferDataState
+  })
+  let { getTransferTValue } = useTransferCalcute({
     transferDataState
   })
   const toggleWalletModal = useWalletModalToggle()
@@ -58,6 +88,7 @@ export default function Confirm(props: ComPropsType) {
     return name
   }, [connector])
 
+
   let [rates, setRates] = useState<RatesType>(null)
   useEffect(() => {
     let active = true
@@ -73,6 +104,49 @@ export default function Confirm(props: ComPropsType) {
       setRates(exchangeRates)
     }
   }, [])
+
+  var initData = async () => {
+    // if (!isInit) {
+      const { selectMakerConfig, transferValue } = transferDataState
+      if (!selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+        return
+      }
+      const { fromChain, toChain } = selectMakerConfig
+      const amount = orbiterCore.getToAmountFromUserAmount(
+        new BigNumber(transferValue).plus(
+          new BigNumber(selectMakerConfig.tradingFee)
+        ),
+        selectMakerConfig,
+        false
+      )
+      if (isExecuteXVMContract(transferDataState)) {
+        const fromCurrency = fromChain.symbol
+        const toCurrency = toChain.symbol
+        const slippage = selectMakerConfig.slippage
+        if (fromCurrency !== toCurrency) {
+          const decimal = toChain.decimals === 18 ? 5 : 3
+          const highValue = (
+            await exchangeToCoin(amount, fromCurrency, toCurrency, rates)
+          ).toFixed(decimal)
+          const lowerValue = new BigNumber(highValue)
+            .multipliedBy(1 - slippage / 10000)
+            .toFixed(decimal)
+          setExpectValue(`${lowerValue} ~ ${highValue} ${toCurrency}`)
+        } else {
+          setExpectValue(`${amount} ${toCurrency}`)
+        }
+      } else {
+        setExpectValue(`${amount} ${selectMakerConfig.fromChain.symbol}`)
+      }
+      setIsInit(true)
+    // }
+  }
+  useEffect(() => {
+    if(!isInit){
+      initData()
+    }
+    
+  }, [isInit, transferDataState])
 
   useEffect(() => {
     console.log('confirm ---', transferDataState)
@@ -91,6 +165,7 @@ export default function Confirm(props: ComPropsType) {
     const { selectMakerConfig } = transferDataState
     // 0.000120000000009022 to 0.000120...09022
     let temp_realTransferAmount = realTransferAmount().toString()
+    console.log('orbiter confirm temp_realTransferAmount---', temp_realTransferAmount)
     temp_realTransferAmount = temp_realTransferAmount.replace(
       /(.*?0)0{4,}(0.*?)/,
       '$1...$2'
@@ -120,7 +195,7 @@ export default function Confirm(props: ComPropsType) {
         title: 'Total Send',
         notice: 'Total amount sent by the ‘Sender’ including the withholding fee.',
         desc:
-          realTransferAmount +
+          temp_realTransferAmount +
           ' ' +
           selectMakerConfig.fromChain.symbol,
         textBold: true,
@@ -147,7 +222,7 @@ export default function Confirm(props: ComPropsType) {
   const dispatch = useDispatch()
 
 
-  
+
   function confirmUserTransaction(hash: any) {
     let currentStatus = 1
     const cron = setInterval(async () => {
@@ -155,10 +230,10 @@ export default function Confirm(props: ComPropsType) {
         // TODO openApi  baseURL: process.env.VUE_APP_OPEN_URL,  cannot find 
         // const { status, txList } = await openApiAx.get(`/status?hash=${hash}`)
         const fetchResponse = await fetch(`${process.env.REACT_APP_OPEN_API_URL}/status?hash=${hash}`)
-        
+
         const resdata = await fetchResponse.json()
-        if(resdata.code !== 0 ){
-          return 
+        if (resdata.code !== 0) {
+          return
         }
         const { status, txList } = resdata.result || {}
         // util.log('txStatus', status, 'txList', txList)
@@ -214,7 +289,7 @@ export default function Confirm(props: ComPropsType) {
   }
 
 
-  const proceedUserTransferReady = (user:any, maker:string, amount:any, localChainID:string, txHash:any)=>{
+  const proceedUserTransferReady = (user: any, maker: string, amount: any, localChainID: string, txHash: any) => {
     if (+localChainID === 4 || +localChainID === 44) {
       // txHash = util.starknetHashFormat(txHash);
     }
@@ -252,8 +327,8 @@ export default function Confirm(props: ComPropsType) {
   }
   const onTransferSucceed = (from: any, amount: any, fromChainID: string, transactionHash: any) => {
     const { selectMakerConfig } = transferDataState
-    if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
-      return  
+    if (!selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+      return
     }
     proceedUserTransferReady(
       from,
@@ -268,12 +343,12 @@ export default function Confirm(props: ComPropsType) {
     if (+fromChainID === 8 || +fromChainID === 88) {
       title = 'TransferId: ' + title
     }
-    // this.$notify.success({
+    // $notify.success({
     //   title,
     //   duration: 3000,
     // })
     showMessage(title, 'success')
-    // this.$emit('stateChanged', '3')
+    // $emit('stateChanged', '3')
     props.onChangeState('3')
   }
 
@@ -284,27 +359,23 @@ export default function Confirm(props: ComPropsType) {
       isCrossAddress,
       selectMakerConfig,
     } = transferDataState
-    // const account =
-    //     compatibleGlobalWalletConf.value.walletPayload.walletAddress
 
     if (!walletIsLogin) {
       return
     }
 
     const amount = getRealTransferValue(transferDataState)
-    const matchSignatureDispatcher = null // TODO
-    // walletDispatchersOnSignature[
-    //     compatibleGlobalWalletConf.value.walletType
-    // ]
-    if (matchSignatureDispatcher) {
-      // TODO
-      // matchSignatureDispatcher(
-      //     account,
-      //     selectMakerConfig,
-      //     amount,
-      //     fromChainID,
-      //     this.onTransferSucceed
-      // )
+    const matchSignatureDispatcher = walletDispatchersOnSignature[
+      userWalletType as keyof typeof walletDispatchersOnSignature
+    ]
+    if (typeof matchSignatureDispatcher === 'function') {
+      (matchSignatureDispatcher as Function)(
+        account,
+        selectMakerConfig,
+        amount,
+        fromChainID,
+        onTransferSucceed
+      )
       return
     }
 
@@ -375,24 +446,20 @@ export default function Confirm(props: ComPropsType) {
       console.error(e)
       // @ts-ignore 
       showMessage(e.message, 'error')
-      // this.$notify.error({
-      //     title: e.message,
-      //     duration: 3000,
-      // })
+
     }
   }
 
   const onRealTransfer = async () => {
+    let { testVal } = testStore()
+    console.log('onRealTransfer---', testVal)
+    // props.onChangeState('3')
     if (!walletIsLogin) {
       // Middle.$emit('connectWallet', true)
       toggleWalletModal()
       return
     }
     if (!await isLegalAddress(transferDataState, account)) {
-      // this.$notify.error({
-      //     title: `Contract address is not supported, please use EVM address.`,
-      //     duration: 3000,
-      // });
       showMessage('Contract address is not supported, please use EVM address.', 'error')
       return;
     }
@@ -418,18 +485,15 @@ export default function Confirm(props: ComPropsType) {
             return
           }
         } else {
-          // TODO
-          // const matchAddChainDispatcher =
-          //     walletDispatchersOnSwitchChain[
-          //         compatibleGlobalWalletConf.value.walletType
-          //     ]
-          // if (matchAddChainDispatcher) {
-          //     matchAddChainDispatcher(
-          //         compatibleGlobalWalletConf.value.walletPayload
-          //             .provider
-          //     )
-          //     return
-          // }
+          let compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+          // @ts-ignore 
+          const matchAddChainDispatcher = walletDispatchersOnSwitchChain[compatibleGlobalWalletConf.walletType]
+          if (matchAddChainDispatcher) {
+            matchAddChainDispatcher(
+              compatibleGlobalWalletConf.walletPayload.provider
+            )
+            return
+          }
         }
       }
     }
@@ -441,135 +505,816 @@ export default function Confirm(props: ComPropsType) {
 
     // EVM contract
     if (isExecuteXVMContract(transferDataState)) {
-      // this.transferLoading = true
+
       setTransferLoading(true)
       await handleXVMContract()
-      // this.transferLoading = false
+
       setTransferLoading(false)
       return
     }
 
-    // this.transferLoading = true
+
 
     // TODO ...
-    // setTransferLoading(true)
+    setTransferLoading(true)
 
-    // if (+fromChainID === 3 || +fromChainID === 33) {
-    //   this.zkTransfer()
-    // } else if (+fromChainID === 14 || +fromChainID === 514) {
-    //   this.zk2Transfer()
-    // } else if (+fromChainID === 9 || +fromChainID === 99) {
-    //   this.loopringTransfer()
-    // } else if (+fromChainID === 12 || +fromChainID === 512) {
-    //   this.zkspaceTransfer()
-    // } else {
-    //   const tokenAddress = selectMakerConfig.fromChain.tokenAddress
-    //   const to = selectMakerConfig.recipient
-    //   const tValue = transferCalculate.getTransferTValue()
-    //   if (!tValue.state) {
-    //     this.$notify.error({
-    //       title: tValue.error,
-    //       duration: 3000,
-    //     })
-    //     this.transferLoading = false
-    //     return
-    //   }
-    //   if (toChainID === 4 || toChainID === 44) {
-    //     this.transferToStarkNet(tValue.tAmount)
-    //     return
-    //   }
-    //   const account =
-    //     compatibleGlobalWalletConf.value.walletPayload.walletAddress
-    //   if (fromChainID === 4 || fromChainID === 44) {
-    //     this.starknetTransfer(tValue.tAmount)
-    //     return
-    //   }
+    if (+fromChainID === 3 || +fromChainID === 33) {
+      zkTransfer()
+    } else if (+fromChainID === 14 || +fromChainID === 514) {
+      zk2Transfer()
+    } else if (+fromChainID === 9 || +fromChainID === 99) {
+      // loopringTransfer()
+    } else if (+fromChainID === 12 || +fromChainID === 512) {
+      zkspaceTransfer()
+    } else {
+      if (!selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+        return
+      }
+      const tokenAddress = selectMakerConfig.fromChain.tokenAddress
+      const to = selectMakerConfig.recipient
+      const tValue = getTransferTValue()
+      // @ts-ignore 
+      if (!tValue || !tValue.state) {
+        // @ts-ignore 
+        showMessage(tValue.error, 'error')
 
-    //   if (fromChainID === 8 || fromChainID === 88) {
-    //     this.imxTransfer(tValue.tAmount)
-    //     return
-    //   }
+        setTransferLoading(false)
+        return
+      }
+      if (+toChainID === 4 || +toChainID === 44) {
+        // transferToStarkNet(tValue.tAmount)
+        return
+      }
+      const compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+      const account =
+        compatibleGlobalWalletConf.walletPayload.walletAddress
+      if (+fromChainID === 4 || +fromChainID === 44) {
+        // starknetTransfer(tValue.tAmount)
+        return
+      }
 
-    //   if (fromChainID === 11 || fromChainID === 511) {
-    //     this.dydxTransfer(tValue.tAmount)
-    //     return
-    //   }
+      if (+fromChainID === 8 || +fromChainID === 88) {
+        imxTransfer(tValue.tAmount)
+        return
+      }
 
-    //   if (util.isEthTokenAddress(fromChainID, tokenAddress)) {
-    //     // When tokenAddress is eth
-    //     this.ethTransfer(tValue.tAmount)
-    //   } else {
-    //     // When tokenAddress is erc20
-    //     if (
-    //       compatibleGlobalWalletConf.value.walletType ===
-    //       WALLETCONNECT
-    //     ) {
-    //       const web3 = new Web3()
-    //       const tokenContract = new web3.eth.Contract(
-    //         Coin_ABI,
-    //         tokenAddress
-    //       )
-    //       const tokenTransferData = await tokenContract.methods
-    //         .transfer(to, web3.utils.toHex(tValue.tAmount))
-    //         .encodeABI()
-    //       return walletConnectSendTransaction(
-    //         fromChainID,
-    //         account,
-    //         tokenAddress,
-    //         0,
-    //         tokenTransferData
-    //       ).then((hash) => {
-    //         this.onTransferSucceed(
-    //           account,
-    //           tValue.tAmount,
-    //           fromChainID,
-    //           hash
-    //         )
-    //       })
-    //     }
-    //     const transferContract = getTransferContract(
-    //       fromChainID,
-    //       tokenAddress
-    //     )
-    //     if (!transferContract) {
-    //       this.$notify.error({
-    //         title: 'Failed to obtain contract information, please refresh and try again',
-    //         duration: 3000,
-    //       })
-    //       return
-    //     }
+      if (+fromChainID === 11 || +fromChainID === 511) {
+        dydxTransfer(tValue.tAmount)
+        return
+      }
 
-    //     let gasLimit = await getTransferGasLimit(
-    //       fromChainID,
-    //       selectMakerConfig,
-    //       account,
-    //       to,
-    //       tValue.tAmount
-    //     )
-    //     if (fromChainID === 2 && gasLimit < 21000) {
-    //       gasLimit = 21000
-    //     }
-    //     const objOption = { from: account, gas: gasLimit }
-    //     transferContract.methods
-    //       .transfer(to, tValue.tAmount)
-    //       .send(objOption, (error, transactionHash) => {
-    //         this.transferLoading = false
-    //         if (!error) {
-    //           this.onTransferSucceed(
-    //             account,
-    //             tValue.tAmount,
-    //             fromChainID,
-    //             transactionHash
-    //           )
-    //         } else {
-    //           this.$notify.error({
-    //             title: error.message,
-    //             duration: 3000,
-    //           })
-    //         }
-    //       })
-    //   }
+      if (isEthTokenAddress(+fromChainID, tokenAddress)) {
+        // When tokenAddress is eth
+        ethTransfer(tValue.tAmount)
+      } else {
+        // When tokenAddress is erc20
+        if (
+          compatibleGlobalWalletConf.walletType ===
+          'WalletConnect'
+        ) {
+          const web3 = new Web3()
+          const tokenContract = new web3.eth.Contract(
+            Coin_ABI,
+            tokenAddress
+          )
+          const tokenTransferData = await tokenContract.methods
+            .transfer(to, web3.utils.toHex(tValue.tAmount))
+            .encodeABI()
+          return walletConnectSendTransaction(
+            fromChainID,
+            account,
+            tokenAddress,
+            0,
+            tokenTransferData
+          ).//@ts-ignore 
+            then((hash) => {
+              onTransferSucceed(
+                account,
+                tValue.tAmount,
+                fromChainID,
+                hash
+              )
+            })
+        }
+        const transferContract = getTransferContract(
+          fromChainID,
+          tokenAddress
+        )
+        if (!transferContract) {
+          showMessage('Failed to obtain contract information, please refresh and try again',
+            'error')
+          return
+        }
+
+        let gasLimit = await getTransferGasLimit(
+          fromChainID,
+          selectMakerConfig,
+          account,
+          to,
+          tValue.tAmount
+        )
+        if (+fromChainID === 2 && gasLimit && gasLimit < 21000) {
+          gasLimit = 21000
+        }
+        const objOption = { from: account, gas: gasLimit };
+        // @ts-ignore 
+        transferContract.methods.transfer(to, tValue.tAmount)
+          // @ts-ignore 
+          .send(objOption, (error, transactionHash) => {
+            setTransferLoading(false)
+            if (!error) {
+              onTransferSucceed(
+                account,
+                tValue.tAmount,
+                fromChainID,
+                transactionHash
+              )
+            } else {
+              showMessage(error.message,
+                'error')
+            }
+          })
+      }
+    }
+  }
+
+
+  async function zk2Transfer() {
+    // @ts-ignore 
+    const { selectMakerConfig, fromChainID } = transferDataState
+    if (!selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+      return
+    }
+    if (selectMakerConfig.fromChain.symbol !== 'ETH') {
+      throw new Error('Tokens are not supported at this time');
+    }
+
+    const tValue = getTransferTValue()
+    if (!tValue || !tValue.state) {
+      if (tValue?.error) {
+        showMessage(tValue?.error, 'error')
+      }
+
+
+      setTransferLoading(false)
+      return
+    }
+    // TODO
+    // const compatibleGlobalWalletConf = getCompatibleGlobalWalletConf()
+    // const provider = new zksync2.Web3Provider(compatibleGlobalWalletConf.walletPayload.provider);
+    // const signer = provider.getSigner();
+    // const amount = (new BigNumber(tValue.tAmount).dividedBy(10 ** 18)).toString();
+    // const transferResult = await signer.transfer({
+    //   to: selectMakerConfig.recipient,
+    //   amount: ethers.utils.parseEther(amount),
+    // });
+    // if (transferResult.hash) {
+    //   onTransferSucceed(
+    //     web3State.coinbase,
+    //     tValue.tAmount,
+    //     fromChainID,
+    //     transferResult.hash
+    //   );
     // }
+
+    setTransferLoading(false)
+  }
+  async function zkTransfer() {
+    const compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+    const { selectMakerConfig, fromChainID } = transferDataState
+    if (!selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+      return
+    }
+    const web3Provider = new Web3(
+      compatibleGlobalWalletConf.walletPayload.provider
+    )
+    const walletAccount =
+      compatibleGlobalWalletConf.walletPayload.walletAddress
+    const tokenAddress = selectMakerConfig.fromChain.tokenAddress
+    const ethWallet = new ethers.providers.Web3Provider(
+      // @ts-ignore 
+      web3Provider?.currentProvider
+    )
+    const syncProvider = await getZkSyncProvider(fromChainID)
+    try {
+      const syncWallet = await zksync.Wallet.fromEthSigner(
+        ethWallet.getSigner(walletAccount),
+        syncProvider
+      )
+      if (!syncWallet) {
+        return
+      }
+      const tValue = getTransferTValue()
+      if (!tValue || !tValue.state) {
+        // @ts-ignore 
+        showMessage(tValue.error, 'error')
+
+        setTransferLoading(false)
+        return
+      }
+      const amount = zksync.utils.closestPackableTransactionAmount(
+        tValue.tAmount
+      )
+      const transferFee = await syncProvider.getTransactionFee(
+        'Transfer',
+        syncWallet.address() || '',
+        tokenAddress
+      )
+      if (!(await syncWallet.isSigningKeySet())) {
+        const nonce = await syncWallet.getNonce('committed')
+        const batchBuilder = syncWallet.batchBuilder(nonce)
+        if (
+          syncWallet.ethSignerType?.verificationMethod ===
+          'ERC-1271'
+        ) {
+          const isOnchainAuthSigningKeySet =
+            await syncWallet.isOnchainAuthSigningKeySet()
+          if (!isOnchainAuthSigningKeySet) {
+            const onchainAuthTransaction =
+              await syncWallet.onchainAuthSigningKey()
+            await onchainAuthTransaction?.wait()
+          }
+        }
+        // @ts-ignore 
+        const newPubKeyHash = await syncWallet.signer.pubKeyHash()
+        const accountID = await syncWallet.getAccountId()
+        if (typeof accountID !== 'number') {
+          throw new TypeError(
+            'It is required to have a history of balances on the account to activate it.'
+          )
+        }
+        const changePubKeyMessage =
+          utils.getChangePubkeyLegacyMessage(
+            newPubKeyHash,
+            nonce,
+            accountID
+          )
+        const ethSignature = (
+          await syncWallet.getEthMessageSignature(
+            changePubKeyMessage
+          )
+        ).signature
+        const keyFee = await syncProvider.getTransactionFee(
+          {
+            ChangePubKey: { onchainPubkeyAuth: false },
+          },
+          syncWallet.address() || '',
+          tokenAddress
+        )
+        // @ts-ignore 
+        const changePubKeyTx = await syncWallet.signer.signSyncChangePubKey({
+          accountId: accountID,
+          account: syncWallet.address(),
+          newPkHash: newPubKeyHash,
+          nonce,
+          ethSignature,
+          validFrom: 0,
+          validUntil: utils.MAX_TIMESTAMP,
+          fee: keyFee.totalFee,
+          feeTokenId:
+            syncWallet.provider.tokenSet.resolveTokenId(
+              tokenAddress
+            ),
+        })
+        batchBuilder.addChangePubKey({
+          tx: changePubKeyTx,
+          // @ts-ignore
+          alreadySigned: true,
+        })
+        batchBuilder.addTransfer({
+          to: selectMakerConfig.recipient,
+          token: tokenAddress,
+          amount,
+          fee: transferFee.totalFee,
+        })
+        const batchTransactionData = await batchBuilder.build()
+        const transactions = await submitSignedTransactionsBatch(
+          syncWallet.provider,
+          batchTransactionData.txs,
+          [batchTransactionData.signature]
+        )
+        let transaction
+        for (const tx of transactions) {
+          if (tx.txData.tx.type !== 'ChangePubKey') {
+            transaction = tx
+            break
+          }
+        }
+        // @ts-ignore 
+        const transferReceipt = await transaction.awaitReceipt()
+        if (
+          transferReceipt.success &&
+          !transferReceipt.failReason
+        ) {
+          onTransferSucceed(
+            walletAccount,
+            amount.toString(),
+            fromChainID,
+            // @ts-ignore 
+            transaction.txHash
+          )
+        }
+
+        setTransferLoading(false)
+      } else {
+        try {
+          const transfer = await syncWallet.syncTransfer({
+            to: selectMakerConfig.recipient,
+            token: tokenAddress,
+            amount,
+          })
+          const transferReceipt = await transfer.awaitReceipt()
+          if (
+            transferReceipt.success &&
+            !transferReceipt.failReason
+          ) {
+            onTransferSucceed(
+              walletAccount,
+              amount.toString(),
+              fromChainID,
+              transfer.txHash
+            )
+          }
+
+          setTransferLoading(false)
+        } catch (error) {
+          // console.warn('inError =', error.message)
+
+          setTransferLoading(false)
+          // @ts-ignore 
+          showMessage(error.message, 'error')
+        }
+      }
+    } catch (error) {
+      // console.warn('outError =', error.message)
+
+      setTransferLoading(false)
+      // @ts-ignore 
+      showMessage(error.message, 'error')
+    }
+  }
+
+  // async function loopringTransfer() {
+  //   const {
+  //     selectMakerConfig,
+  //     isCrossAddress,
+  //     crossAddressReceipt,
+  //     fromChainID,
+  //     toChainID,
+  //   } = transferDataState
+  //   if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+  //     return 
+  //   }
+  //   const tokenAddress = selectMakerConfig.fromChain.tokenAddress
+  //   const compatibleGlobalWalletConf = getCompatibleGlobalWalletConf()
+  //   try {
+  //     const tValue = getTransferTValue()
+  //     if (!tValue || !tValue.state) {
+  //       // @ts-ignore 
+  //       showMessage(tValue.error,'error')
+
+  //       setTransferLoading(false)
+  //       return
+  //     }
+  //     const p_text = 9000 + Number(toChainID) + ''
+  //     const amount = tValue.tAmount
+  //     const memo = isCrossAddress
+  //       ? `${p_text}_${crossAddressReceipt}`
+  //       : p_text
+  //     if (memo.length > 128) {
+  //       showMessage('The sending address is too long',
+  //         'error')
+
+  //       setTransferLoading(false)
+  //       return
+  //     }
+  //     try {
+  //       const response = await loopring.sendTransfer(
+  //         compatibleGlobalWalletConf.walletPayload
+  //           .walletAddress,
+  //         fromChainID,
+  //         selectMakerConfig.recipient,
+  //         0,
+  //         tokenAddress,
+  //         amount,
+  //         memo
+  //       )
+  //       if (response.hash && response.status === 'processing') {
+  //         onTransferSucceed(
+  //           compatibleGlobalWalletConf.walletPayload
+  //             .walletAddress,
+  //           amount,
+  //           fromChainID,
+  //           response.hash
+  //         )
+  //       }
+
+  //       setTransferLoading(false)
+  //     } catch (error) {
+
+  //       setTransferLoading(false)
+  //       if (error.message === 'account is not activated') {
+  //         // const notify =
+  //         $notify({
+  //           type: 'error',
+  //           message:
+  //             '<div style="text-align:left;font-size: 1.4rem; color: black">This Loopring account is not yet activated, please activate it before transferring.</div>',
+  //           dangerouslyUseHTMLString: true,
+  //           duration: 8000,
+  //         })
+  //       } else if (error.message === 'User account is frozen') {
+  //         const notify = $notify({
+  //           type: 'error',
+  //           message:
+  //             '<div style="text-align:left;font-size: 1.4rem; color: black">Your Loopring account is frozen, please check your Loopring account status on Loopring website. Get more details <span style="color:blue;text-decoration: underline"> here </span>.</div>',
+  //           dangerouslyUseHTMLString: true,
+  //           duration: 8000,
+  //         })
+  //         notify.$el.querySelector('span').onclick = () => {
+  //           notify.close()
+  //           window.open(
+  //             'https://docs.loopring.io/en/basics/key_mgmt.html?h=frozen',
+  //             '_blank'
+  //           )
+  //         }
+  //       } else {
+  //         showMessage(error.message,
+  //           'error')
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.warn('outError =', error.message)
+
+  //     setTransferLoading(false)
+  //     showMessage(error.message,
+  //       'error')
+  //   }
+  // }
+  async function ethTransfer(value: any) {
+    const { selectMakerConfig, fromChainID } = transferDataState
+    const compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+    const from =
+      compatibleGlobalWalletConf.walletPayload.walletAddress
+    // @ts-ignore 
+    const matchSignatureDispatcher = walletDispatchersOnSignature[compatibleGlobalWalletConf.walletType]
+    if (matchSignatureDispatcher) {
+      matchSignatureDispatcher(
+        from,
+        selectMakerConfig,
+        value,
+        fromChainID,
+        onTransferSucceed
+      )
+      return
+    }
+
+    if (!walletIsLogin) {
+
+      setTransferLoading(false)
+      return
+    }
+    if (!selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+      return
+    }
+
+    try {
+      const compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+      const provider =
+        compatibleGlobalWalletConf.walletPayload.provider
+      const web3 = new Web3(provider)
+
+      let gasLimit = await getTransferGasLimit(
+        fromChainID,
+        selectMakerConfig,
+        from,
+        selectMakerConfig.recipient,
+        value,
+        provider
+      )
+      if (+fromChainID === 2 && gasLimit && gasLimit < 21000) {
+        gasLimit = 21000
+      }
+      // @ts-ignore 
+      const eprovider = new providers.Web3Provider(web3.currentProvider)
+      const signer = eprovider.getSigner()
+      signer
+        .sendTransaction({
+          from,
+          to: selectMakerConfig.recipient,
+          value,
+          gasLimit,
+        })
+        .then((res) => {
+          setTransferLoading(false)
+          onTransferSucceed(
+            from,
+            value,
+            fromChainID,
+            res.hash
+          )
+        })
+        .catch((err) => {
+          setTransferLoading(false)
+          showMessage(err.message,
+            'error')
+        })
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
+  async function imxTransfer(value: any) {
+    const compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+    const { selectMakerConfig, fromChainID } = transferDataState
+    if (!walletIsLogin) {
+
+      setTransferLoading(false)
+      return
+    }
+    if (!selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+      return
+    }
+    const from =
+      compatibleGlobalWalletConf.walletPayload.walletAddress
+    try {
+      const contractAddress = selectMakerConfig.fromChain.tokenAddress
+
+      const imxHelper = new IMXHelper(+fromChainID)
+      let provider = await connector?.getProvider()
+      const imxClient = await imxHelper.getImmutableXClient(
+        provider,
+        from,
+        true
+      )
+
+      let tokenInfo = {
+        type: ETHTokenType.ETH,
+        data: {
+          decimals: selectMakerConfig.fromChain.decimals,
+        },
+      }
+      if (!isEthTokenAddress(+fromChainID, contractAddress)) {
+        tokenInfo = {
+          // @ts-ignore 
+          type: ERC20TokenType.ERC20,
+          data: {
+            // @ts-ignore 
+            symbol: selectMakerConfig.fromChain.symbol,
+            decimals: selectMakerConfig.fromChain.decimals,
+            tokenAddress: contractAddress,
+          },
+        }
+      }
+      const resp = await imxClient.transfer({
+        sender: from,
+        token: tokenInfo,
+        quantity: ethers.BigNumber.from(value),
+        receiver: selectMakerConfig.recipient,
+      })
+      onTransferSucceed(
+        from,
+        value,
+        fromChainID,
+        resp.transfer_id
+      )
+    } catch (error) {
+      // @ts-ignore 
+      showMessage(error.message, 'error')
+    } finally {
+
+      setTransferLoading(false)
+    }
+  }
+  async function dydxTransfer(value: any) {
+    const compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+    const { selectMakerConfig, fromChainID } = transferDataState
+    if (!walletIsLogin || !selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+      setTransferLoading(false)
+      return
+    }
+    const from = account || ''
+    // compatibleGlobalWalletConf.walletPayload.walletAddress
+    try {
+      const dydxHelper = new DydxHelper(
+        +fromChainID,
+        new Web3(
+          compatibleGlobalWalletConf.walletPayload.provider
+        ),
+        'MetaMask',
+        connector
+      )
+      const dydxMakerInfo = dydxHelper.getMakerInfo(
+        selectMakerConfig.recipient
+      )
+      const dydxClient = await dydxHelper.getDydxClient(
+        from,
+        false,
+        true
+      )
+      const dydxAccount = await dydxHelper.getAccount(from)
+
+      const params = {
+        clientId: dydxHelper.generateClientId(from),
+        amount: new BigNumber(value).dividedBy(10 ** 6).toString(), // Only usdc now!
+        expiration: new Date(
+          new Date().getTime() + 86400000 * 30
+        ).toISOString(),
+        receiverAccountId: dydxHelper.getAccountId(
+          selectMakerConfig.recipient
+        ),
+        receiverPublicKey: dydxMakerInfo.starkKey,
+        receiverPositionId: String(dydxMakerInfo.positionId),
+      }
+      const resp = await dydxClient.private.createTransfer(
+        params,
+        dydxAccount.positionId
+      )
+
+      onTransferSucceed(
+        from,
+        value,
+        fromChainID,
+        resp.transfer.id
+      )
+    } catch (error) {
+      console.error(error)
+      // @ts-ignore 
+      showMessage(error.message,
+        'error')
+    } finally {
+
+      setTransferLoading(false)
+    }
+  }
+  async function zkspaceTransfer() {
+    const { selectMakerConfig, fromChainID } = transferDataState
+    if (!selectMakerConfig || Object.keys(selectMakerConfig).length === 0) {
+      return
+    }
+    const compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+    try {
+      const provider = new ethers.providers.Web3Provider(
+        compatibleGlobalWalletConf.walletPayload.provider
+      )
+      const walletAccount =
+        compatibleGlobalWalletConf.walletPayload.walletAddress
+      const signer = provider.getSigner()
+      const privateKey = await zkspace.getL1SigAndPriVateKey(signer)
+
+      const tValue = getTransferTValue()
+      if (!tValue || !tValue.state) {
+        // @ts-ignore 
+        showMessage(tValue.error, 'error')
+        // this.transferLoading = false
+        setTransferLoading(false)
+        return
+      }
+      const transferValue =
+        zksync.utils.closestPackableTransactionAmount(
+          tValue.tAmount
+        )
+
+      const accountInfo = await zkspace.getAccountInfo(
+        +fromChainID,
+        privateKey,
+        signer,
+        walletAccount
+      )
+      const feeTokenId = 0
+      const zksNetWorkID =
+        +fromChainID === 512
+          ? otherConfig.ZKSpace.zksrinkebyChainID
+          : otherConfig.ZKSpace.zksChainID
+
+      const fee = await zkspace.getZKSpaceTransferGasFee(
+        +fromChainID,
+        walletAccount,
+        transferDataState
+      )
+
+      const transferFee = zksync.utils.closestPackableTransactionFee(
+        ethers.utils.parseUnits(fee.toString(), 18)
+      )
+
+      const zksTokenInfos =
+        +fromChainID === 12
+          ? zksTokenList.mainnet
+          : zksTokenList.rinkeby
+      const tokenAddress = selectMakerConfig.toChain.tokenAddress
+      const tokenInfo = zksTokenInfos.find(
+        (item: any) => item.address === tokenAddress
+      )
+      const { pubKey, l2SignatureOne } = zkspace.getL2SigOneAndPK(
+        privateKey,
+        accountInfo,
+        walletAccount,
+        // @ts-ignore 
+        tokenInfo ? tokenInfo.id : 0,
+        transferValue,
+        feeTokenId,
+        transferFee,
+        zksNetWorkID,
+        transferDataState
+      )
+
+      const l2SignatureTwo = await zkspace.getL2SigTwoAndPK(
+        signer,
+        accountInfo,
+        transferValue,
+        fee,
+        zksNetWorkID,
+        tokenInfo,
+        transferDataState
+      )
+      const req = {
+        signature: {
+          type: 'EthereumSignature',
+          signature: l2SignatureTwo,
+        },
+        fastProcessing: false,
+        tx: {
+          type: 'Transfer',
+          // @ts-ignore 
+          accountId: accountInfo.id,
+          from: walletAccount,
+          to: selectMakerConfig.recipient,
+          // @ts-ignore 
+          token: tokenInfo ? tokenInfo.id : 0,
+          amount: transferValue.toString(),
+          feeToken: feeTokenId,
+          fee: transferFee.toString(),
+          chainId: zksNetWorkID,
+          // @ts-ignore 
+          nonce: accountInfo.nonce,
+          signature: {
+            pubKey,
+            signature: l2SignatureOne,
+          },
+        },
+      }
+
+      const transferResult = await zkspace.sendTransfer(
+        +fromChainID,
+        req
+      )
+      const txHash = transferResult.data?.data.replace(
+        'sync-tx:',
+        '0x'
+      )
+
+      const firstResult = await getFristResult(
+        fromChainID,
+        txHash
+      )
+
+      onTransferSucceed(
+        walletAccount,
+        tValue.tAmount.toString(),
+        fromChainID,
+        firstResult.data.tx_hash
+      )
+      // this.transferLoading = false
+      setTransferLoading(false)
+    } catch (error) {
+      // this.transferLoading = false
+      setTransferLoading(false)
+      // @ts-ignore 
+      showMessage(error.message,
+        'error')
+      // @ts-ignore 
+      console.warn('zkspaceTransfer =', error.message)
+    }
+
+
+  }
+  // @ts-ignore 
+  async function getFristResult(fromChainID: string, txHash: any) {
+    const firstResult = await zkspace.getZKSpaceTransactionData(
+      +fromChainID,
+      txHash
+    )
+    if (
+      firstResult.success &&
+      !firstResult.data.fail_reason &&
+      !firstResult.data.success &&
+      !firstResult.data.amount
+    ) {
+      await new Promise((res) => {
+        setTimeout(() => {
+          res(1)
+        }, 300);
+      }) //util.sleep(300)
+      return await getFristResult(fromChainID, txHash)
+    } else if (
+      firstResult.success &&
+      !firstResult.data.fail_reason &&
+      firstResult.data.success &&
+      firstResult.data.amount
+    ) {
+      return firstResult
+    } else {
+      throw new Error('zks sendResult is error')
+    }
   }
   return (<div className="confirm-box">
     <CommBoxHeader className="head-com" back={true} onBack={onBackClick}>Confirm</CommBoxHeader>
@@ -579,9 +1324,9 @@ export default function Confirm(props: ComPropsType) {
           key={item.title}
           style={{ marginBottom: '22px' }}>
           <div className="item-left">
-            <SvgIcon iconName={'light-' + item.icon} />
+            <SvgIcon iconName={'dark-' + item.icon} />
             <span className="left-txt">{item.title}</span>
-            <QuestionHelper text={item.notice || ''} />
+            {item.notice && <QuestionHelper text={item.notice || ''} />}
 
           </div>
           <div className="item-right">
@@ -592,7 +1337,7 @@ export default function Confirm(props: ComPropsType) {
               <div className="descBottom">
                 {
                   item.descInfo.map((desc: any, index) => {
-                    return (<div key={desc.no} style={{ marginBottom: '10px' }}>
+                    return (<div key={desc.no + index} style={{ marginBottom: '10px' }}>
 
                       <span
                         style={{
@@ -644,7 +1389,7 @@ export default function Confirm(props: ComPropsType) {
                         </span>
                       </MouseoverTooltip>
                       <span style={{ marginLeft: '3px', verticalAlign: '-25%' }}>
-                        <SvgIcon iconName={'light-' + desc.icon} />
+                        <SvgIcon iconName={'dark-' + desc.icon} />
                       </span>
                     </div>)
                   })
@@ -655,7 +1400,7 @@ export default function Confirm(props: ComPropsType) {
           }
           {
             item.haveSep && (<div style={{
-              borderBottom: '2px dashed rgba(0, 0, 0, 0.2)',
+              borderBottom: '2px dashed rgba(255, 255, 255, 0.2)',
               height: '43px'
             }}>
 
@@ -671,7 +1416,7 @@ export default function Confirm(props: ComPropsType) {
         textAlign: 'left',
         paddingTop: '8px'
       }}>
-        <SvgIcon iconName="light-info" />
+        <SvgIcon iconName="dark-info" />
         <span style={{ color: '#df2e2d', flex: 1, marginLeft: '10px' }}>Starknet is still in alpha version, the transaction on it maybe
           will be done in 1~2 hours. Orbiter keeps your funds safe.</span>
 
@@ -686,7 +1431,7 @@ export default function Confirm(props: ComPropsType) {
         paddingTop: '8px'
       }}
     >
-      <SvgIcon iconName="light-info" />
+      <SvgIcon className="warn-tip" iconName="dark-info" />
       <span style={{ color: '#df2e2d', flex: 1, marginRight: '10px' }}>
         Please do not modify the transaction or remove the last four
         digits on the transfer amount in your wallet as this will cause

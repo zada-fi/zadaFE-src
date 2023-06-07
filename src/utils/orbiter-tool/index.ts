@@ -1,6 +1,8 @@
+import store from '../../state'
 import Web3 from 'web3'
 import { Eth } from 'web3-eth';
 import config from '../orbiter-config'
+import { findMatchWeb3ProviderByWalletType } from './walletsDispatchers/utils'
 import { TransferDataStateType } from '../../components/Orbiter/bridge'
 import { Coin_ABI } from '../orbiter-constant/contract';
 import orbiterEnv from '../orbiter-env';
@@ -20,6 +22,29 @@ export type GlobalSelectWalletConfType = {
   walletType: string,
   walletPayload: WalletPayLoadType,
   loginSuccess: false
+}
+export function transferTimeStampToTime(timestamp:any) {
+  if (!timestamp) {
+    return timestamp
+  }
+  if (timestamp.toString().length === 10) {
+    timestamp = Number(timestamp) * 1000
+  }
+  var date = new Date(timestamp)
+  var Y = date.getFullYear() + '-'
+  var M =
+    (date.getMonth() + 1 < 10
+      ? '0' + (date.getMonth() + 1)
+      : date.getMonth() + 1) + '-'
+  var D = (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' '
+  var h =
+    (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':'
+  var m =
+    (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) +
+    ':'
+  var s = date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds()
+  var result = Y + M + D + h + m + s
+  return result
 }
 export function shortAddress(address: string) {
   if (address && address.length > 5) {
@@ -459,6 +484,38 @@ export async function isLegalAddress(transferDataState: TransferDataStateType, a
   return true;
 }
 
+export function formatDate(date: any, isShort=false) {
+  date = new Date(date);
+  const year = date.getFullYear();
+  const mon = (date.getMonth() + 1) < 10 ? "0" + (date.getMonth() + 1) : date.getMonth() + 1;
+  const data = date.getDate() < 10 ? "0" + (date.getDate()) : date.getDate();
+  const hour = date.getHours() < 10 ? "0" + (date.getHours()) : date.getHours();
+  const min = date.getMinutes() < 10 ? "0" + (date.getMinutes()) : date.getMinutes();
+  const seon = date.getSeconds() < 10 ? "0" + (date.getSeconds()) : date.getSeconds();
+
+  if (isShort) return mon + "-" + data + " " + hour + ":" + min;
+  const toYear = new Date().getFullYear();
+  if(toYear === year){
+    return mon + "-" + data + " " + hour + ":" + min + ":" + seon;
+  }else{
+    return year + "-" + mon + "-" + data + " " + hour + ":" + min;
+  }
+}
+
+export function setCache(key:string, data:any, sec: any) {
+  localStorage.setItem(key, JSON.stringify({ data, expireTime: new Date().valueOf() + sec }));
+}
+
+export function getCache(key:string) {
+  const storage = localStorage.getItem(key);
+  if (!storage) return null;
+  const { data, expireTime } = JSON.parse(storage);
+  // this.log("expireTime", new Date(expireTime), `left ${ ((expireTime - new Date().valueOf()) / 1000).toFixed(0) }s`);
+  if (new Date().valueOf() > expireTime) {
+    return null;
+  }
+  return data;
+}
 
 export const getQuery = (url = window.location.href) => {
   const arrList = url.split("#");
@@ -492,4 +549,65 @@ export const getQuery = (url = window.location.href) => {
 
 export function stableWeb3(chainId: number) {
   return new Web3(stableRpc(chainId))
+}
+
+// just for test
+export function testStore(){
+  // @ts-ignore 
+  let testVal = store.getState()
+  return {
+    testVal
+  }
+}
+
+export function getStoreTransferDataState(){
+  let storeData = store.getState()
+  return storeData.orbiter.storeTransferDataState
+}
+
+export function getStoreWeb3State(){
+  let storeData = store.getState()
+  return storeData.orbiter.web3State
+}
+
+// compatibleGlobalWalletConf  
+export function getWalletIsLogin(){
+  let storeData = store.getState()
+  let globalSelectWalletConf = storeData.orbiter.storeGlobalSelectWalletConf
+  return globalSelectWalletConf.loginSuccess
+}
+
+export async function getCompatibleGlobalWalletConf(){
+  let storeData = store.getState()
+  let globalSelectWalletConf = storeData.orbiter.storeGlobalSelectWalletConf
+  let web3State = storeData.orbiter.web3State
+  if (
+    globalSelectWalletConf.walletType &&
+    globalSelectWalletConf.walletType !== 'MetaMask'
+  ) {
+    let tempObj = {
+      walletType: globalSelectWalletConf.walletType,
+      walletPayload: {
+        walletAddress: globalSelectWalletConf.walletPayload.walletAddress,
+        networkId: globalSelectWalletConf.walletPayload.networkId,
+        connector: globalSelectWalletConf.walletPayload.connector,
+        provider: null
+      },
+      loginSuccess: false,
+    }
+    tempObj.walletPayload.provider = await globalSelectWalletConf.walletPayload.connector.getProvider()
+    return tempObj
+  }
+  return {
+    walletType: 'MetaMask',
+    walletPayload: {
+      walletAddress: web3State.coinbase,
+      provider: findMatchWeb3ProviderByWalletType('MetaMask'),
+      ...web3State,
+      networkId:
+        globalSelectWalletConf.walletPayload.networkId || web3State.networkId,
+    },
+    loginSuccess: true,
+  }
+
 }

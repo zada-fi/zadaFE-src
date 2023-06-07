@@ -1,0 +1,102 @@
+.app .confirm-box {
+  width: 480px;
+  padding-bottom: 20px;
+}
+
+
+
+.app .confirm-box .confirm-item {
+  margin: 22px 0;
+}
+
+.app .select-wallet-dialog {
+  width: 420px;
+}
+
+@media (max-width:960px) {
+  .app .confirm-box{
+    width:100%;
+  }
+  .app .select-wallet-dialog {
+    width: 100%;
+  }
+}
+
+.app-mobile .confirm-box {
+  width: 100%;
+  height: 100%;
+  padding: 0 20px;
+}
+
+.app-mobile .confirm-box .confirm-item {
+  margin: 12px 0;
+}
+
+.app-mobile .select-wallet-dialog {
+  width: 100%;
+}
+
+.confirm-box {
+  font-family: 'Inter Regular';
+  border-radius: 20px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.confirm-box .confirm-item {
+  overflow: hidden;
+  padding: 0 30px;
+}
+.confirm-box .confirm-item svg{
+  width: 25px;
+  height: 25px
+}
+.confirm-box .warn-tip{
+  width: 20px;
+  height:20px
+}
+
+.confirm-box .confirm-item .item-left {
+  float: left;
+  display: flex;
+  align-items: center;
+}
+
+.confirm-box .confirm-item .item-left .left-txt {
+  margin: 0 10px 0 8px;
+}
+
+.confirm-box .confirm-item .item-right {
+  float: right;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 24px;
+  text-align: right;
+}
+
+.confirm-box .confirm-item .item-right .textBold {
+  font-weight: 600;
+}
+
+.confirm-box .confirm-item .descBottom {
+  max-height: 9.2rem;
+  text-align: center;
+  clear: both;
+  padding-top: 20px;
+}
+.confirm-box .select-wallet-dialog{
+  margin-top:20px;
+}
+
+/* .confirm-box .select-wallet-dialog {
+  font-family: 'Inter Bold';
+  margin-top: 20px;
+  height: 50px;
+  line-height: 34px;
+  background: linear-gradient(90.46deg, #eb382d 4.07%, #bc3035 98.55%);
+} */
+
+/* .o-tip {
+  padding-right: 15px;
+} */

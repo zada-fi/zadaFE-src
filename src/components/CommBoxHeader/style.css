@@ -7,18 +7,35 @@
   font-weight: 700;
   font-size: 16px;
   font-family: 'Inter Bold';
+  display: block;
+  position: relative;
 }
 
 .comm-box-header .header-left {
-  float: left;
+  /* float: left; */
+  left:0;
 }
 
 .comm-box-header .header-right {
-  float: right;
+  /* float: right; */
+  right: 0;
 }
+
 
 .comm-box-header .header-left,
 .comm-box-header .header-right {
   cursor: pointer;
-  margin-top: 22px;
+  display: inline-block;
+  position: absolute;
+}
+
+.comm-box-header .header-left svg,
+.comm-box-header .header-right svg{
+  width:20px;
+  height:20px;
+}
+
+.comm-box-header .header-content{
+  width: 100%;
+  text-align: center;
 }

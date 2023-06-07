@@ -12,7 +12,7 @@ type PropsType ={
 export default function CommBoxHeader(props: PropsType){
   return ( <div className={`comm-box-header ${props.className}`}>
     {
-      props.back && <span  className="header-left" onClick={props.onBack} ><SvgIcon iconName="light-back"/></span>
+      props.back && <span className="header-left" onClick={props.onBack} ><SvgIcon iconName="back"/></span>
     }
   
   <div className="header-content">

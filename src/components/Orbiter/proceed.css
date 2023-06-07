@@ -1,0 +1,217 @@
+.app .proceed-box {
+  width: 600px;
+  height: 568px;
+  margin: 0 auto;
+}
+@media (max-width:960px) {
+  .app .confirm-box{
+    width:100%;
+  }
+}
+
+.app .proceed-box .ProceedContent {
+  padding: 0 40px;
+}
+
+.app .proceed-box .ProceedContent .chainDataContent {
+  padding: 20px 41px;
+  width: 520px;
+}
+@media (max-width:960px) {
+  .app .confirm-box{
+    width:100%;
+  }
+  .app .proceed-box .ProceedContent .chainDataContent {
+    width: 100%;
+  }
+}
+
+.app .proceed-box .ProceedContent .chainDataContent .middle-icon .rocket-box {
+  margin-top: 18px;
+  background-size: 100%;
+}
+
+.app-mobile .proceed-box {
+  width: 100%;
+  height: 100%;
+}
+
+.app-mobile .proceed-box .ProceedContent {
+  padding: 0 20px;
+}
+
+.app-mobile .proceed-box .ProceedContent .chainDataContent {
+  padding: 20px 6px;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.app-mobile .proceed-box .ProceedContent .chainDataContent .middle-icon-abs {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+}
+
+.app-mobile .proceed-box .ProceedContent .chainDataContent .middle-icon-abs .rocket-box {
+  background-repeat: no-repeat;
+  background-size: 50%;
+  margin-top: 90px;
+}
+
+.app-mobile .proceed-box .ProceedContent .chainDataContent .middle-icon-abs .rocket-box-bg {
+  background-repeat: no-repeat;
+  background-size: 100%;
+  margin-top: 80px;
+  background-origin: content-box;
+  height: calc(100% - 90px);
+  padding-left: 120px;
+  padding-right: 120px;
+}
+
+.app-mobile .proceed-box .ProceedContent .chainDataContent .middle-icon {
+  width: 65px;
+}
+
+.app-mobile .proceed-box .ProceedContent .chainDataContent .middle-icon .rocket-box {
+  margin-top: 50px;
+  background-size: 200%;
+}
+
+.proceed-box {
+  font-family: 'Inter Regular';
+  border-radius: 20px;
+  max-height: calc(100vh - 8.4rem - var(--top-nav-height) - var(--bottom-nav-height));
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.proceed-box .ProceedContent {
+  margin-top: 8px;
+  position: relative;
+}
+
+.proceed-box .ProceedContent .contentItem {
+  width: 100%;
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.proceed-box .ProceedContent .chainDataContent {
+  height: 280px;
+  border-radius: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  text-align: center;
+}
+
+.proceed-box .ProceedContent .chainDataContent .item {
+  width: 128px;
+  height: 100%;
+  z-index: 3;
+}
+
+.proceed-box .ProceedContent .chainDataContent .item .chain-name {
+  font-family: 'Inter Bold';
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  white-space: nowrap;
+}
+
+.proceed-box .ProceedContent .chainDataContent .item .chain-name .label {
+  font-weight: 400;
+  font-size: 12px;
+  line-height: 24px;
+  margin-right: 12px;
+}
+
+.proceed-box .ProceedContent .chainDataContent .item .chain {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #1dfff1;
+  border-radius: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 14px;
+}
+
+.proceed-box .ProceedContent .chainDataContent .item .tx {
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  cursor: pointer;
+  margin-top: 22px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-decoration: underline;
+}
+
+.proceed-box .ProceedContent .chainDataContent .item .tx .status-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+}
+
+.proceed-box .ProceedContent .chainDataContent .item .tx:hover {
+  text-decoration: underline;
+  color: red;
+}
+
+.proceed-box .ProceedContent .chainDataContent .item .switch-btn {
+  width: 128px;
+  height: 28px;
+  border-radius: 20px;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 28px;
+  cursor: pointer;
+  word-break: keep-all;
+  white-space: nowrap;
+}
+
+.proceed-box .ProceedContent .chainDataContent .middle-icon {
+  flex: 1;
+}
+
+.proceed-box .ProceedContent .chainDataContent .middle-icon .rocket-box {
+  height: 60px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background-repeat: no-repeat;
+}
+
+.rock-line-style {
+  width: 161px;
+  height: 14px;
+  margin-top: 10px;
+}
+
+.chain-logo{
+  width: 56px;
+  height: 56px;
+}
+
+.proceed-box .ProceedContent .chainDataContent{
+  background: rgba(0,0,0,.3);
+
+}
+.proceed-box .ProceedContent .contentItem .item-title{
+  color: #ffffff;
+}
+.proceed-box .ProceedContent .contentItem .item-value{
+  color: rgba(255,255,255,.6);
+}

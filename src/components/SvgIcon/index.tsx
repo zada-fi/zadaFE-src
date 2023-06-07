@@ -18,7 +18,7 @@ requireAll(req3)
 
 
 export default function SvgIcon(props: SvgiconPropsType){
-  return ( <svg className={`svg ${props.className}`}>
+  return ( <svg className={`svg ${props.className||''}`}>
   <use xlinkHref={`#${props.iconName || 'tokenLogo'}`} />
 </svg>)
 }

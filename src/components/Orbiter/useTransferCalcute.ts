@@ -996,6 +996,20 @@ export default function useTransferCalcute(props: PropsType) {
     return 9000 + Number(toChainID) + ''
   }
 
+  const getTransferTValue = ()=> {
+    const { selectMakerConfig, transferValue, fromChainID, toChainID } =
+      props.transferDataState
+      if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+        return null
+      }
+    const rAmount = new BigNumber(transferValue)
+      .plus(new BigNumber(selectMakerConfig.tradingFee))
+      .multipliedBy(new BigNumber(10 ** selectMakerConfig.fromChain.decimals))
+    const rAmountValue = rAmount.toFixed()
+    const p_text = 9000 + Number(toChainID) + ''
+    return orbiterCore.getTAmountFromRAmount(fromChainID, rAmountValue, p_text)
+  }
+
 
   return {
     transferSpentGas,
@@ -1004,6 +1018,7 @@ export default function useTransferCalcute(props: PropsType) {
     getTokenConvertUsd,
     transferOrginGasUsd,
     realTransferAmount,
-    realTransferOPID
+    realTransferOPID,
+    getTransferTValue
   }
 }

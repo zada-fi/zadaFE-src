@@ -1,36 +1,36 @@
-// import { reactive } from '../../composition'
+import store from './../../../state'
+import { updateStoreGlobalSelectWalletConf , updateStoreGlobalSelectWalletPayload} from '../../../state/orbiter/reducer'
+export const globalSelectWalletConf = ()=>store.getState().orbiter.storeGlobalSelectWalletConf
 
-// // responsive data of the wallet information that already login
-// // change wallet will update this data
-// export const globalSelectWalletConf = reactive({
-//   walletType: '',
-//   walletPayload: {
-//     walletAddress: '',
-//     networkId: '',
-//     provider: null, // ethereum node match this wallet type
-//   },
-//   loginSuccess: false,
-// })
 
-// export const updateGlobalSelectWalletConf = (
-//   type = '',
-//   conf = {},
-//   loginSuccess = false
-// ) => {
-//   globalSelectWalletConf.walletPayload = conf
-//   globalSelectWalletConf.walletType = type
-//   globalSelectWalletConf.loginSuccess = loginSuccess
-// }
+export const updateGlobalSelectWalletConf = (
+  type = '',
+  conf = {},
+  loginSuccess = false
+) => {
+  store.dispatch(updateStoreGlobalSelectWalletConf({
+    walletPayload: conf,
+    walletType: type,
+    loginSuccess
+  }))
+  // globalSelectWalletConf.walletPayload = conf
+  // globalSelectWalletConf.walletType = type
+  // globalSelectWalletConf.loginSuccess = loginSuccess
+}
 
-// export const updateSelectWalletConfPayload = (payload) => {
-//   globalSelectWalletConf.walletPayload = {
-//     ...globalSelectWalletConf.walletPayload,
-//     ...payload,
-//   }
-// }
+export const updateSelectWalletConfPayload = (payload:any) => {
+  store.dispatch(updateStoreGlobalSelectWalletPayload(payload))
+  // globalSelectWalletConf.walletPayload = {
+  //   ...globalSelectWalletConf.walletPayload,
+  //   ...payload,
+  // }
+}
 
-// export const updateSelectWalletAddress = (newAddress) => {
-//   globalSelectWalletConf.walletPayload.walletAddress = newAddress
-// }
+export const updateSelectWalletAddress = (newAddress: string) => {
+  store.dispatch(updateStoreGlobalSelectWalletPayload({
+    walletAddress: newAddress
+  }))
+  // globalSelectWalletConf.walletPayload.walletAddress = newAddress
+}
 
-export default {}
+// export default {}

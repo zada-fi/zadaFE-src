@@ -9,7 +9,6 @@ import Row from "../Row"
 import { SUPPORTED_WALLETS } from '../../constants'
 import { injected } from '../../connectors'
 import nonceUtil from "../../utils/orbiter-core/nonce"
-// import { BigNumber } from '@ethersproject/bignumber'
 import BigNumber from 'bignumber.js'
 import { notification } from 'antd'
 import 'antd/es/notification/style/index.css'
@@ -25,7 +24,7 @@ import useLoadingData from "./useLoadingData"
 import useBalance from "./useBalance"
 import { useHistory, useLocation } from "react-router-dom"
 import { getRates, RatesType, exchangeToUsd, asyncGetExchangeToUsdRate } from '../../utils/orbiter-tool/coinbase'
-import { isWhite, chainName } from './../../utils/orbiter-tool'
+import { isWhite, chainName, getCompatibleGlobalWalletConf } from './../../utils/orbiter-tool'
 import ObSelect from "../ObSelect"
 import useGasData from "./useGasData"
 import Loader from "../Loader"
@@ -42,8 +41,9 @@ import { useDispatch } from "react-redux"
 import { updateConfirmRouteDescInfo } from "../../state/orbiter/reducer"
 import orbiterCore from "../../utils/orbiter-core"
 import TransferInfoBox from "./info"
+import walletsDispatchers from "../../utils/orbiter-tool/walletsDispatchers"
 
-
+const { walletDispatchersOnSwitchChain } = walletsDispatchers
 
 type CronConfigType = {
   cron: any,
@@ -1319,7 +1319,7 @@ export default function Transfer(props: ComPropsType) {
         fromChain.tokenAddress,
         fromChain.symbol,
         // @ts-ignore 
-        account, //compatibleGlobalWalletConf.value.walletPayload.walletAddress
+        account, //compatibleGlobalWalletConf.walletPayload.walletAddress
         getAccountStorageID
       )
       // if (toChainID === 4 || toChainID === 44) {
@@ -1360,7 +1360,7 @@ export default function Transfer(props: ComPropsType) {
       if (toChainID === '8' || toChainID === '88') {
         const imxHelper = new IMXHelper(+toChainID)
         const walletAddress = account || ''
-        //compatibleGlobalWalletConf.value.walletPayload.walletAddress
+        //compatibleGlobalWalletConf.walletPayload.walletAddress
         walletAddress && (await imxHelper.ensureUser(walletAddress, curWalletProvider))
       }
 
@@ -1398,7 +1398,7 @@ export default function Transfer(props: ComPropsType) {
         //   return
         // }
       } else {
-        let temp_networkID = (chainId)//+compatibleGlobalWalletConf.value.walletPayload.networkId 
+        let temp_networkID = (chainId)//+compatibleGlobalWalletConf.walletPayload.networkId 
         if (typeof chainId === 'undefined') {
           return
         }
@@ -1417,21 +1417,19 @@ export default function Transfer(props: ComPropsType) {
               return
             }
           } else {
-            // TODO 
-            // const matchSwitchChainDispatcher =
-            //   walletDispatchersOnSwitchChain[
-            //     compatibleGlobalWalletConf.value.walletType
-            //   ]
-            // if (matchSwitchChainDispatcher) {
-            //   const successCallback = () => this.$emit('stateChanged', '2')
-            //   matchSwitchChainDispatcher(
-            //     compatibleGlobalWalletConf.value.walletPayload.provider,
-            //     () => {
-            //       this.$emit('stateChanged', '2')
-            //     }
-            //   )
-            //   return
-            // }
+            let compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+            // @ts-ignore 
+            const matchSwitchChainDispatcher = walletDispatchersOnSwitchChain[compatibleGlobalWalletConf.walletType]
+            if (matchSwitchChainDispatcher) {
+              // const successCallback = () =>  props.onChangeState('2')
+              matchSwitchChainDispatcher(
+                compatibleGlobalWalletConf.walletPayload.provider,
+                () => {
+                  props.onChangeState('2')
+                }
+              )
+              return
+            }
           }
         }
       }
@@ -1455,11 +1453,12 @@ export default function Transfer(props: ComPropsType) {
           : (account || '')
       ).toLowerCase()
       // sendTransfer
+      console.log('orbiter transfer sendTransfer', transferValue, selectMakerConfig)
       dispatch(updateConfirmRouteDescInfo([
         {
           no: 1,
           from:
-            new BigNumber(transferValue).plus(
+            new BigNumber(transferValue||'0').plus(
               new BigNumber(selectMakerConfig.tradingFee)
             ) + (fromCurrency || ''),
           to: toAddress,

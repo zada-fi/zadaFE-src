@@ -11,13 +11,13 @@ import {
   BIT_KEEP_APP,
   COINBASE_APP, OKXWALLET, BRAVE_APP,
 } from './constants';
-// import {
-//   updateGlobalSelectWalletConf,
-//   globalSelectWalletConf,
-// } from './walletsCoreData'
-// import { toRefs } from '../../composition'
-// import { isMobileEnv } from '../env'
+import {
+  updateGlobalSelectWalletConf,
+  globalSelectWalletConf,
+} from './walletsCoreData'
 export let isBraveWallet = false;
+export const MOBILE_APP = 'mobileApp' // mobile env
+export const PC_BROWSER = 'pcBrowser' // pc browser env
 // TODO: should check by code
 // export const isWebSimulation = false
 // if u r in a mobile webview environment, return true, otherwise return false
@@ -66,7 +66,7 @@ export const withPerformInterruptWallet = (fn) => {
     // @ts-ignore 
     localStorage.setItem('localLogin', false)
     // 3. clear wallet login information saved in global responsive variable
-    // updateGlobalSelectWalletConf()
+    updateGlobalSelectWalletConf()
     // 4. if u have any else to process
     return fn(...args)
   }
@@ -107,7 +107,7 @@ export const checkEthereumConflicts = () => {
 // according to the coinbase official, we can get all the provider by accessing ethereum.providers
 export const findMatchWeb3ProviderByWalletType = (
   walletType: string,
-  walletIsInstalledInvestigator:any
+  walletIsInstalledInvestigator?:any
 ) => {
   if (!checkEthereumConflicts()) {
     // if there is no conflict, there's only one "ethereum" instance in window
@@ -136,12 +136,10 @@ export const findMatchWeb3ProviderByWalletType = (
 }
 
 // login status checker
-// export const fetchTargetWalletLoginStatus = ({ walletType }) => {
-//   const { walletType: walletTypeRef, loginSuccess: loginSuccessRef } = toRefs(
-//     globalSelectWalletConf
-//   )
-//   return walletTypeRef.value === walletType && loginSuccessRef.value === true
-// }
+export const fetchTargetWalletLoginStatus = (params: { walletType: string }) => {
+  let gwcf = globalSelectWalletConf()
+  return gwcf.walletType === params.walletType && gwcf.loginSuccess
+}
 
 
 

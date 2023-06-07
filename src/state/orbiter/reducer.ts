@@ -1,8 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { TransferDataStateType } from './../../components/Orbiter/bridge'
+import { TransferDataStateType, GlobalSelectWalletConfType, OrWeb3StateType } from './../../components/Orbiter/bridge'
 export const orbiterSlice = createSlice({
   name: 'orbiter',
   initialState: {
+    storeGlobalSelectWalletConf:<GlobalSelectWalletConfType>{
+      walletType: '',
+      walletPayload: {
+        walletAddress: '',
+        networkId: '',
+        connector: null,
+        // provider: null, // ethereum node match this wallet type
+      },
+      loginSuccess: false,
+    },
     storeTransferDataState: <TransferDataStateType>{
       fromChainID: '',
       toChainID: '',
@@ -56,10 +66,31 @@ export const orbiterSlice = createSlice({
       rinkeby: [],
       mainnet: [],
     },
+
+    lpAccountInfo: null,
+    lpApiKey: null,
+    web3State: <OrWeb3StateType>{
+      isInstallMeta: false,
+      isInjected: false,
+      web3Instance: null,
+      networkId: null,
+      coinbase: null,
+      error: null,
+      localLogin: true,
+      starkNet: {
+        starkNetAddress: '',
+        starkNetWalletName: '',
+        starkWalletIcon: '',
+        starkIsConnected: false,
+        starkChain: '',
+      },
+    },
+
+
   },
   reducers: {
     updateProceedTxID(state, action) {
-      state.proceedTXID = action.payload.txid
+      state.proceedTXID = action.payload
       state.proceedState = 1
       state.proceeding.userTransfer.localChainID = null
       state.proceeding.userTransfer.from = null
@@ -123,6 +154,66 @@ export const orbiterSlice = createSlice({
         state.zksTokenList.rinkeby = action.payload.tokenList
       }
     },
+    updateStoreGlobalSelectWalletConf(state, action){
+      // let walletType = state.storeGlobalSelectWalletConf.walletType
+      // let walletPayload = state.storeGlobalSelectWalletConf.walletPayload
+      // let loginSuccess = state.storeGlobalSelectWalletConf.loginSuccess
+      
+      state.storeGlobalSelectWalletConf = action.payload
+    },
+    updateStoreGlobalSelectWalletPayload(state, action){
+      let walletPayload = state.storeGlobalSelectWalletConf.walletPayload
+      let newWalletPayload = {
+        ...walletPayload,
+        ...action
+      }
+      state.storeGlobalSelectWalletConf.walletPayload = newWalletPayload
+    },
+    updateNetWorkId(state, action) {
+      state.web3State.networkId = action.payload
+      state.lpAccountInfo = null 
+      state.lpApiKey = null
+      // updatelpAccountInfo(null)
+      // updatelpApiKey(null)
+    },
+    updateLocalLogin(state, action) {
+      state.web3State.localLogin = action.payload
+      state.lpAccountInfo = null 
+      state.lpApiKey = null
+      // updatelpAccountInfo(null)
+      // updatelpApiKey(null)
+    },
+    updateCoinbase(state, action) {
+      let coinbase = action.payload
+      if (!action.payload || action.payload.length === 0) {
+        state.web3State.isInjected = false
+        coinbase = '0x'
+      } else {
+        state.web3State.isInjected = true
+        state.web3State.localLogin = true
+        // @ts-ignore 
+        localStorage.setItem('localLogin', true)
+      }
+      state.lpAccountInfo = null
+      state.lpApiKey = null
+      // updatelpAccountInfo(null)
+      // updatelpApiKey(null)
+      if (coinbase instanceof Array) {
+        state.web3State.coinbase = coinbase[0];
+      } else {
+        state.web3State.coinbase = coinbase;
+      }
+    }, 
+    updatelpApiKey(state, action) {
+      state.lpApiKey = action.payload
+    }, 
+    updatelpAccountInfo(state, action) {
+      state.lpAccountInfo = action.payload
+    }, 
+    updateIsInstallMeta(state,action) {
+      state.web3State.isInstallMeta = action.payload
+    }
+
   }
 
 
@@ -137,6 +228,13 @@ export const { updateZKTokenList,
    updateProceedingUserTransfer,
    updateProceedingMakerTransfer,
    updateProceedState,
-   
+   updateStoreGlobalSelectWalletConf,
+   updateStoreGlobalSelectWalletPayload,
+   updateIsInstallMeta,
+   updatelpAccountInfo,
+   updatelpApiKey,
+   updateCoinbase,
+   updateNetWorkId,
+   updateLocalLogin,
    } = orbiterSlice.actions
 export default orbiterSlice.reducer

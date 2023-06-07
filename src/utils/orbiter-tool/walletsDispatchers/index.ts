@@ -5,32 +5,32 @@
 //  * this file will export some api to connect wallet
 //  */
 
-// import pcBrowserWalletDispatchers from './pcBrowser'
-// import mobileAppWebviewWalletDispatchers from './mobileAppWebview'
-// import { PC_BROWSER, MOBILE_APP, isMobileEnv } from '../env.js'
+import pcBrowserWalletDispatchers from './pcBrowser'
+import mobileAppWebviewWalletDispatchers from './mobileAppWebview'
+import { PC_BROWSER, MOBILE_APP, isMobileEnv } from './utils'
 
 // export { globalSelectWalletConf } from './walletsCoreData'
 
-// export * from './constants'
-// export {
-//   modifyLocalLoginInfo,
-//   getCurrentLoginInfoFromLocalStorage,
-// } from './utils'
+export * from './constants'
+export {
+  modifyLocalLoginInfo,
+  getCurrentLoginInfoFromLocalStorage,
+} from './utils'
 
-// const dispatchersInEachDeviceEnv = {
-//   [PC_BROWSER]: pcBrowserWalletDispatchers,
-//   [MOBILE_APP]: mobileAppWebviewWalletDispatchers,
-// }
+const dispatchersInEachDeviceEnv = {
+  [PC_BROWSER]: pcBrowserWalletDispatchers,
+  [MOBILE_APP]: mobileAppWebviewWalletDispatchers,
+}
 
-// // provide different wallet methods according to the different user environment
-// // at last, this file will export several methods:
-// // switch chain
-// // add chain
-// // init wallet
-// // disconnect wallet
-// // login status checker
-// export default isMobileEnv()
-//   ? dispatchersInEachDeviceEnv[MOBILE_APP]
-//   : dispatchersInEachDeviceEnv[PC_BROWSER]
+// provide different wallet methods according to the different user environment
+// at last, this file will export several methods:
+// switch chain
+// add chain
+// init wallet
+// disconnect wallet
+// login status checker
+export default isMobileEnv()
+  ? dispatchersInEachDeviceEnv[MOBILE_APP]
+  : dispatchersInEachDeviceEnv[PC_BROWSER]
 
-export default {}
+// export default {}

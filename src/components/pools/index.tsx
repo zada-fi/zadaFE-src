@@ -83,7 +83,7 @@ export default function AllPools() {
     }
     setIsLoading(true)
     try {
-      let url = (`http://8.218.16.29:8088/get_all_pools?pg_no=${encodeURIComponent(1)}`)
+      let url = (`${process.env.REACT_APP_ANALYTICS}/get_all_pools?pg_no=${encodeURIComponent(1)}`)
       let response = await fetch(url)
       let resData = await response.json()
       console.log('get all pools =', response, 'resData=', resData)

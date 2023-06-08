@@ -34,10 +34,13 @@ export default function SwDatetimeRangePicker(props: {
   };
   return (<div style={{display:"flex",flexDirection:"row", alignItems:"center"}}>
     <SubTitleDiv>{props.title}</SubTitleDiv>
-    <RangePicker
+    {
+      false && <RangePicker
       showTime={{ format: timeFormatStr }}
       format={dateFormatStr}
       onOk={onOk}
     />
+    }
+    
   </div>)
 }

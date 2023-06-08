@@ -85,7 +85,8 @@
     "svgo-loader": "^4.0.0",
     "typescript": "^3.8.3",
     "zdfnswap-sdk": "3.0.7",
-    "zksync": "0.11.3"
+    "zksync": "0.11.3",
+    "zksync-web3": "^0.14.3"
   },
   "resolutions": {
     "@walletconnect/web3-provider": "1.1.1-alpha.0"

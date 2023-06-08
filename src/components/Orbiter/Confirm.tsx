@@ -40,6 +40,8 @@ import { Coin_ABI } from "../../utils/orbiter-constant/contract"
 import orbiterCore from "../../utils/orbiter-core"
 import { DydxHelper } from "../../utils/orbiter-tool/dydx/dydx_helper"
 import * as zksync from 'zksync'
+import * as zksync2 from 'zksync-web3'
+
 import otherConfig from "../../utils/orbiter-config/other"
 import { getZkSyncProvider } from "../../utils/orbiter-tool/zkysnc_helper"
 import { providers } from 'ethers'
@@ -57,6 +59,7 @@ const {
 
 export default function Confirm(props: ComPropsType) {
   let zksTokenList = useSelector((state: AppState) => state.orbiter.zksTokenList)
+  let web3State = useSelector((state: AppState)=> state.orbiter.web3State)
   // @ts-ignore 
   let [transferLoading, setTransferLoading] = useState<boolean>(false)
   // @ts-ignore 
@@ -515,7 +518,6 @@ export default function Confirm(props: ComPropsType) {
 
 
 
-    // TODO ...
     setTransferLoading(true)
 
     if (+fromChainID === 3 || +fromChainID === 33) {
@@ -659,23 +661,22 @@ export default function Confirm(props: ComPropsType) {
       setTransferLoading(false)
       return
     }
-    // TODO
-    // const compatibleGlobalWalletConf = getCompatibleGlobalWalletConf()
-    // const provider = new zksync2.Web3Provider(compatibleGlobalWalletConf.walletPayload.provider);
-    // const signer = provider.getSigner();
-    // const amount = (new BigNumber(tValue.tAmount).dividedBy(10 ** 18)).toString();
-    // const transferResult = await signer.transfer({
-    //   to: selectMakerConfig.recipient,
-    //   amount: ethers.utils.parseEther(amount),
-    // });
-    // if (transferResult.hash) {
-    //   onTransferSucceed(
-    //     web3State.coinbase,
-    //     tValue.tAmount,
-    //     fromChainID,
-    //     transferResult.hash
-    //   );
-    // }
+    const compatibleGlobalWalletConf = await getCompatibleGlobalWalletConf()
+    const provider = new zksync2.Web3Provider(compatibleGlobalWalletConf.walletPayload.provider);
+    const signer = provider.getSigner();
+    const amount = (new BigNumber(tValue.tAmount).dividedBy(10 ** 18)).toString();
+    const transferResult = await signer.transfer({
+      to: selectMakerConfig.recipient,
+      amount: ethers.utils.parseEther(amount),
+    });
+    if (transferResult.hash) {
+      onTransferSucceed(
+        account || web3State.coinbase,
+        tValue.tAmount,
+        fromChainID,
+        transferResult.hash
+      );
+    }
 
     setTransferLoading(false)
   }

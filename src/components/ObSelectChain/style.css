@@ -15,7 +15,8 @@
   height: calc( 100% - 8.4rem - var(--top-nav-height) - var(--bottom-nav-height));
   border-radius: 20px;
   padding: 20px 0;
-  background: #2C2F36;
+  /* background: #2C2F36; */
+  background-color: #3f415b;
 }
 
 .obSelectChainBody .selectChainContent {

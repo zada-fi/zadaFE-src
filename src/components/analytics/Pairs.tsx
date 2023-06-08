@@ -3,9 +3,11 @@ import SwDatetimeRangePicker from "../SwDatetimeRangePicker";
 import moment from 'moment'
 import { shortenAddress } from '../../utils'
 import { ColumnProps } from 'antd/es/table/interface'
-import { Table } from "antd";
+import { Table, Pagination } from "antd";
 import 'antd/es/table/style/index.css'
 import 'antd/es/dropdown/style/index.css'
+import 'antd/es/pagination/style/index.css'
+import './Pair.css'
 import FixedLoader from "../FixedLoader";
 
 
@@ -49,7 +51,7 @@ export default function Pairs(props: {
 }) {
   const baseConfig: BaseConfigType = {
     pairs: {
-      netUrl: 'http://8.218.16.29:8088/get_pair_statistic_info',
+      netUrl: `${process.env.REACT_APP_ANALYTICS}/get_pair_statistic_info`,
       columns: [
         {
           title: 'Name',
@@ -74,7 +76,7 @@ export default function Pairs(props: {
       ]
     },
     transactions: {
-      netUrl: 'http://8.218.16.29:8088/get_all_transactions',
+      netUrl: `${process.env.REACT_APP_ANALYTICS}/get_all_transactions`,
       columns: [
         {
           title: 'All',
@@ -96,7 +98,10 @@ export default function Pairs(props: {
               text: 'swap',
               value: 'swap',
             }
-          ]
+          ],
+          onFilter(value, record) {
+            return value === record.op_type
+          },
         },
         {
           title: 'Token0',
@@ -128,6 +133,8 @@ export default function Pairs(props: {
   const start = moment('2022/09/18')
   let [dateValue, setDateValue] = useState<Array<moment.Moment>>([start, now]) // eslint-disable
   let [tableDatas, setTableDatas] = useState<Array<DataItem>>([])
+  let [curPage, setCurPage] = useState<number>(1)
+  let [total, setTotal] = useState<number>(0)
 
   let [isFinishData, setIsFinishData] = useState<boolean>(false)
   let [isLoading, setIsLoading] = useState<boolean>(false)
@@ -155,18 +162,20 @@ export default function Pairs(props: {
     }
   }
 
-  const getTableData = async () => {
+  const getTableData = async (page = curPage) => {
     try {
 
       let netUrl = baseConfig[props.skey as keyof BaseConfigType].netUrl
       // console.log('getTableData netUrl =', netUrl)
-      let url = (`${netUrl}?pg_no=${encodeURIComponent(1)}`)
+      let url = (`${netUrl}?pg_no=${encodeURIComponent(page)}`)
       let response = await fetch(url)
       let resData = await response.json()
       console.log('get tableData res=', props.skey, 'resData=', resData.data)
       let tempTableList: Array<DataItem> = []
       if (props.skey === 'pairs') {
         tempTableList = resData.data && resData.data.length ? resData.data[1] : []
+        let temp_total = resData.data && resData.data.length ? resData.data[0]: tempTableList.length
+        setTotal(temp_total)
       } else {
         tempTableList = resData.data.data && resData.data.data.length ? resData.data.data[1] : []
         tempTableList = tempTableList.reduce((res: DataItem[], item) => {
@@ -180,6 +189,8 @@ export default function Pairs(props: {
           })
           return res
         }, [])
+        let temp_total = resData.data.page_count 
+        setTotal(temp_total)
       }
       console.log('get tableData resultData---', props.skey, tempTableList)
       setTableDatas(tempTableList)
@@ -188,16 +199,22 @@ export default function Pairs(props: {
       console.log('oh there is an error here', error)
     }
   }
-
+  let onChangePage = (page:number, pageSize?:number)=>{
+    setCurPage(page)
+    getTableData(page)
+  }
   const TableComp = () => {
     let nowColumns: ColumnType[] = baseConfig[props.skey as keyof BaseConfigType].columns
+    
     return (
       <FixedLoader isLoading={isLoading}>
         <Table
-          pagination={{ position: 'bottom' }}
+          pagination={false}
+          scroll={{y:500}}
           columns={nowColumns}
           dataSource={tableDatas}
         />
+        <Pagination total={total} current={curPage} onChange={onChangePage}/>
       </FixedLoader>
     )
   }

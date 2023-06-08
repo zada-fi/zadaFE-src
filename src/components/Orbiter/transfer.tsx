@@ -42,6 +42,7 @@ import { updateConfirmRouteDescInfo } from "../../state/orbiter/reducer"
 import orbiterCore from "../../utils/orbiter-core"
 import TransferInfoBox from "./info"
 import walletsDispatchers from "../../utils/orbiter-tool/walletsDispatchers"
+import { DataItem } from "../ObSelect/a";
 
 const { walletDispatchersOnSwitchChain } = walletsDispatchers
 
@@ -169,7 +170,7 @@ export default function Transfer(props: ComPropsType) {
     userMinPrice,
     makerMaxBalance,
     walletIsLogin,
-    refreshUserBalance } = useBalance({
+     } = useBalance({
       transferDataState,
       updateLoadingData,
       getTransferGasLimit,
@@ -510,7 +511,7 @@ export default function Transfer(props: ComPropsType) {
       text: 'SEND',
       disable: true
     };
-    console.log('sendBtnInfo useMemo=', selectMakerConfig)
+    // console.log('sendBtnInfo useMemo=', selectMakerConfig)
     const { fromChain } = selectMakerConfig;
 
     const availableDigit = fromChain && fromChain.decimals === 18 ? 6 : 2;
@@ -524,7 +525,7 @@ export default function Transfer(props: ComPropsType) {
     let makerMax = new BigNumber(fromChain.maxPrice);
     let makerMin = new BigNumber(userMinPrice);
     let temp_transferValue = new BigNumber(transferValue || 0);
-
+    console.log('sendBtnInfo usememo', userMax, walletIsLogin)
     if (walletIsLogin) {
       const info = {
         text: 'SEND',
@@ -597,7 +598,20 @@ export default function Transfer(props: ComPropsType) {
       }
     }
 
-  }, [fromBalance,
+  }, [
+    fromBalance,
+    userMinPrice,
+    walletIsLogin,
+    transferValue,
+    userMaxPrice,
+    toValue,
+    makerMaxBalance,
+    isShowUnreachMinInfo,
+    isShowMax,
+    isCrossAddress,
+    isLoopring,
+    crossAddressReceipt,
+    isErrorAddress,
     transferDataState.selectMakerConfig,
     transferDataState.fromCurrency,
     transferDataState.toCurrency
@@ -629,9 +643,6 @@ export default function Transfer(props: ComPropsType) {
   transferDataState.fromChainID, transferDataState.fromCurrency])
 
 
-  useEffect(() => {
-    updateTransferInfo()
-  }, [isWhiteWallet, isNewVersion])
 
   const queryParams = useMemo(() => {
     let query = getQuery()
@@ -947,6 +958,13 @@ export default function Transfer(props: ComPropsType) {
       updateInputData(toCurrency || '', 'from')
     }
 
+    let arr = (process.env.REACT_APP_TO_ID_FIX||'').split(',').filter(item=>item)
+    toChainIdList = toChainIdList.filter((item)=> arr.indexOf(item+'')>-1)
+
+    console.log('fromChainIdList=', fromChainIdList,'----toChainIdList=', toChainIdList)
+
+
+
     if (ctData.fromChainIdList !== fromChainIdList) {
       updateChainAndTokenData(fromChainIdList, 'fromChainIdList')
     }
@@ -987,7 +1005,7 @@ export default function Transfer(props: ComPropsType) {
         });
     }
 
-    await refreshUserBalance()
+    // await refreshUserBalance()
     console.log('updateRoutes Before', transferDataState)
     // updateRoutes(oldFromChainID, oldToChainID);
   }
@@ -1544,8 +1562,10 @@ export default function Transfer(props: ComPropsType) {
   }, [isInit])
 
   const fromTransferPlaceholder = useMemo(() => {
+    console.log('fromTransferPlaceholder ---', userMinPrice, userMaxPrice, fromBalance)
     return userMinPrice
-      ? new BigNumber(userMinPrice).comparedTo(new BigNumber(fromBalance)) === 1 || new BigNumber(userMinPrice).comparedTo(new BigNumber(userMaxPrice)) > -1
+      ? new BigNumber(userMinPrice).comparedTo(new BigNumber(fromBalance)) === 1 
+      || new BigNumber(userMinPrice).comparedTo(new BigNumber(userMaxPrice)) > -1
         ? `at least ${userMinPrice}`
         : `${userMinPrice}~${userMaxPrice}`
       : '0'
@@ -1556,9 +1576,19 @@ export default function Transfer(props: ComPropsType) {
     const { fromChainID, toChainID, fromCurrency, toCurrency } = transferDataState
     updateTransferDataState(toChainID, 'fromChainID')
     updateTransferDataState(fromChainID, 'toChainID')
+    
     updateInputData(toCurrency || '', 'from')
     updateInputData(fromCurrency || '', 'to')
   }
+
+  useEffect(()=>{
+    updateTransferInfo()
+  },[transferDataState.fromChainID, 
+    transferDataState.toChainID,
+  transferDataState.fromCurrency, 
+  transferDataState.toCurrency,
+  isWhiteWallet,
+  isNewVersion])
 
   const onChangeFromChain = (item: any) => {
     console.log('onChangeFromChain--', item)
@@ -1572,6 +1602,15 @@ export default function Transfer(props: ComPropsType) {
       updateTransferDataState(item.localID + '', 'toChainID')
     }
   }
+  const onChangeSelectToTokenHandler = (item: DataItem)=>{
+    onChangeSelectToToken(item)
+    updateTransferDataState(item.value, 'toCurrency')
+  }
+  const onChangeSelectFromTokenHander = (item: DataItem)=>{
+    onChangeSelectFromToken(item)
+    updateTransferDataState(item.value, 'fromCurrency')
+    updateInputData('','transferValue')
+  }
   return (<div className="transfer-box">
     <Row>
       <Text fontSize={20} fontWeight={500}>Token</Text>
@@ -1580,7 +1619,7 @@ export default function Transfer(props: ComPropsType) {
           <ObSelect
             datas={ctData.fromTokenList}
             value={selectFromToken}
-            onChange={onChangeSelectFromToken} />
+            onChange={onChangeSelectFromTokenHander} />
         </div>)
       }
 
@@ -1625,7 +1664,7 @@ export default function Transfer(props: ComPropsType) {
               <ObSelect
                 datas={ctData.fromTokenList}
                 value={selectFromToken}
-                onChange={onChangeSelectFromToken} />
+                onChange={onChangeSelectFromTokenHander} />
             </div>)
           }
         </div>
@@ -1640,9 +1679,9 @@ export default function Transfer(props: ComPropsType) {
         />
       </span>
     </AutoRow>} */}
-
+    {isShowExchangeIcon?'':''}
     {
-      isShowExchangeIcon && (<AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
+      false && (<AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
         <ArrowWrapper clickable onClick={onChangeTransfer}>
           <ArrowDown
             size="16"
@@ -1682,12 +1721,14 @@ export default function Transfer(props: ComPropsType) {
         }
       </div>
       <div className="bottomItem">
-        <div className="left" onClick={() => updateInputData(true, 'isShowToSel')}>
+        <div className="left" onClick={() => ctData.toChainIdList.length && updateInputData(true, 'isShowToSel')}>
           <StyledSvgIcon
             iconName={toChainObj.icon}
           />
           <span>{toChainObj.name}</span>
-          <StyledDropDown selected={true}></StyledDropDown>
+         { 
+          !!ctData.toChainIdList.length && <StyledDropDown selected={true}></StyledDropDown>
+         }
         </div>
         <div
           style={{
@@ -1701,7 +1742,7 @@ export default function Transfer(props: ComPropsType) {
               <ObSelect
                 datas={ctData.toTokenList}
                 value={selectToToken}
-                onChange={onChangeSelectToToken} />
+                onChange={onChangeSelectToTokenHandler} />
             </div>)
           }
           <QuestionHelper text={toValueToolTip} />
@@ -1778,7 +1819,9 @@ export default function Transfer(props: ComPropsType) {
       </div>)
     }
 
-    <div style={{height:'30px'}}></div>
+    <div style={{height:'30px'}}>
+      {/* {JSON.stringify(sendBtnInfo)}-{transferValue}-{userMaxPrice} */}
+    </div>
 
     <SubmitBtn
       onClick={sendTransfer}
@@ -1795,7 +1838,7 @@ export default function Transfer(props: ComPropsType) {
     <TransferInfoBox
       isCurrentAddress={isCrossAddress}
       isErrorAddres={isErrorAddress}
-      isShowUnreachMinInfo={isShowExchangeIcon}
+      isShowUnreachMinInfo={isShowUnreachMinInfo}
       isShowMax={isShowMax}
       showSaveGas={showSaveGas}
       maxPrice={maxPrice}

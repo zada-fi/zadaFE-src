@@ -35,7 +35,7 @@ export type MakerConfigType = {
     gasFee: number,
   },
 }
-const isProd = () => process.env.NODE_ENV === 'production'
+const isProd = () => process.env.REACT_APP_ORBITER_ENV === 'production'
 
 const getChainConfig = () => {
   const chain = isProd() ? chainMain : chainTest;

@@ -10,14 +10,14 @@ export default function Analytics(){
     {
       idName:'swap-chart-tvl',
       title:'TVL',
-      netDataUrl:'http://8.218.16.29:8088/get_total_tvl_by_day',
+      netDataUrl:`${process.env.REACT_APP_ANALYTICS}/get_total_tvl_by_day`,
       xKey:'tvl_date',
       yKey:'tvl_value',
     },
     {
       idName:'swap-chart-volume',
       title:'Volume',
-      netDataUrl:'http://8.218.16.29:8088/get_total_volume_by_day',
+      netDataUrl:`${process.env.REACT_APP_ANALYTICS}/get_total_volume_by_day`,
       xKey:'volume_date',
       yKey:'volume_value',
     }
@@ -34,6 +34,7 @@ export default function Analytics(){
         }
       </div>
       <Pairs title="Pairs" key="pairs" skey="pairs" ></Pairs>
+      <div style={{height: '30px'}}></div>
       <Pairs title="Transactions" key="transactions" skey="transactions"  ></Pairs> 
     </AppFlowBody>
     </>

@@ -171,7 +171,12 @@ export function requestWeb3(chainId:number, method:string, args?: Web3ParamsType
         }
         try {
           const web3 = new Web3(url)
-          result = await web3.eth[method as keyof Eth ](args)
+          console.log('requestWeb3', args, method, url )
+          if(typeof args === 'undefined'){
+            result = await web3.eth[method as keyof Eth ]()
+          }else{
+            result = await web3.eth[method as keyof Eth ](args)
+          }
           setStableRpc(chainId, url, 'success')
           resolve(result)
           break

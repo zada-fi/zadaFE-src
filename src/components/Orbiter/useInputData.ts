@@ -78,7 +78,7 @@ export default function useInputData(props: PropsType) {
       }
       setToValue(res)
     }
-  }, [props.transferDataState, props.rates])
+  }, [props.transferDataState, props.rates, transferValue])
   const updateInputData = (value: string|boolean, key: string) => {
     switch (key) {
       case 'from':

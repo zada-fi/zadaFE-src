@@ -24,7 +24,9 @@ export default function useBalance(props: PropsType) {
   let [userMaxPrice, setUserMaxPrice] = useState('0')
   let userMinPrice = useMemo(() => {
     return props.transferDataState.selectMakerConfig?.fromChain?.minPrice || 0
-  }, [props.transferDataState.fromChainID, props.transferDataState.fromCurrency])
+  }, [props.transferDataState.fromChainID, 
+    props.transferDataState.fromCurrency,
+    props.transferDataState.selectMakerConfig])
   let [makerMaxBalance, setMakerMaxBalance] = useState<number | undefined>()
   useEffect(() => {
     let active = true
@@ -102,6 +104,7 @@ export default function useBalance(props: PropsType) {
   }, [active, contextNetwork])
 
   const updateUserMaxPrice = async () => {
+    console.log('updateUserMaxPrice--enter-', props.transferDataState.selectMakerConfig, fromBalance)
     const { selectMakerConfig } = props.transferDataState;
     if (!selectMakerConfig||!Object.keys(selectMakerConfig).length) return '0';
     const { fromChain, toChain } = selectMakerConfig;
@@ -146,17 +149,24 @@ export default function useBalance(props: PropsType) {
       max = max.decimalPlaces(5, BigNumber.ROUND_DOWN);
     }
     // this.userMaxPrice = max.toString();
+    console.log('updateUserMaxPrice---', max.toString(), max.toNumber(), props.transferDataState, 
+    fromBalance, transferGasFee)
     setUserMaxPrice(max.toString())
   }
 
+  useEffect(()=>{
+    updateUserMaxPrice(); 
+  },[props.transferDataState.selectMakerConfig, fromBalance, walletIsLogin])
+
   const refreshUserBalance = async () => {
+    console.log('refreshUserBalance---', props.transferDataState)
     
+    props.updateLoadingData(true, 'fromBalanceLoading')
+    props.updateLoadingData(true, 'toBalanceLoading')
     // @ts-ignore 
     const { fromChainID, toChainID, selectMakerConfig } = props.transferDataState;
     if (!selectMakerConfig || !Object.keys(selectMakerConfig).length) return;
     const { fromChain, toChain } = selectMakerConfig;
-    props.updateLoadingData(true, 'fromBalanceLoading')
-    props.updateLoadingData(true, 'toBalanceLoading')
 
     let address = account //compatibleGlobalWalletConf.value.walletPayload.walletAddress;
     // if (fromChainID === 4 || fromChainID === 44) {
@@ -169,7 +179,7 @@ export default function useBalance(props: PropsType) {
         // self.addBalance(fromChain.id, fromChain.symbol, balance, address);
         // self.fromBalance = balance;
         setFromBalance(balance)
-        await updateUserMaxPrice(); 
+        
       }catch(error){
         console.warn(error);
       }finally{
@@ -202,6 +212,12 @@ export default function useBalance(props: PropsType) {
       props.updateLoadingData(false, 'toBalanceLoading')
     }
   }
+
+  useEffect(()=>{
+    refreshUserBalance()
+  },[props.transferDataState.fromChainID, props.transferDataState.toChainID,
+  props.transferDataState.selectMakerConfig])
+
   return {
     fromBalance,
     toBalance,

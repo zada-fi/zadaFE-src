@@ -133,13 +133,13 @@ export default function useSwEChart(props:SwapChartProps){
         },
         yAxis:{
           position: 'right',
-          // type: 'log',
           splitLine: {
             show: false
           },
           // min: yAxisData[0],
           // max: yAxisData[yAxisData.length - 1],
           axisLabel:{
+            align: 'right',
             formatter: function(value: number|string){
               return formateChartValue(value)
             }

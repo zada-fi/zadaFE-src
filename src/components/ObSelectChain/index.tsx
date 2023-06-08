@@ -41,6 +41,9 @@ export default function ObSelectChain(props: ObSelChainPropsType) {
         chain: chainName(item),
         localID: item,
       }
+      if([4,44,9,99].indexOf(+item)> -1){
+        return res
+      }
       res.push(chainData)
       return res
     }, [])

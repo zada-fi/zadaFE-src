@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { ButtonPrimary } from '../Button'
 import { Text } from 'rebass'
 import { ColumnProps } from 'antd/es/table/interface'
-import { Table } from "antd";
+import { Table, Pagination } from "antd";
 import 'antd/es/table/style/index.css'
 import 'antd/es/spin/style/index.css'
 // import 'antd/dist/antd.css'
@@ -40,6 +40,8 @@ export default function AllPools() {
   let [tableDatas, setTableDatas] = useState<Array<PoolPairItemType>>([])
   let [isLoading, setIsLoading] = useState(false)
   let [isFinish, setIsFinish] = useState(false)
+  let [curPage, setCurPage] = useState<number>(1)
+  let [total, setTotal] = useState<number>(0)
 
   let columnsConfig = useMemo<ColumnType[]>(() => ([
     {
@@ -76,20 +78,20 @@ export default function AllPools() {
 
     }
   ]), [])
-  const getTableData = async () => {
+  const getTableData = async (page = curPage) => {
     console.log('getTableData---')
     if (isLoading) {
       return
     }
     setIsLoading(true)
     try {
-      let url = (`${process.env.REACT_APP_ANALYTICS}/get_all_pools?pg_no=${encodeURIComponent(1)}`)
+      let url = (`${process.env.REACT_APP_ANALYTICS}/get_all_pools?pg_no=${encodeURIComponent(page)}`)
       let response = await fetch(url)
       let resData = await response.json()
       console.log('get all pools =', response, 'resData=', resData)
       let originList = []
       if (resData.code === 'Ok') {
-        originList = resData.data[1]
+        originList = resData.data[1] || []
       }
 
       let tempList = originList.reduce((result: Array<PoolPairItemType>, item: any) => {
@@ -114,6 +116,8 @@ export default function AllPools() {
         return result
       }, [])
       setTableDatas(tempList)
+      let temp_total = resData.data && resData.data.length ? resData.data[0]: tempList.length
+      setTotal(temp_total)
       // setTableDatas([])
     } catch (error) {
       console.log('oh there is an error here', error)
@@ -132,18 +136,25 @@ export default function AllPools() {
     }
   }, [isFinish])
 
+  let onChangePage = (page:number, pageSize?:number)=>{
+    setCurPage(page)
+    getTableData(page)
+  }
+
   // let currencyx = useCurrency('0xa1ea0b2354f5a344110af2b6ad68e75545009a03')
   // console.log('currecyx=', currencyx)
   // let allToken = useAllTokens()
   // console.log('allToken=', allToken)
 
-  return (<Table
+  return (<><Table
     scroll={{ x: 500, y: 800 }}
     loading={isLoading}
     columns={columnsConfig}
     pagination={false}
     dataSource={tableDatas}>
-  </Table>)
+  </Table>
+  <Pagination total={total} current={curPage} onChange={onChangePage}/>
+  </>)
 
 
 }

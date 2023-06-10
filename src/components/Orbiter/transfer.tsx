@@ -525,7 +525,7 @@ export default function Transfer(props: ComPropsType) {
     let makerMax = new BigNumber(fromChain.maxPrice);
     let makerMin = new BigNumber(userMinPrice);
     let temp_transferValue = new BigNumber(transferValue || 0);
-    console.log('sendBtnInfo usememo', userMax, walletIsLogin)
+    console.log('sendBtnInfo usememo', userMax, walletIsLogin, temp_transferValue.toString(), makerMin.toString())
     if (walletIsLogin) {
       const info = {
         text: 'SEND',
@@ -634,13 +634,15 @@ export default function Transfer(props: ComPropsType) {
   // @ts-ignore
   const isShowExchangeIcon = useMemo(() => {
     let makerConfigs = isNewVersion ? config.makerConfigs : config.v1MakerConfigs // not new version
-    return !!makerConfigs.find(item =>
-      item.fromChain.id + '' === transferDataState.toChainID &&
+    let tempRes = !!makerConfigs.find(item =>
+      item.fromChain.id + '' === transferDataState.toChainID+'' &&
       item.fromChain.symbol === transferDataState.toCurrency &&
-      item.toChain.id + '' === transferDataState.fromChainID &&
+      item.toChain.id + '' === transferDataState.fromChainID+'' &&
       item.toChain.symbol === transferDataState.fromCurrency);
+    console.log('isShowExchangeIcon---', tempRes, transferDataState, makerConfigs)
+    return !!tempRes
   }, [transferDataState.toChainID, transferDataState.toCurrency,
-  transferDataState.fromChainID, transferDataState.fromCurrency])
+  transferDataState.fromChainID, transferDataState.fromCurrency, isNewVersion])
 
 
 
@@ -746,7 +748,7 @@ export default function Transfer(props: ComPropsType) {
       sources,
       dests,
     };
-  }, [])
+  }, [location.search])
   const refererUpper = useMemo(() => {
     const href = window.location.href
     const match = href.match(/referer=(\w*)/i)
@@ -845,18 +847,16 @@ export default function Transfer(props: ComPropsType) {
       }
       setIsCrossAddress(false)
     }
+    console.log('updateTransferInfo---queryParams', queryParams, transferDataState)
     const { tokens, source, dest } = queryParams;
     const fromTokens = tokens;
     const makerConfigs = isNewVersion ? config.makerConfigs : config.v1MakerConfigs
-    const fromChainIdList: number[] = Array.from(new Set(
+    let fromChainIdList: number[] = Array.from(new Set(
       makerConfigs.map(item => item.fromChain.id)
     )).sort(function (a, b) {
       return a - b;
     });
 
-    fromChainID = fromChainID || (source && fromChainIdList.find(item => item === +source) ?
-      (+source) + '' :
-      fromChainIdList[0] + '');
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -873,21 +873,46 @@ export default function Transfer(props: ComPropsType) {
       return a - b;
     });
 
+
+    fromChainID = fromChainID || (source && fromChainIdList.find(item => item === +source) ?
+      (+source) + '' :
+      fromChainIdList[0] + '');
+    
+
+    let arr = (process.env.REACT_APP_TO_ID_FIX||'').split(',').filter(item=>item)
+    if(arr.indexOf(fromChainID+'')>-1){
+      fromChainIdList = fromChainIdList.filter((item)=> arr.indexOf(item+'')>-1)
+    }else {
+      toChainIdList = toChainIdList.filter((item)=> arr.indexOf(item+'')>-1)
+    }
+    
+
+    console.log('fromChainIdList=', fromChainIdList,'----toChainIdList=', toChainIdList)
+
+
     toChainID = toChainID || (dest && toChainIdList.find(item => item + '' === '' + dest) ?
       (dest + '') :
       (toChainIdList[0] + ''));
     if (toChainIdList.indexOf(+toChainID) === -1) {
       toChainID = toChainIdList.indexOf(dest) > -1 ?
-        dest :
-        toChainIdList[0];
+        dest+'' :
+        toChainIdList[0]+'';
     }
 
+    console.log('toChainIdList---', toChainIdList)
     // Reverse path
     if (makerConfigs.find(item => item.toChain.id + '' === '' + fromChainID) && makerConfigs.find(item => item.fromChain.id + '' === '' + toChainID)) {
       toChainIdList.push(+fromChainID);
       toChainIdList = toChainIdList.sort(function (a, b) {
         return a - b;
       });
+    }
+    console.log('toChainIdList-after--', toChainIdList)
+    let tarr = (process.env.REACT_APP_TO_ID_FIX||'').split(',').filter(item=>item)
+    if(tarr.indexOf(fromChainID+'')>-1){
+      fromChainIdList = fromChainIdList.filter((item)=> arr.indexOf(item+'')>-1)
+    }else {
+      toChainIdList = toChainIdList.filter((item)=> arr.indexOf(item+'')>-1)
     }
 
     const selectedFromChainIdIndex: number = fromChainIdList.findIndex(item => item + '' === fromChainID + '');
@@ -899,6 +924,7 @@ export default function Transfer(props: ComPropsType) {
     if (selectedToChainIdIndex !== -1) {
       toChainIdList.splice(selectedToChainIdIndex, 1);
     }
+    
 
     let makerConfigList: any[] = makerConfigs.filter(item => item.fromChain.id + '' === fromChainID + '' && item.toChain.id + '' === toChainID + '');
     if (fromTokens.length) {
@@ -945,7 +971,7 @@ export default function Transfer(props: ComPropsType) {
 
     if (toTokenList.length && !toTokenList.find((item) => item.token === toCurrency)) {
       toCurrency = toTokenList[0].token;
-      if (oldToChainID !== toChainID) {
+      if (oldToChainID+'' !== toChainID+'') {
         updateInputData(toTokenList[0].token, 'to')
       }
       //this.selectToToken = toTokenList[0].token;
@@ -958,11 +984,11 @@ export default function Transfer(props: ComPropsType) {
       updateInputData(toCurrency || '', 'from')
     }
 
-    let arr = (process.env.REACT_APP_TO_ID_FIX||'').split(',').filter(item=>item)
-    toChainIdList = toChainIdList.filter((item)=> arr.indexOf(item+'')>-1)
+    
 
-    console.log('fromChainIdList=', fromChainIdList,'----toChainIdList=', toChainIdList)
+    console.log('fromChainIdList= after ---', fromChainIdList,'----toChainIdList=', toChainIdList)
 
+ 
 
 
     if (ctData.fromChainIdList !== fromChainIdList) {
@@ -986,10 +1012,10 @@ export default function Transfer(props: ComPropsType) {
     updateTransferDataState(toCurrency, 'toCurrency');
 
     specialProcessing(oldFromChainID, oldToChainID)
-    if (fromChainID !== oldFromChainID || toChainID !== oldToChainID) {
+    if (fromChainID+'' !== oldFromChainID+'' || toChainID+'' !== oldToChainID+'') {
       updateOriginGasCost();
     }
-    if (fromChainID !== oldFromChainID) {
+    if (fromChainID+'' !== oldFromChainID+'') {
       // gasCostLoading = true;
       setGasCostLoading(true)
       // transferCalculate.
@@ -1035,7 +1061,7 @@ export default function Transfer(props: ComPropsType) {
     if (Object.keys(changeQuery).length) {
       const newQuery = JSON.parse(JSON.stringify(query));
       Object.assign(newQuery, changeQuery);
-      let searchStr = '?' + objParseQuery(newQuery)
+      let searchStr = '?t=1' + objParseQuery(newQuery)
       console.log('searchStr=', searchStr)
       history.push({
         pathname: path,
@@ -1070,7 +1096,16 @@ export default function Transfer(props: ComPropsType) {
   }
 
 
-
+  useEffect(()=>{
+    refreshGasSavingMin()
+  },[originGasCost,
+     gasTradingTotal,
+     exchangeToUsdPrice, 
+     transferDataState.gasFee,
+     transferDataState.ethPrice,
+     transferDataState.selectMakerConfig,
+     transferDataState.fromChainID
+    ])
   const refreshGasSavingMin = () => {
     const temp_gasCost = gasCost();
     let savingValue = (new BigNumber(originGasCost).minus(
@@ -1084,16 +1119,24 @@ export default function Transfer(props: ComPropsType) {
     let savingTokenName = '$';
     updateGasData(savingTokenName + savingValue.toFixed(2).toString(), 'gasSavingMin')
   }
+  useEffect(()=>{
+    refreshGasTradingTotal()
+  },[transferDataState.selectMakerConfig, orbiterTradingFee])
   const refreshGasTradingTotal = () => {
     const { selectMakerConfig } = transferDataState;
-    if (!selectMakerConfig) return "0.000000";
+    if (!selectMakerConfig|| Object.keys(selectMakerConfig).length === 0) return "0.000000";
     let gasFee = new BigNumber(selectMakerConfig.tradingFee);
     updateGasData(gasFee.plus(orbiterTradingFee).toFixed(6), 'gasTradingTotal')
   }
 
+
+  useEffect(()=>{
+    refreshOrbiterTradingFee()
+  },[transferDataState.selectMakerConfig, transferValue ])
   const refreshOrbiterTradingFee = () => {
+    console.log('refreshOrbiterTradingFee--', transferDataState)
     const { selectMakerConfig } = transferDataState;
-    if (!selectMakerConfig) return;
+    if (!selectMakerConfig|| Object.keys(selectMakerConfig).length === 0) return;
     const { fromChain } = selectMakerConfig;
     let tradingFee = new BigNumber(
       transferValue ? transferValue : 0
@@ -1103,6 +1146,15 @@ export default function Transfer(props: ComPropsType) {
     let digit = orbiterCore.getDigitByPrecision(fromChain.decimals);
     setOrbiterTradingFee(tradingFee.decimalPlaces(digit, BigNumber.ROUND_UP).toNumber().toString())
   }
+
+  useEffect(()=>{
+    refreshGasSavingMax()
+  },[
+    originGasCost,
+    gasTradingTotal,
+    exchangeToUsdPrice
+  ])
+
   const refreshGasSavingMax = () => {
     let savingValue = (new BigNumber(originGasCost).minus(new BigNumber(gasTradingTotal).multipliedBy(exchangeToUsdPrice))).toNumber() || 0;
     if (savingValue < 0) {
@@ -1112,8 +1164,20 @@ export default function Transfer(props: ComPropsType) {
     updateGasData(savingTokenName + savingValue.toFixed(2).toString(), 'gasSavingMax');
   }
 
+  useEffect(()=>{
+    refreshGasFeeToolTip()
+  },[transferDataState.selectMakerConfig,
+  originGasCost,
+  orbiterTradingFee,
+  exchangeToUsdPrice,
+  gasTradingTotal
+])
+
   const refreshGasFeeToolTip = () => {
     const { selectMakerConfig } = transferDataState;
+    if(!selectMakerConfig || Object.keys(selectMakerConfig).length === 0){
+      return 
+    }
     const gasFee = `<b>Fees using the native bridge costs around:</b><br />Gas Fee: $${originGasCost.toFixed(
       2
     )}<br />`;
@@ -1136,11 +1200,11 @@ export default function Transfer(props: ComPropsType) {
 
 
   const refreshGas = () => {
-    refreshOrbiterTradingFee()
-    refreshGasTradingTotal()
-    refreshGasSavingMin()
-    refreshGasSavingMax()
-    refreshGasFeeToolTip()
+    // refreshOrbiterTradingFee()
+    // refreshGasTradingTotal()
+    // refreshGasSavingMin()
+    // refreshGasSavingMax()
+    // refreshGasFeeToolTip()
   }
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -1587,19 +1651,29 @@ export default function Transfer(props: ComPropsType) {
     transferDataState.toChainID,
   transferDataState.fromCurrency, 
   transferDataState.toCurrency,
+  queryParams,
   isWhiteWallet,
   isNewVersion])
 
   const onChangeFromChain = (item: any) => {
     console.log('onChangeFromChain--', item)
     if (item.localID + '' !== transferDataState.fromChainID) {
-      updateTransferDataState(item.localID + '', 'fromChainID')
+      if(item.localID+ '' === transferDataState.toChainID){
+        onChangeTransfer()
+      }else{
+        updateTransferDataState(item.localID + '', 'fromChainID')
+      }
     }
   }
   const onChangeToChain = (item: any) => {
     console.log('onChangeToChain--', item)
     if (item.localID + '' !== transferDataState.toChainID) {
-      updateTransferDataState(item.localID + '', 'toChainID')
+      if(item.localID + '' === transferDataState.fromChainID){
+        onChangeTransfer()
+      }else{
+        updateTransferDataState(item.localID + '', 'toChainID')
+      }
+      
     }
   }
   const onChangeSelectToTokenHandler = (item: DataItem)=>{
@@ -1636,12 +1710,12 @@ export default function Transfer(props: ComPropsType) {
         }
       </div>
       <div className="bottomItem">
-        <div className="left" onClick={() => updateInputData(true, 'isShowFromSel')}>
+        <div className="left" onClick={() => ctData.fromChainIdList.length&&updateInputData(true, 'isShowFromSel')}>
           <StyledSvgIcon
             iconName={fromChainObj.icon}
           />
           <span>{fromChainObj.name}</span>
-          <StyledDropDown selected={true}></StyledDropDown>
+          { !!ctData.fromChainIdList.length&&<StyledDropDown selected={true}></StyledDropDown>}
         </div>
         <div style={{
           display: 'flex',
@@ -1679,9 +1753,8 @@ export default function Transfer(props: ComPropsType) {
         />
       </span>
     </AutoRow>} */}
-    {isShowExchangeIcon?'':''}
     {
-      false && (<AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
+      isShowExchangeIcon && (<AutoRow justify={'center'} style={{ padding: '0 1rem' }}>
         <ArrowWrapper clickable onClick={onChangeTransfer}>
           <ArrowDown
             size="16"

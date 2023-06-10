@@ -311,6 +311,7 @@ export default function WalletModal({
 
   const switchChianId = async () => {
     var scrollchainId = '0x' + ChainId.SCROLL_ALPHA.toString(16)
+    console.log(scrollchainId)
     try {
       await (window.ethereum as any)?.request({
         method: 'wallet_switchEthereumChain',

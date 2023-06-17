@@ -49,9 +49,13 @@ export default function Pairs(props: {
   title: string,
   skey: string
 }) {
+  let baseUrl = process.env.REACT_APP_ANALYTICS
+  if(!baseUrl){
+    baseUrl = location.protocol + '//' + location.hostname+':8088'
+  }
   const baseConfig: BaseConfigType = {
     pairs: {
-      netUrl: `${process.env.REACT_APP_ANALYTICS}/get_pair_statistic_info`,
+      netUrl: `${baseUrl}/get_pair_statistic_info`,
       columns: [
         {
           title: 'Name',
@@ -76,7 +80,7 @@ export default function Pairs(props: {
       ]
     },
     transactions: {
-      netUrl: `${process.env.REACT_APP_ANALYTICS}/get_all_transactions`,
+      netUrl: `${baseUrl}/get_all_transactions`,
       columns: [
         {
           title: 'All',

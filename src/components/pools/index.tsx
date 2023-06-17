@@ -85,7 +85,11 @@ export default function AllPools() {
     }
     setIsLoading(true)
     try {
-      let url = (`${process.env.REACT_APP_ANALYTICS}/get_all_pools?pg_no=${encodeURIComponent(page)}`)
+      let baseUrl = process.env.REACT_APP_ANALYTICS
+      if(!baseUrl){
+        baseUrl = location.protocol + '//' + location.hostname+':8088'
+      }
+      let url = (`${baseUrl}/get_all_pools?pg_no=${encodeURIComponent(page)}`)
       let response = await fetch(url)
       let resData = await response.json()
       console.log('get all pools =', response, 'resData=', resData)

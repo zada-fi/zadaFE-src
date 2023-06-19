@@ -1,0 +1,116 @@
+
+.launchpad-home-container .search-container{
+  border: 1px solid #313D7A;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 30px;
+  box-sizing: border-box;
+}
+
+.launchpad-home-container .search-container .search-icon{
+  width: 20px;
+  height: 20px;
+}
+.launchpad-home-container .search-container input.search-input{
+  border: none;
+  outline: none;
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 16px;
+}
+.launchpad-home-container .search-container input::placeholder{
+  color: #566188;
+}
+.launchpad-home-container .table-list{
+  width: 100%;
+}
+
+
+.launchpad-home-container .ant-table-thead>tr>th {
+  background-color: transparent;
+  /* //rgba(0, 0, 0, 0.4); */
+  color: inherit;
+  border-bottom-color: #313D7A;
+}
+
+.launchpad-home-container .ant-table-wrapper tr:hover th {
+  background-color: #313D7A !important
+}
+
+.launchpad-home-container .ant-table-wrapper tr:hover td {
+  background-color: #313D7A !important
+}
+
+.launchpad-home-container .ant-table-header {
+  background-color: transparent;
+}
+
+.launchpad-home-container .ant-table {
+  color: #ffffff;
+}
+
+.launchpad-home-container .ant-table>* {
+  color: inherit;
+  border-color: transparent;
+}
+
+.launchpad-home-container .ant-table-tbody>tr>td {
+  border-color: transparent;
+}
+
+.launchpad-home-container .ant-table-fixed-header>.ant-table-content>.ant-table-scroll>.ant-table-body {
+  background-color: transparent;
+}
+
+.launchpad-home-container .ant-table-fixed-header .ant-table-scroll .ant-table-header::-webkit-scrollbar {
+  border: none;
+}
+
+.launchpad-home-container .ant-table-placeholder {
+  background: inherit;
+  border: none;
+  color: inherit;
+  opacity: 0.8;
+}
+
+.launchpad-home-container .ant-table-placeholder .ant-empty-image {
+  opacity: 0.5;
+}
+
+
+.launchpad-home-container .ant-pagination li {
+  background-color: transparent;
+}
+
+.launchpad-home-container .ant-pagination li a.ant-pagination-item-link {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+.launchpad-home-container .ant-pagination  a {
+  color: #ffffff;
+  background-color: transparent;
+}
+.launchpad-home-container .ant-pagination li.ant-pagination-item-active a{
+  color : #1890ff;
+}
+
+.launchpad-home-container .ant-table-filter-dropdown-link{
+  cursor: pointer;
+}
+
+.launchpad-home-container .ant-pagination li.ant-pagination-disabled a,
+.launchpad-home-container .ant-pagination li.ant-pagination-disabled:hover a,
+.launchpad-home-container .ant-pagination li.ant-pagination-disabled:focus a,
+.launchpad-home-container .ant-pagination li.ant-pagination-disabled .ant-pagination-item-link,
+.launchpad-home-container .ant-pagination li.ant-pagination-disabled:hover .ant-pagination-item-link,
+.launchpad-home-container .ant-pagination li.ant-pagination-disabled:focus .ant-pagination-item-link {
+  color: rgba(255, 255, 255, 0.45);
+  border: none;
+  /* border: 1px solid rgba(255, 255, 255, 0.45) ; */
+}
+
+.launchpad-home-container .ant-pagination-jump-prev .ant-pagination-item-container .ant-pagination-item-ellipsis, .ant-pagination-jump-next .ant-pagination-item-container .ant-pagination-item-ellipsis{
+  color:#ffffff;
+}

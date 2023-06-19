@@ -121,7 +121,7 @@ export default function AllPools() {
       }, [])
       setTableDatas(tempList)
       let temp_total = resData.data && resData.data.length ? resData.data[0]: tempList.length
-      setTotal(temp_total)
+      setTotal(temp_total*10)
       // setTableDatas([])
     } catch (error) {
       console.log('oh there is an error here', error)
@@ -150,7 +150,7 @@ export default function AllPools() {
   // let allToken = useAllTokens()
   // console.log('allToken=', allToken)
 
-  return (<><Table
+  return (<div className="grey-content"><Table
     scroll={{ x: 500, y: 800 }}
     loading={isLoading}
     columns={columnsConfig}
@@ -158,7 +158,7 @@ export default function AllPools() {
     dataSource={tableDatas}>
   </Table>
   <Pagination total={total} current={curPage} onChange={onChangePage}/>
-  </>)
+  </div>)
 
 
 }

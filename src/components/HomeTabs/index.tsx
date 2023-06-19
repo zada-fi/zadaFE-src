@@ -10,7 +10,7 @@ const Tabs = styled.div`
   justify-content: center;
   height: 3rem;
 
-${({ theme }) => theme.mediaWidth.upToExtraSmall`
+${({ theme }) => theme.mediaWidth.upToLarge`
   display: none;
 `};
 `
@@ -100,6 +100,9 @@ export function HomeTabs() {
       {/* "https://rinkeby.orbiter.finance/" */}
       <DocuA href={`${window.location.origin}/orbiter`}  className={`${pathname.indexOf('orbiter')>-1?'active':''}`}  rel="noopener noreferrer" >
         L2 Bridge
+      </DocuA>
+      <DocuA href={`${window.location.origin}/launchpad`} className={`${pathname.indexOf('launchpad')>-1?'active':''}`}  rel="noopener noreferrer" >
+        Launchpad
       </DocuA>
       <DocuA href="https://zadafinance.gitbook.io/99009900/" target="_blank" rel="noopener noreferrer">
         Docs

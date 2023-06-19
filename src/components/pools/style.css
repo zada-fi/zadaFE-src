@@ -1,49 +1,49 @@
-.ant-table-thead>tr>th {
+.grey-content .ant-table-thead>tr>th {
   background-color: rgba(0, 0, 0, 0.4);
   color: inherit;
   border-bottom: transparent;
 }
 
-.ant-table-wrapper tr:hover th {
+.grey-content .ant-table-wrapper tr:hover th {
   background-color: rgba(0, 0, 0, 0.6) !important
 }
 
-.ant-table-wrapper tr:hover td {
+.grey-content .ant-table-wrapper tr:hover td {
   background-color: rgba(0, 0, 0, 0.6) !important
 }
 
-.ant-table-header {
+.grey-content .ant-table-header {
   background-color: transparent;
 }
 
-.ant-table {
+.grey-content .ant-table {
   color: #ffffff;
 }
 
-.ant-table>* {
+.grey-content .ant-table>* {
   color: inherit;
   border-color: transparent;
 }
 
-.ant-table-tbody>tr>td {
+.grey-content .ant-table-tbody>tr>td {
   border-color: transparent;
 }
 
-.ant-table-fixed-header>.ant-table-content>.ant-table-scroll>.ant-table-body {
+.grey-content .ant-table-fixed-header>.ant-table-content>.ant-table-scroll>.ant-table-body {
   background-color: transparent;
 }
 
-.ant-table-fixed-header .ant-table-scroll .ant-table-header::-webkit-scrollbar {
+.grey-content .ant-table-fixed-header .ant-table-scroll .ant-table-header::-webkit-scrollbar {
   border: none;
 }
 
-.ant-table-placeholder {
+.grey-content .ant-table-placeholder {
   background: inherit;
   border: none;
   color: inherit;
   opacity: 0.8;
 }
 
-.ant-table-placeholder .ant-empty-image {
+.grey-content .ant-table-placeholder .ant-empty-image {
   opacity: 0.5;
 }

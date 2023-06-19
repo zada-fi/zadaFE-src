@@ -179,7 +179,7 @@ export default function Pairs(props: {
       if (props.skey === 'pairs') {
         tempTableList = resData.data && resData.data.length ? resData.data[1] : []
         let temp_total = resData.data && resData.data.length ? resData.data[0]: tempTableList.length
-        setTotal(temp_total)
+        setTotal(temp_total*10)
       } else {
         tempTableList = resData.data.data && resData.data.data.length ? resData.data.data[1] : []
         tempTableList = tempTableList.reduce((res: DataItem[], item) => {
@@ -194,7 +194,7 @@ export default function Pairs(props: {
           return res
         }, [])
         let temp_total = resData.data.page_count 
-        setTotal(temp_total)
+        setTotal(temp_total*10)
       }
       console.log('get tableData resultData---', props.skey, tempTableList)
       setTableDatas(tempTableList)
@@ -223,7 +223,7 @@ export default function Pairs(props: {
     )
   }
 
-  return (<>
+  return (<div  className="grey-content">
     <SwDatetimeRangePicker
       title={props.title}
       value={dateValue}
@@ -232,6 +232,6 @@ export default function Pairs(props: {
     <TableComp />
 
 
-  </>)
+  </div>)
 
 }

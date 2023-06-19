@@ -49,7 +49,7 @@ const StyledMenu = styled.div`
   border: none;
   text-align: left;
   display: none ;
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+  ${({ theme }) => theme.mediaWidth.upToLarge`
   display: flex
 `};
 `
@@ -89,6 +89,8 @@ const MenuItemLast = styled(ExternalLink)`
   padding: 0.5rem 0.5rem;
   color: ${({ theme }) => theme.text2};
   text-decoration: none;
+  word-break: keep-all;
+  white-space: nowrap;
   :hover {
     color: ${({ theme }) => theme.text1};
     cursor: pointer;
@@ -132,10 +134,15 @@ export default function Menu() {
             <Code size={14} />
             L1 Bridge
           </MenuItemLast>
-          <MenuItemLast id={`l2bridge-nav-link`} href="https://rinkeby.orbiter.finance/">
+          <MenuItemLast id={`l2bridge-nav-link`} href={`${location.origin}/orbiter`}>
             <Code size={14} />
             L2 Bridge
           </MenuItemLast>
+          <MenuItemLast id={`l2bridge-nav-link`} href={`${location.origin}/launchpad`}>
+            <Code size={14} />
+            Launchpad
+          </MenuItemLast>
+
           <MenuItemLast id="link" href="https://zadafinance.gitbook.io/99009900/">
             <BookOpen size={14} />
             Docs

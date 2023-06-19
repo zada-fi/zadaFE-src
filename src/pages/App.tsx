@@ -23,6 +23,7 @@ import PoolFinder from './PoolFinder'
 import RemoveLiquidity from './RemoveLiquidity'
 import { RedirectOldRemoveLiquidityPathStructure } from './RemoveLiquidity/redirects'
 import Swap from './Swap'
+import Launchpad from './Launchpad'
 import Analytics from './Analytics'
 
 import { RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
@@ -91,6 +92,7 @@ export default function App() {
                 {/* <Route exact strict path="/bridge" component={Bridge} /> */}
                 {/* <Route exact strict path="/docs" component={Docs} /> */}
                 <Route exact strict path="/swap" component={Swap} />
+                <Route exact strict path="/launchpad" component={Launchpad}/>
                 <Route exact strict path="/swap/:outputCurrency" component={RedirectToSwap} />
                 <Route exact strict path="/orbiter" component={OrbiterBridage}/>
                 <Route exact strict path="/send" component={RedirectPathToSwapOnly} />

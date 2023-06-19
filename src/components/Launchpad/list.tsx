@@ -36,10 +36,7 @@ const ListContainer = styled.div`
   ${({ theme }) => theme.mediaWidth.upToLarge`
     width: 100%;
     padding: 15px;
-    .search-container{
-      height: 45px;
-      border-radius: 45px;
-    }
+    
   `};
 `
 type T = any

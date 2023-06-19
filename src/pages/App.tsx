@@ -28,6 +28,7 @@ import Analytics from './Analytics'
 
 import { RedirectPathToSwapOnly, RedirectToSwap } from './Swap/redirects'
 import OrbiterBridage from './Orbiter/bridage'
+import Claim from './Claim'
 
 const AppWrapper = styled.div`
   display: flex;
@@ -93,6 +94,7 @@ export default function App() {
                 {/* <Route exact strict path="/docs" component={Docs} /> */}
                 <Route exact strict path="/swap" component={Swap} />
                 <Route exact strict path="/launchpad" component={Launchpad}/>
+                <Route exact strict path="/claim" component={Claim}></Route>
                 <Route exact strict path="/swap/:outputCurrency" component={RedirectToSwap} />
                 <Route exact strict path="/orbiter" component={OrbiterBridage}/>
                 <Route exact strict path="/send" component={RedirectPathToSwapOnly} />

@@ -1,0 +1,96 @@
+
+.claim-container-body .filter-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.claim-container-body .filter-container .search-container{
+  border: 1px solid #313D7A;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-left: 30px;
+  box-sizing: border-box;
+  height: 40px;
+  border-radius: 20px;
+  flex: none;
+  width: 450px;
+}
+
+.claim-container-body  .filter-container .search-container .search-icon{
+  width: 20px;
+  height: 20px;
+}
+.claim-container-body  .filter-container .search-container input.search-input{
+  border: none;
+  outline: none;
+  background-color: transparent;
+  color: #ffffff;
+  font-size: 16px;
+}
+.claim-container-body  .filter-container .search-container input::placeholder{
+  color: #566188;
+}
+
+.claim-container-body .filter-container .right{
+  flex: none;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.claim-container-body .filter-container .right .ant-radio-wrapper .ant-radio-inner{
+  background-color: transparent;
+}
+.claim-container-body .filter-container .right .ant-radio-wrapper .radio-value{
+  font-size: 16px;
+  font-family: Arial;
+  font-weight: 400;
+  color: #566188;
+  line-height: 1;
+}
+
+
+.claim-container-body .filter-container .right .network-select-wrapper span{
+  font-size: 16px;
+  font-family: Arial;
+  font-weight: 400;
+  color: #566188;
+  line-height: 1;
+}
+.claim-container-body .filter-container .right .network-select-wrapper .network-select{
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 10px;
+  min-width: 161px;
+  height: 40px;
+  background: #D9E1F7;
+  border-radius: 20px;
+  padding: 0 4px;
+  box-sizing: border-box;
+}
+.claim-container-body .filter-container .right .network-select-wrapper .network-select .cur-network-val{
+  margin-left: 8px;
+}
+.claim-container-body .filter-container .right .network-select-wrapper .network-select .sel-icon{
+  width: 20px;
+  height: 20px;
+  color: #999999;
+  margin-left: 11px;
+}
+
+@media (max-width: 800px){
+  .claim-container-body .filter-container{
+    flex-wrap: wrap;
+  }
+  .claim-container-body .filter-container .search-container{
+    width: 100%;
+  }
+  .claim-container-body .filter-container .right{
+    width: 100%;
+    margin-top: 10px;
+  }
+}

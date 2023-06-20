@@ -7,6 +7,8 @@ import styled from "styled-components"
 import SvgIcon from "../SvgIcon"
 import FixedLoader from "../FixedLoader";
 import './list.css'
+import CheckedImg from './images/icon-checked.png'
+import UncheckedImg from './images/icon-unchecked.png'
 
 const ListBody = styled.div`
   width: 100%;
@@ -42,12 +44,28 @@ const ListContainer = styled.div`
 type T = any
 type ColumnType = ColumnProps<T>
 type DataItemType = {
+  project_name?: string,
+  project_description?: string,
+  project_links?: any,
+  project_owner?: string,
+  token_address?: string,
+  start_time?: string,
+  end_time?: string,
+  raise_limit?: string,
+  raised?: string,
+  removed?: boolean,
+  phase?: number,
+  purchased_min_limit?: number,
+  purchased_max_limit?: number,
+  white_list_max_limit?: number,
+
+
   name: string,
-  hardcap: any,
-  wl_stage: any,
-  status: any,
-  total_raised: any,
-  your_allocation: any,
+  hardcap: number, // 1 correct  2 incorrect
+  wl_stage: number, // 1 correct 2incorrect
+  status: string,
+  total_raised: string,
+  your_allocation: string,
 }
 
 export default function List(){
@@ -65,17 +83,43 @@ export default function List(){
     {
       title:'Name',
       dataIndex:'name',
-      key:'launchpad-name'
+      key:'launchpad-name',
+      render: (text, record:any)=>{
+        return (<div className="name-container">
+          <div className="icon-wrapper">
+
+          </div>
+          <div className="name-wrapper">
+            <label className="name-txt1">Name</label>
+            <p className="name-txt2">{text}</p>
+          </div>
+        </div>)
+      }
+
     },
     {
       title:'Hardcap',
       dataIndex:'hardcap',
-      key:'launchpad-hardcap'
+      key:'launchpad-hardcap',
+      render(text, record, index) {
+        if(text === 1){
+          return (<img className="column-icon" src={CheckedImg}></img>)
+        }else{
+          return (<img className="column-icon" src={UncheckedImg}></img>)
+        }
+      },
     },
     {
       title:'WL stage',
-      dataIndex:'stage',
-      key:'launchpad-wl-stage'
+      dataIndex:'wl_stage',
+      key:'launchpad-wl-stage',
+      render(text, record, index) {
+        if(text === 1){
+          return (<img className="column-icon" src={CheckedImg}></img>)
+        }else{
+          return (<img className="column-icon" src={UncheckedImg}></img>)
+        }
+      },
     },
     {
       title:'Status',
@@ -89,7 +133,7 @@ export default function List(){
     },
     {
       title:'Your allocation',
-      dataIndex:'allocation',
+      dataIndex:'your_allocation',
       key:'launchpad-allocation'
     }
   ]
@@ -114,8 +158,22 @@ export default function List(){
     await new Promise((res)=>{
       setTimeout(()=>{res(1)},1000)
     })
-    setTableData([])
+    // setTableData([])
+    // setTotal(0)
+
+
+    // 测试
+    setTableData([{
+      name: 'project1',
+      hardcap: 1,
+      wl_stage: 0,
+      status: 'sold out',
+      total_raised: '10000',
+      your_allocation: '0',
+    }])
     setTotal(0)
+
+
   }
 
   useEffect(() => {
@@ -137,6 +195,7 @@ export default function List(){
           scroll={{x: 800,y:500}}
           columns={columnsDatas}
           dataSource={tableData}
+          rowKey={'launchpad-table-key'}
         />
         <Pagination total={total} current={curPage} onChange={onChangePage}/>
       </FixedLoader>

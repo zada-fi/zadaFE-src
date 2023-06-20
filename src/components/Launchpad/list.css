@@ -26,6 +26,39 @@
   width: 100%;
 }
 
+.launchpad-home-container .table-list .name-container{
+  display: flex;
+  align-items: center;
+}
+.launchpad-home-container .table-list .name-container .icon-wrapper{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  margin-right: 12px;
+}
+.launchpad-home-container .table-list .name-container .name-wrapper .name-txt1{
+  font-size: 20px;
+  font-family: Arial;
+  font-weight: bold;
+  color: #D9E1F7;
+  line-height: 1;
+}
+.launchpad-home-container .table-list .name-container .name-wrapper .name-txt2{
+  font-size: 14px;
+  font-family: Arial;
+  font-weight: 400;
+  color: #878C99;
+  line-height: 1;
+  margin-top: 8px;
+  padding:0;
+  margin-bottom:0;
+}
+.launchpad-home-container .table-list .column-icon{
+  width: 28px;
+  height: 28px;
+}
+
 
 .launchpad-home-container .ant-table-thead>tr>th {
   background-color: transparent;

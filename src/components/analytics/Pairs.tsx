@@ -66,7 +66,8 @@ export default function Pairs(props: {
           dataIndex: 'usd_tvl',
           key: 'usd_tvl',
           render: (text) => {
-            return `$${text}`
+            let reg = (text+'').indexOf(".") > -1 ? /(\d)(?=(\d{3})+\.)/g : /(\d)(?=(?:\d{3})+$)/g;
+            return `$${text.replace(reg, '$1,')}`
           }
         }, {
           title: 'Volume(24h)',

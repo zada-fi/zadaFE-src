@@ -1,0 +1,46 @@
+.MainTitle {
+  width: 100%;
+  color: #4A68FF;
+  font-size: 50px;
+  line-height: 1;
+  font-family: Arial;
+  font-weight: bold;
+  margin: 0;
+}
+
+.DesTitle {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 135px;
+  font-size: 16px;
+  font-family: Arial;
+  font-weight: 400;
+  color: #D9E1F7;
+  line-height: 24px;
+  margin-top: 34px;
+}
+
+.FooterText {
+  font-size: 14px;
+  font-family: PingFang SC;
+  font-weight: 400;
+  color: #D63232;
+  line-height: 24px;
+}
+
+.desc1{
+  padding-top: 72px;
+  
+}
+
+.desc2{
+  padding-top: 48px;
+  padding-bottom: 41px;
+}
+
+.desc2 .tips{
+  width: 16px;
+  height: 16px;
+  color: #4A68FF;
+}

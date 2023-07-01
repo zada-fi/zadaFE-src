@@ -1,9 +1,10 @@
 import React from 'react'
-import LaunchHome from '../../components/Launchpad/home'
+import LaunchDetail from '../../components/LaunchpadDetail/LaunchDetail'
 
 
-export default function Launchpad(){
+export default function LaunchpadDetail(){
+  console.log('launchpadDetail page---')
   return (<>
-    <LaunchHome></LaunchHome>
+    <LaunchDetail></LaunchDetail>
     </>)
 }

@@ -100,8 +100,8 @@ export default function useBalance(props: PropsType) {
     }
   }
   const walletIsLogin = useMemo(() => {
-    return contextNetwork.active || active
-  }, [active, contextNetwork])
+    return (contextNetwork.active || active) && account
+  }, [active, contextNetwork, account])
 
   const updateUserMaxPrice = async () => {
     console.log('updateUserMaxPrice--enter-', props.transferDataState.selectMakerConfig, fromBalance)

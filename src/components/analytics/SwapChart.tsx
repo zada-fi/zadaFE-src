@@ -103,6 +103,20 @@ export default function SwapChart(props: {
       //     volume_value: '200000',
       //   }]
       // }
+      tempList = tempList.sort((item1: SwDataItem, item2: SwDataItem)=>{
+        let x = props.xKey as keyof SwDataItem
+        let val1 = item1[x] as string
+        let val2 = item2[x] as string
+        val1 = val1.replace(/-/ig, '/')
+        val2 = val2.replace(/-/ig, '/')
+        if(new Date(val1).getTime() > new Date(val2).getTime()){
+          return 1
+        }else if(new Date(val1).getTime() < new Date(val2).getTime()){
+          return -1
+        }else {
+          return 0
+        }
+      })
 
       if (tempList.length) {
         let len = tempList.length

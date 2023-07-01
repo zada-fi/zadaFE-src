@@ -49,7 +49,7 @@ const StyledMenu = styled.div`
   border: none;
   text-align: left;
   display: none ;
-  ${({ theme }) => theme.mediaWidth.upToLarge`
+  ${({ theme }) => theme.mediaWidth.upToMedium`
   display: flex
 `};
 `
@@ -130,18 +130,18 @@ export default function Menu() {
             Swap
           </MenuItemLast>
 
-          <MenuItemLast id={`l1bridge-nav-link`} href="https://scroll.io/alpha/bridge">
+          {/* <MenuItemLast id={`l1bridge-nav-link`} href="https://scroll.io/alpha/bridge">
             <Code size={14} />
             L1 Bridge
-          </MenuItemLast>
+          </MenuItemLast> */}
           <MenuItemLast id={`l2bridge-nav-link`} href={`${location.origin}/orbiter`}>
             <Code size={14} />
-            L2 Bridge
+            Bridge
           </MenuItemLast>
-          <MenuItemLast id={`l2bridge-nav-link`} href={`${location.origin}/launchpad`}>
+          {/* <MenuItemLast id={`l2bridge-nav-link`} href={`${location.origin}/launchpad`}>
             <Code size={14} />
             Launchpad
-          </MenuItemLast>
+          </MenuItemLast> */}
 
           <MenuItemLast id="link" href="https://zadafinance.gitbook.io/99009900/">
             <BookOpen size={14} />

@@ -20,8 +20,8 @@ export default function useHistroyPanel() {
   const { active, account } = useWeb3React()
   const contextNetwork = useWeb3React(NetworkContextName)
   const walletIsLogin = useMemo(() => {
-    return contextNetwork.active || active
-  }, [active, contextNetwork])
+    return (contextNetwork.active || active)&&account
+  }, [active, contextNetwork, account])
   useEffect(() => {
     if (!walletIsLogin) {
       setHistoryPanelState((prev) => {

@@ -1,0 +1,25 @@
+.RightInfoTop {
+  margin: 0;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+  font-family: Arial;
+  font-weight: 400;
+  color: #878C99;
+
+}
+
+.RightInfoBottom {
+  margin: 0;
+  padding: 0;
+  padding-top: 11px;
+  font-size: 20px;
+  line-height: 1;
+  font-family: Arial;
+  font-weight: bold;
+  color: #D9E1F7;
+  word-wrap: nowrap;
+  word-break: keep-all;
+  white-space: nowrap;
+
+}

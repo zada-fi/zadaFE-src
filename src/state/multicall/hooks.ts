@@ -189,6 +189,42 @@ export function useSingleContractMultipleData(
   }, [fragment, contract, results, latestBlockNumber])
 }
 
+
+export function useSingleContractMultipleMethodData(
+  contract: Contract | null | undefined,
+  methodNames: string[],
+  callInputs: OptionalMethodInputs[],
+  options?: ListenerOptions
+): CallState[] {
+  const fragments = useMemo(() => methodNames.map(m => contract?.interface?.getFunction(m)).filter(Boolean), [
+    contract,
+    methodNames
+  ])
+  const calls = useMemo(
+    () =>
+      contract && fragments && callInputs && callInputs.length > 0 && callInputs.length === fragments.length
+        ? callInputs.map<Call>((inputs, index) => {
+            return {
+              address: contract.address,
+              callData: contract.interface.encodeFunctionData(fragments[index]!, inputs)
+            }
+          })
+        : [],
+    [callInputs, contract, fragments]
+  )
+
+  const results = useCallsData(calls, options)
+
+  const latestBlockNumber = useBlockNumber()
+
+  return useMemo(() => {
+    // @ts-ignore
+    return results.map((result, index) => toCallState(result, contract?.interface, fragments[index], latestBlockNumber))
+  }, [fragments, contract, results, latestBlockNumber])
+}
+
+
+
 export function useMultipleContractSingleData(
   addresses: (string | undefined)[],
   contractInterface: Interface,

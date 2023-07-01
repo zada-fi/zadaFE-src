@@ -10,7 +10,7 @@ const Tabs = styled.div`
   justify-content: center;
   height: 3rem;
 
-${({ theme }) => theme.mediaWidth.upToLarge`
+${({ theme }) => theme.mediaWidth.upToMedium`
   display: none;
 `};
 `
@@ -94,16 +94,16 @@ export function HomeTabs() {
       <DocuA href={`${window.location.origin}/swap`} className={`${pathname.indexOf('swap')>-1?'active':''}`}  rel="noopener noreferrer" >
         Swap
       </DocuA>
-      <DocuA href="https://scroll.io/alpha/bridge" target="_blank" rel="noopener noreferrer" >
+      {/* <DocuA href="https://scroll.io/alpha/bridge" target="_blank" rel="noopener noreferrer" >
        L1 Bridge
-      </DocuA>
+      </DocuA> */}
       {/* "https://rinkeby.orbiter.finance/" */}
       <DocuA href={`${window.location.origin}/orbiter`}  className={`${pathname.indexOf('orbiter')>-1?'active':''}`}  rel="noopener noreferrer" >
-        L2 Bridge
+        Bridge
       </DocuA>
-      <DocuA href={`${window.location.origin}/launchpad`} className={`${pathname.indexOf('launchpad')>-1?'active':''}`}  rel="noopener noreferrer" >
+      {/* <DocuA href={`${window.location.origin}/launchpad`} className={`${pathname.indexOf('launchpad')>-1?'active':''}`}  rel="noopener noreferrer" >
         Launchpad
-      </DocuA>
+      </DocuA> */}
       <DocuA href="https://zadafinance.gitbook.io/99009900/" target="_blank" rel="noopener noreferrer">
         Docs
       </DocuA>

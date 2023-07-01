@@ -1,0 +1,138 @@
+
+.ClaimTitle {
+  margin:0;
+  padding:0;
+  padding-top: 35px;
+  padding-bottom: 24px;
+  box-sizing: border-box;
+  font-size: 22px;
+  line-height: 1;
+  font-family: Arial;
+  font-weight: bold;
+  color: #FEFEFF;
+}
+
+.ClaimSubTitle {
+  margin:0;
+  padding:0;
+  font-size: 14px;
+  font-family: Adobe Heiti Std;
+  font-weight: normal;
+  color: #878C99;
+}
+
+.ClaimAmountTitle {
+  font-size: 36px;
+  font-family: Arial;
+  font-weight: bold;
+  color: #D9E1F7;
+  padding-top: 17px;
+}
+
+.item{
+  background:#0A0F34;
+  min-height: 88px;
+  border-radius: 14px;
+  padding: 12px 28px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+.item .right{
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.item  .key{
+  color: #878C99;
+  font-size: 14px;
+  line-height: 18px;
+}
+.item .key.avail{
+  word-break: keep-all;
+  white-space: nowrap;
+  text-align: right;
+}
+.item .key .impo{
+  color: #D9E1F7;
+}
+
+.item .key-zhanwei{
+  width: 100px;
+  height: 18px;
+  position: relative;
+}
+.item .key-zhanwei .key{
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 400px;
+}
+
+.item .value-frame .value{
+  color: #D9E1F7;
+  font-size: 36px;
+  font-weight: bold;
+}
+.item .value-frame input{
+  border: none;
+  outline: none;
+  background-color: transparent;
+  width: 200px;
+}
+.item .value-frame input::placeholder{
+  color: #6C7284;
+}
+
+.item .current-logo-container{
+  /* background-color: rgb(12, 6, 42); */
+  border: 1px solid #26326D;
+  border-radius: 20px;
+  width: 121px;
+  height: 40px;
+  text-align: left;
+  padding-left: 20px;
+  box-sizing: border-box;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+}
+.item .current-logo-container svg{
+  vertical-align: middle;
+}
+.item .current-logo-container .txt{
+  font-size: 16px;
+  line-height: 40px;
+  font-weight: bold;
+  color: #fff;
+  margin-left:10px;
+}
+
+
+.bottom-item {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-top: -10px;
+  padding-bottom: 31px;
+}
+.bottom-item .bot-key{
+  text-align: left;
+  font-size: 14px;
+  color: #FFFFFF;
+}
+.bottom-item .bot-value{
+  text-align: right;
+  font-size: 14px;
+  color: #FFFFFF;
+}
+
+.my-error-msg{
+  margin: 0 ;
+  padding: 0;
+  color: red;
+  font-size:14px;
+}

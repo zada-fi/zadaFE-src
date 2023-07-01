@@ -54,7 +54,7 @@ export function formateChartValue(value:number|string){
       res = tempNum1.toNumber().toFixed(1)+'K'
     } 
   }
-  console.log(res)
+  // console.log(res)
   return `$${res}`
 }
 

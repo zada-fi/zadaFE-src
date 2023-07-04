@@ -130,9 +130,27 @@
   color: #FFFFFF;
 }
 
+.bot-button{
+  cursor: pointer;
+}
+.bot-button.disable{
+  cursor: auto;
+  background-color: #6C7284;
+}
+
+
 .my-error-msg{
   margin: 0 ;
   padding: 0;
   color: red;
   font-size:14px;
+  line-height: 20px;
+}
+
+.submit-result-error{
+  margin: 0 ;
+  padding: 0;
+  color: red;
+  font-size:14px;
+  line-height: 20px;
 }

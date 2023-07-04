@@ -59,6 +59,7 @@ export const Input = React.memo(function InnerInput({
 
   return (
     <StyledInput
+      title="Token Amount"
       {...rest}
       value={value}
       onChange={event => {
@@ -67,7 +68,6 @@ export const Input = React.memo(function InnerInput({
       }}
       // universal input options
       inputMode="decimal"
-      title="Token Amount"
       autoComplete="off"
       autoCorrect="off"
       // text-specific options

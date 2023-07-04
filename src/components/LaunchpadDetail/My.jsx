@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from 'react'
-import { useWeb3React } from "@web3-react/core"
+import React, {useMemo, useState} from 'react'
+import {useWeb3React} from "@web3-react/core"
 import CurrencyLogo from './../CurrencyLogo'
-import { Input as NumericalInput } from '../NumericalInput'
-import { NetworkContextName } from "../../constants"
-import { useWalletModalToggle } from "../../state/application/hooks"
+import {Input as NumericalInput} from '../NumericalInput'
+import {NetworkContextName} from "../../constants"
+import {useWalletModalToggle} from "../../state/application/hooks"
 import BigNumber from 'bignumber.js'
 import styled from 'styled-components'
 import './My.css'
+import {sendApprove, sendBuy, sendClaim} from './LaunchPadHooks'
 const InfoRightDiv = styled.div`
   display:flex;
   flex-flow:column nowrap;
@@ -55,182 +56,326 @@ const ClaimCenterDiv = styled.div`
   ${({theme}) => theme.mediaWidth.upToSmall`
   `};
 `
-export default function LaunchMy(props){
-  let [errorMsg, setErrorMsg] = useState('')
-  let [investNum, setInvestNum ] = useState(null)
-  const { active, account } = useWeb3React()
+
+const MyBotButton = (props) => {
+  const toggleWalletModal = useWalletModalToggle()
+  if (!props.walletIsLogin) {
+    return (<button className={`bot-button ${props.btnCls}`} onClick={toggleWalletModal}>
+      {props.btnText}
+    </button>)
+  } else {
+    return (<button className={`bot-button ${props.btnCls}`} onClick={props.clickHandler}>
+      {props.btnText}
+    </button>)
+  }
+
+}
+
+export default function LaunchMy(props) {
+  let [submitErrorMsg, setSubmitErrorMsg] = useState('')
+  let [inputInvestNum, setInvestNum] = useState('')
+  const {active, account, library} = useWeb3React()
   const contextNetwork = useWeb3React(NetworkContextName)
   const walletIsLogin = useMemo(() => {
-    console.log('walletIsLogin---',active, account, contextNetwork.active)
-    return (contextNetwork.active || active)&& account
+    console.log('walletIsLogin---', active, account, contextNetwork.active)
+    return (contextNetwork.active || active) && account
   }, [active, contextNetwork, account])
- 
-
-
-  const btnStatus = useMemo(()=>{
-    if(walletIsLogin){
-      if(props.curStatus === 2){
-        return 1 // buy
-      }else{
-        return 2 // claim
-      }
-    }else{
-      return 0 // connect
+  let realBalance = useMemo(() => {
+    if (props.fromCoin) {
+      let a = new BigNumber(props.balance).shiftedBy(0 - props.fromCoin.decimals)
+      return a.toString()
+    } else {
+      return '0'
     }
-  },[props.curStatus, walletIsLogin])
+  }, [props.fromCoin, props.balance])
 
-  let fromCoinName = useMemo(()=>{
-    return (props.fromCoin||{}).symbol || ''
-  },[props.fromCoin])
-  let toCoinName = useMemo(()=>{
-    return (props.toCoin||{}).symbol || ''
-  },[props.toCoin])
 
-  let realBalance = useMemo(()=>{
-    if(props.fromCoin){
-      let a = new BigNumber(props.balance).shiftedBy(0-props.fromCoin.decimals)
+  const netInputInvestNum = useMemo(() => {
+    if (props.fromCoin) {
+      let a = new BigNumber(inputInvestNum).shiftedBy(props.fromCoin.decimals)
+      return a
+    } else {
+      return new BigNumber(0)
+    }
+  }, [props.fromCoin, inputInvestNum])
+
+
+  const btnText = useMemo(() => {
+    if (!walletIsLogin) {
+      return 'Connect Wallet'
+    } else {
+      if (props.curStatus === 0) {
+        return 'Approve'
+      } else if (props.curStatus === 1) {
+        if (props.allowance == '0') {
+          return 'Approve'
+        }
+        if (netInputInvestNum.comparedTo(props.allowance) <= 0) {
+          return 'Buy'
+
+        }
+        return 'Approve'
+      } else if (props.curStatus === 2) {
+        if (props.isClaimed) {
+          return 'Claimed'
+        } else {
+          return 'Claim'
+        }
+      } else {
+        return ''
+      }
+    }
+  }, [walletIsLogin, props.curStatus, props.iswhite, props.isClaimed, props.allowance, netInputInvestNum])
+
+
+
+
+
+
+  let fromCoinName = useMemo(() => {
+    return (props.fromCoin || {}).symbol || ''
+  }, [props.fromCoin])
+  let toCoinName = useMemo(() => {
+    return (props.toCoin || {}).symbol || ''
+  }, [props.toCoin])
+
+  let realAvailClaimNum = useMemo(()=>{
+    if(props.toCoin){
+      let a = new BigNumber(props.availClaimNum).shiftedBy(0-props.toCoin.decimals)
       return a.toString()
     }else{
-      return 0
+      return ''
     }
-  },[props.fromCoin, props.balance])
-  let realPrice = useMemo(()=>{
-    if (props.fromCoin && props.toCoin){
+  },[props.toCoin, props.availClaimNum])
+  let realPrice = useMemo(() => {
+    if (props.fromCoin && props.toCoin) {
       let a = new BigNumber(props.price).shiftedBy(props.fromCoin.decimals - props.toCoin.decimals)
       return a.toString()
     }
     else {
       return ''
     }
-  },[props.toCoin, props.fromCoin])
-  let profitNum = useMemo(()=>{
-    if(!realPrice || !investNum){
+  }, [props.toCoin, props.fromCoin])
+  let profitNum = useMemo(() => {
+    if (!realPrice || !inputInvestNum) {
       return 0
     }
-    let tempNum = new BigNumber(investNum).multipliedBy(realPrice)
+    let tempNum = new BigNumber(inputInvestNum).multipliedBy(realPrice)
     return tempNum.toString()
-  },[investNum, realPrice])
+  }, [inputInvestNum, realPrice])
 
-  let realMax = useMemo(()=>{
-    if (props.max){
-      let a = new BigNumber(props.max).shiftedBy(0-(props.fromCoin?.decimals ?? 0))
+  let realMax = useMemo(() => {
+    if (props.max) {
+      let a = new BigNumber(props.max).shiftedBy(0 - (props.fromCoin?.decimals ?? 0))
       return a.toString()
     }
     else {
       return ''
     }
-  },[props.max, props.fromCoin])
-  let realMin = useMemo(()=>{
-    if (props.min){
-      let a = new BigNumber(props.min).shiftedBy(0-(props.fromCoin?.decimals ?? 0))
+  }, [props.max, props.fromCoin])
+  let realMin = useMemo(() => {
+    if (props.min) {
+      let a = new BigNumber(props.min).shiftedBy(0 - (props.fromCoin?.decimals ?? 0))
       return a.toString()
     }
     else {
       return ''
     }
-  },[props.min, props.fromCoin])
+  }, [props.min, props.fromCoin])
+  const btnCls = useMemo(() => {
+    if (!walletIsLogin) {
+      return 'disable'
+    } else {
+      if (props.curStatus === 0) {
+        return 'disable'
+      } else if (props.curStatus === 1) {
+        if (!props.iswhite) {
+          return 'disable'
+        } else {
+          if (inputInvestNum === '') {
+            return 'disable'
+          } else {
+            // if(realMin&& inputInvestNum && new BigNumber(realMin).comparedTo(inputInvestNum)> 0){
+            //   return 'disable'
+            // }else if(realMax && inputInvestNum && new BigNumber(inputInvestNum).comparedTo(realMax)> 0){
+            //   return 'disable'
+            // }else
+            if (inputInvestNum && new BigNumber(inputInvestNum).comparedTo(realBalance) === 1) {
+              return 'disable'
+            } else {
+              return ''
+            }
+          }
+        }
+      } else if (props.curStatus === 2) {
+        if (props.isClaimed) {
+          return 'disable'
+        } else {
+          if (props.availClaimNum && new BigNumber(props.availClaimNum).comparedTo(0) === 1) {
+            return ''
+          } else {
+            return 'disable'
+          }
 
-  const toggleWalletModal = useWalletModalToggle()
+        }
+      } else {
+        return ''
+      }
+    }
+  }, [walletIsLogin, props.curStatus, props.iswhite, props.isClaimed, inputInvestNum, realBalance, realMax, realMin])
 
-  const clickHandler = ()=>{
+
+  const errorMsg = useMemo(() => {
+    if (!walletIsLogin) {
+      return ''
+    } else {
+      if (props.curStatus === 0) {
+        return 'Unstart!'
+      } else if (props.curStatus === 1) {
+        if (!props.iswhite) {
+          return 'You have no permission'
+        } else {
+          if (inputInvestNum === '') {
+            return 'Please input invest amount'
+          } else {
+            if (realMin && inputInvestNum && new BigNumber(realMin).comparedTo(inputInvestNum) > -1) {
+              return 'Invest amount need be greater than minimum'
+            } else if (realMax && inputInvestNum && new BigNumber(inputInvestNum).comparedTo(realMax) > -1) {
+              return 'Invest amount need be lesser than maxmum'
+            } else
+              if (inputInvestNum && new BigNumber(inputInvestNum).comparedTo(realBalance) === 1) {
+                return 'Insufficient'
+              } else {
+                return ''
+              }
+          }
+
+
+        }
+      } else if (props.curStatus === 2) {
+        if (props.availClaimNum && new BigNumber(props.availClaimNum).comparedTo(0) === 1) {
+          return ''
+        } else {
+          return 'No Claim available'
+        }
+      } else {
+        return ''
+      }
+    }
+  }, [walletIsLogin, props.curStatus, props.iswhite, props.isClaimed,
+    inputInvestNum, realBalance, realMax, realMin])
+
+  const clickHandler = () => {
+    if (btnCls === 'disable') {
+      console.log('btnCls===disable');
+      return
+    }
     // buy or claim
-    setErrorMsg('')
-    if(props.curStatus === 2){
+    if (props.curStatus === 2) {
       // claim
-      if(props.availClaimNum && new BigNumber(props.availClaimNum).comparedTo(0) === 1){
-        // To Claim
+      sendClaim(props.projectAddress, library.getSigner()).then((res) => {
+        console.log(res);
+        setSubmitErrorMsg('')
+      }).catch((err) => {
+        setSubmitErrorMsg(err.reason)
+        console.log(err.reason);
+      });
+    } else if (props.curStatus === 1) {
+      if (btnText == 'Buy') {
+        sendBuy(props.projectAddress, netInputInvestNum.toString(), library.getSigner()).then((res) => {
+          console.log(res);
+          setSubmitErrorMsg('')
+        }).catch((err) => {
+          setSubmitErrorMsg(err.reason)
+          console.log(err);
+        });
+      } else if (btnText == 'Approve') {
+        sendApprove(props.fromCoin.address, props.projectAddress, library.getSigner()).then((res) => {
+          console.log(res);
+          setSubmitErrorMsg('')
+        }).catch((err) => {
+          setSubmitErrorMsg(err.reason)
+          console.log(err);
+        });
 
-
-      }else{
-        setErrorMsg('No Available claim')
       }
 
-    }else if(props.curStatus === 1){
-      // buy
-
-
-
-
-    }else if(props.curStatus === 0){
-      // unstart
-      setErrorMsg('Unstart!')
-      return 
     }
-
   }
-  
 
-  return ( <InfoRightDiv>
-    <p className="ClaimTitle">{props.curStatus === 2 ?`Claim ${toCoinName} Token`:`Invest in ${toCoinName} Token`}</p>
+
+  return (<InfoRightDiv>
+    <p className="ClaimTitle">{props.curStatus === 2 ? `Claim ${toCoinName} Token` : `Invest in ${toCoinName} Token`}</p>
     {
       props.curStatus === 2 && (<ClaimCenterDiv>
         <p className="ClaimSubTitle">Claim available</p>
-        <div className="ClaimAmountTitle">{walletIsLogin?props.availClaimNum:0.0000}</div>
+        <div className="ClaimAmountTitle">{walletIsLogin ? realAvailClaimNum : 0.0000}</div>
       </ClaimCenterDiv>)
     }
     {
       props.curStatus !== 2 && (<>
-      <div className='item invest-item'>
-        <div className='left'>
-          <span className='key'>Investment</span>
-          <div className='value-frame'>
+        <div className='item invest-item'>
+          <div className='left'>
+            <span className='key'>Investment</span>
+            <div className='value-frame'>
               <NumericalInput
                 className="value"
-                value={investNum}
+                title=""
+                value={inputInvestNum}
                 onUserInput={val => {
                   setInvestNum(val)
                 }}
               />
+            </div>
           </div>
-        </div>
-        <div className='right'>
-          <div className='key-zhanwei'>
+          <div className='right'>
+            <div className='key-zhanwei'>
+              <label className='key avail'>
+                Minimum: <span className='impo'>{realMin}</span>
+              </label>
+            </div>
             <label className='key avail'>
-              Minimum: <span className='impo'>{realMin}</span>
+              Max amount: <span className='impo'>{realMax}</span>
             </label>
-          </div>
-         <label className='key avail'>
-          Max amount: <span className='impo'>{realMax}</span>
-         </label> 
-         <label className='key avail'>
-          Balance: <span className='impo'>{realBalance}</span>
-         </label> 
-         <div className='current-logo-container'>
-          <CurrencyLogo currency={props.fromCoin} size={'24px'} />
-          <span className='txt'>{(props.fromCoin||{}).symbol}</span>
-         </div>
+            <label className='key avail'>
+              Balance: <span className='impo'>{realBalance}</span>
+            </label>
+            <div className='current-logo-container'>
+              <CurrencyLogo currency={props.fromCoin} size={'24px'} />
+              <span className='txt'>{(props.fromCoin || {}).symbol}</span>
+            </div>
 
-        </div>
-      </div>
-      <div className='item amount-item'>
-        <div className='left'>
-          <span className='key'>Amount</span>
-          <div className='value-frame'>
-            <span className='value'>{profitNum}</span>
           </div>
         </div>
-        <div className='right'>
-         {/* <label className='key avail'>
+        <div className='item amount-item'>
+          <div className='left'>
+            <span className='key'>Amount</span>
+            <div className='value-frame'>
+              <span className='value'>{profitNum}</span>
+            </div>
+          </div>
+          <div className='right'>
+            {/* <label className='key avail'>
           Max amount: <span className='impo'>{realMax}</span>
          </label> */}
+          </div>
         </div>
-      </div>
-      <div className='bottom-item'>
-        <span className='bot-key'>Price</span>
-        <span className='bot-value'>
-        1.0{fromCoinName} = {realPrice}{toCoinName}
-        </span>
-      </div>
+        <div className='bottom-item'>
+          <span className='bot-key'>Price</span>
+          <span className='bot-value'>
+            1.0{fromCoinName} = {realPrice}{toCoinName}
+          </span>
+        </div>
       </>)
     }
-    
-    {
-      !walletIsLogin && <button className='bot-button' onClick={toggleWalletModal}>Not connected</button>
-    }
-    {
-      walletIsLogin && <button className='bot-button' onClick={clickHandler}>{props.curStatus === 2?'Claim':'Buy'}</button>
-    }
+
+    <MyBotButton
+      walletIsLogin={walletIsLogin}
+      btnCls={btnCls}
+      btnText={btnText}
+      clickHandler={clickHandler} />
     <p className='my-error-msg'>{errorMsg}</p>
-    
+    <p className='submit-result-error'>{submitErrorMsg}</p>
+
   </InfoRightDiv>)
 }

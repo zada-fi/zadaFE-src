@@ -1,11 +1,12 @@
 import { useMemo } from 'react'
 import { Interface } from '@ethersproject/abi'
 import { Contract } from '@ethersproject/contracts'
+import { MaxUint256 } from '@ethersproject/constants'
 import LAUNCHPAD_ABI from './abis/Launchpad.json'
 import PROJECT_ABI from './abis/Project.json'
 import {useSingleContractMultipleMethodData, NEVER_RELOAD} from '../../state/multicall/hooks'
 import ERC20_ABI from '../../constants/abis/erc20.json'
-
+import { ethers } from 'ethers';
 import BigNumber from 'bignumber.js'
 
 const LAUNCHPAD_INTERFACE = new Interface(LAUNCHPAD_ABI);
@@ -29,7 +30,6 @@ export function getProjectData(projectAddress, userAddress = '0x0000000000000000
 
 }
 
-
 export function getProjectCommonData(projectAddress){
   console.log('getProjectCommonData-enter-', projectAddress)
   const projectContract = new Contract(projectAddress, PROJECT_INTERFACE);
@@ -37,7 +37,7 @@ export function getProjectCommonData(projectAddress){
    'maxUserCap','tokenPrice',
    'ERC20Interface','tokenAddress',
    'totalUSDCReceived','maxCap',
-   'saleStart', 'saleEnd'], [[], [],[],[],[],[],[],[],[]], NEVER_RELOAD);
+   'saleStart', 'saleEnd'], [[], [],[],[],[],[],[],[],[]]);
   console.log('getProjectCommonData- res-', res)
   
   return useMemo(()=>{
@@ -64,7 +64,7 @@ export function getProjectCommonData(projectAddress){
 }
 export function getProjectUserData(projectAddress, userAddress){
   console.log('getProjectUserData--', projectAddress, userAddress)
-  let methodName = ['users','whiteList']
+  let methodName = ['users','whiteList','claimedList']
   let projectContract = null
   if(!userAddress || !projectAddress){
     methodName = []
@@ -73,14 +73,20 @@ export function getProjectUserData(projectAddress, userAddress){
   }
   console.log('getProjectUserData start--')
   
-  const res = useSingleContractMultipleMethodData(projectContract, methodName, [[userAddress],[userAddress]], NEVER_RELOAD);
+  const res = useSingleContractMultipleMethodData(projectContract, methodName, [[userAddress],[userAddress],[userAddress]]);
   console.log('getProjectUserData--', res)
   return useMemo(()=>{
     let tempList = res.reduce((result,item, index)=>{
       if(item.result&&item.result.length){
-        result.push(item.result[0].toString())
+        if(index === 0){
+          result.push(item.result[0].toString())
+        }else{
+          result.push(item.result[0])
+        }
       }else{
         if(index === 1){
+          result.push(false)
+        }else if(index === 2){
           result.push(false)
         }else{
           result.push('0')
@@ -106,7 +112,7 @@ export function getTokenAllowanceAndBalance(tokenAddress,projectAddress, userAdd
     contract = new Contract(tokenAddress, ERC20_INTERFACE);
   }
   console.log('getTokenAllowanceAndBalance start---')
-  const res = useSingleContractMultipleMethodData(contract,methodName , [[userAddress, projectAddress], [userAddress]], NEVER_RELOAD);
+  const res = useSingleContractMultipleMethodData(contract,methodName , [[userAddress, projectAddress], [userAddress]]);
   console.log('getTokenAllowanceAndBalance res---',res)
   return useMemo(()=>{
     let tempList = res.reduce((result, item)=>{
@@ -126,6 +132,21 @@ export function getTokenInfo(tokenAddress){
   const contract = new Contract(tokenAddress, ERC20_INTERFACE);
   const res = useSingleContractMultipleMethodData(projectContract, ['symbol', 'decimals' ], [[], []], NEVER_RELOAD);
   return res;
+}
+
+export function sendApprove(tokenAddress,projectAddress, signer){
+  const contract = new Contract(tokenAddress, ERC20_INTERFACE, signer);
+  return contract.approve(projectAddress, MaxUint256)
+}
+
+export function sendBuy(projectAddress, amount, signer){
+  const contract = new Contract(projectAddress, PROJECT_INTERFACE, signer);
+  return contract.buyTokens(amount)
+}
+
+export function sendClaim(projectAddress, signer){
+  const contract = new Contract(projectAddress, PROJECT_INTERFACE, signer);
+  return contract.claimTokens()
 }
 
 //0x58e460dEE0bFAd1E40F959dEbef4B096177feedb  tokenA

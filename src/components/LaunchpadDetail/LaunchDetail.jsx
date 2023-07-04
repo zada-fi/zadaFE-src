@@ -138,7 +138,7 @@ export default function LaunchDetail() {
   // let [allowance, balance] = ['0', '0'];
     // let [allowance, balance] = getTokenAllowanceAndBalance('0x58e460dEE0bFAd1E40F959dEbef4B096177feedb', '0xEE5970AE95C802F8BbabeB7b93F0A3482837F244', '0xCe7BAa4cd38574ECc8C2D05f55f0e6E69087B76f');
 
-  let [investNum, iswhite] = getProjectUserData(projectAddress, account)
+  let [investNum, iswhite, isClaimed] = getProjectUserData(projectAddress, account)
   
   // let [startTime, endTime] = getProjectTime(projectAddress)
   let curStatus = useMemo(()=>{
@@ -199,8 +199,11 @@ export default function LaunchDetail() {
         toCoin={toCoinCurrency}></LaunchTotal>
       </InfoLeftDiv>
       <LaunchMy 
+       projectAddress={projectAddress}
         allowance={allowance}
         balance={balance}
+        isClaimed={isClaimed}
+        iswhite={iswhite}
         availClaimNum={availClaimNum}
         min={minUserCap} 
         max={maxUserCap} 

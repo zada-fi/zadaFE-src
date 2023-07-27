@@ -156,4 +156,8 @@ export function sendClaim(projectAddress, signer){
  * proj
  * 0xEE5970AE95C802F8BbabeB7b93F0A3482837F244
  * 0x63e2c3Ded1a6892eEce49076Da103b2F1B364907
+ * 
+ * LaunchPad
+ * 0x3D54DDD96959b691BA4fD5C1c522c5a920c1279B
  */
+

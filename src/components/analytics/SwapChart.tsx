@@ -69,40 +69,16 @@ export default function SwapChart(props: {
       let url = (`${props.netDataUrl}`)
       let response = await fetch(url)
       let resData = await response.json()
-      console.log('chartData resData=', resData)
+      console.log('chartData resData=',props, resData)
 
 
       let tempList: Array<SwDataItem>
-      tempList = resData.data || []
-      // if(props.idName === 'swap-chart-tvl'){
-      //   tempList  = [{
-      //     tvl_date:'2023-02-23',
-      //     tvl_value: '50000000',
-      //   },{
-      //     tvl_date:'2023-02-24',
-      //     tvl_value: '1000000',
-      //   },{
-      //     tvl_date:'2023-02-25',
-      //     tvl_value: '300000',
-      //   },{
-      //     tvl_date:'2023-02-26',
-      //     tvl_value: '90000000',
-      //   }]
-      // }else{
-      //   tempList  = [{
-      //     volume_date:'2023-02-23',
-      //     volume_value: '50000000',
-      //   },{
-      //     volume_date:'2023-02-24',
-      //     volume_value: '1000000',
-      //   },{
-      //     volume_date:'2023-02-25',
-      //     volume_value: '302000',
-      //   },{
-      //     volume_date:'2023-02-26',
-      //     volume_value: '200000',
-      //   }]
-      // }
+      if(props.idName === 'swap-chart-volume'){
+        tempList = resData.data.stat_infos || []
+      }else{
+        tempList = resData.data || []
+      }
+      
       tempList = tempList.sort((item1: SwDataItem, item2: SwDataItem)=>{
         let x = props.xKey as keyof SwDataItem
         let val1 = item1[x] as string
@@ -118,12 +94,17 @@ export default function SwapChart(props: {
         }
       })
 
-      if (tempList.length) {
-        let len = tempList.length
-        let y = props.yKey as keyof SwDataItem
-        console.log('lastData=', tempList[len - 1][y])
-        setLastData(tempList[len - 1][y])
+      if(props.idName === 'swap-chart-volume'){
+        setLastData(resData.data.total_volume)  
+      }else{
+        if (tempList.length) {
+          let len = tempList.length
+          let y = props.yKey as keyof SwDataItem
+          console.log('lastData=', tempList[len - 1][y])
+          setLastData(tempList[len - 1][y])
+        }
       }
+      
 
       let rsFormate = tempList.reduce((res, item: SwDataItem) => {
         let x = props.xKey as keyof SwDataItem

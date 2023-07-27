@@ -44,7 +44,8 @@ export default function LaunchTotal(props){
   },[props.toCoin])
   let realPrice = useMemo(()=>{
     if (props.fromCoin && props.toCoin){
-      let a = new BigNumber(props.price).shiftedBy(props.fromCoin.decimals - props.toCoin.decimals)
+      let a = new BigNumber(props.price)
+      // .shiftedBy(props.fromCoin.decimals - props.toCoin.decimals)
       return `1.0${fromCoinName} = ${a.toString()}${toCoinName}` 
     }
     else {
@@ -59,7 +60,7 @@ export default function LaunchTotal(props){
     </DetailInfoContainerDiv>
     <DetailInfoContainerDiv>
       {/* <DetailInfo avatarImg={Img3} label={`Circ. marketcap (min/max)`} value={`-/-`}></DetailInfo> */}
-      <DetailInfo avatarImg={Img4} label={`FDV (min/max)`} value={`-/-`}></DetailInfo>
+      {/* <DetailInfo avatarImg={Img4} label={`FDV (min/max)`} value={`-/-`}></DetailInfo> */}
     </DetailInfoContainerDiv>
 
   </InfoLeftBottomDiv>)

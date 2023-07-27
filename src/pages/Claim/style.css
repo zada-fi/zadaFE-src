@@ -82,6 +82,134 @@
   margin-left: 11px;
 }
 
+.claim-container-body .table-list .filter-result {
+  overflow-x: auto;
+  margin-top: 30px;
+}
+
+.claim-container-body .table-list .filter-result .list-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  border-radius: 14px;
+  background-color: #313D7A;
+  padding: 30px;
+  min-width: 750px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+}
+
+.claim-container-body .table-list .name-container{
+  width: 30%;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+}
+.claim-container-body .table-list .name-container .icon-wrapper{
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  margin-right: 12px;
+}
+.claim-container-body .table-list .name-container .name-wrapper .name-txt1{
+  font-size: 20px;
+  font-family: Arial;
+  font-weight: bold;
+  color: #D9E1F7;
+  line-height: 1;
+}
+.claim-container-body .table-list .name-container .name-wrapper .name-txt2{
+  font-size: 14px;
+  font-family: Arial;
+  font-weight: 400;
+  color: #878C99;
+  line-height: 1;
+  margin-top: 8px;
+  padding:0;
+  margin-bottom:0;
+}
+.claim-container-body .table-list .txt1{
+  font-size: 14px;
+  line-height: 1;
+  color: #878C99;
+  text-align: center;
+}
+.claim-container-body .table-list .txt2{
+  font-size: 18px;
+  line-height: 1;
+  color: #D9E1F7;
+  font-weight: bold;
+  padding: 16px 0;
+  box-sizing: border-box;
+  text-align: center;
+}
+.claim-container-body .table-list .claim-amount{
+  width: 15%;
+  min-width: 100px;
+}
+.claim-container-body .table-list .claim-date{
+  width: 25%;
+  min-width: 210px;
+}
+.claim-container-body .table-list .operator-area{
+  width: 30%;
+  min-width: 180px;
+  display: flex;
+  justify-content: flex-end;
+}
+.claim-container-body .table-list .operator-area .btn{
+  border: none;
+  outline: none;
+  width: 140px;
+  height: 40px;
+  border-radius: 20px;
+  background-color: #4A68FF;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+}
+.claim-container-body .table-list .operator-area .btn.disable{
+  background-color: #26326D;
+  color: #878C99;
+}
+
+
+.claim-container-body .ant-pagination li {
+  background-color: transparent;
+}
+
+.claim-container-body .ant-pagination li a.ant-pagination-item-link {
+  color: #ffffff;
+  background-color: transparent;
+}
+
+.claim-container-body .ant-pagination  a {
+  color: #ffffff;
+  background-color: transparent;
+}
+.claim-container-body .ant-pagination li.ant-pagination-item-active a{
+  color : #1890ff;
+}
+
+
+
+.claim-container-body .ant-pagination li.ant-pagination-disabled a,
+.claim-container-body .ant-pagination li.ant-pagination-disabled:hover a,
+.claim-container-body .ant-pagination li.ant-pagination-disabled:focus a,
+.claim-container-body .ant-pagination li.ant-pagination-disabled .ant-pagination-item-link,
+.claim-container-body .ant-pagination li.ant-pagination-disabled:hover .ant-pagination-item-link,
+.claim-container-body .ant-pagination li.ant-pagination-disabled:focus .ant-pagination-item-link {
+  color: rgba(255, 255, 255, 0.45);
+  border: none;
+  /* border: 1px solid rgba(255, 255, 255, 0.45) ; */
+}
+
+.claim-container-body .ant-pagination-jump-prev .ant-pagination-item-container .ant-pagination-item-ellipsis, .ant-pagination-jump-next .ant-pagination-item-container .ant-pagination-item-ellipsis{
+  color:#ffffff;
+}
+
 @media (max-width: 800px){
   .claim-container-body .filter-container{
     flex-wrap: wrap;
@@ -92,5 +220,34 @@
   .claim-container-body .filter-container .right{
     width: 100%;
     margin-top: 10px;
+  }
+  .claim-container-body .table-list .filter-result .list-item{
+    width: 100%;
+    min-width: 100%;
+    flex-wrap: wrap;
+  }
+  .claim-container-body .filter-result .list-item > div{
+    width: 50%;
+    min-width: 50%;
+    margin-bottom: 10px;
+  }
+  .claim-container-body .filter-result .list-item > div.claim-amount{
+    width: 50%;
+    min-width: 50%;
+    margin-bottom: 10px;
+  }
+  .claim-container-body .filter-result .list-item > div.claim-date{
+    width: 100%;
+    min-width: 100%;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+  }
+  .claim-container-body .filter-result .list-item > div.claim-date .txt2{
+    margin-left: 10px;
+  }
+  .claim-container-body .filter-result .list-item > div.operator-area{
+    width: 100%;
+    min-width: 100%;
   }
 }

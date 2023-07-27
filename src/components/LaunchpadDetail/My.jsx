@@ -149,7 +149,8 @@ export default function LaunchMy(props) {
   },[props.toCoin, props.availClaimNum])
   let realPrice = useMemo(() => {
     if (props.fromCoin && props.toCoin) {
-      let a = new BigNumber(props.price).shiftedBy(props.fromCoin.decimals - props.toCoin.decimals)
+      let a = new BigNumber(props.price)
+      // .shiftedBy(props.fromCoin.decimals - props.toCoin.decimals)
       return a.toString()
     }
     else {

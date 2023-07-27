@@ -138,10 +138,10 @@ export default function Menu() {
             <Code size={14} />
             Bridge
           </MenuItemLast>
-          {/* <MenuItemLast id={`l2bridge-nav-link`} href={`${location.origin}/launchpad`}>
+          <MenuItemLast id={`launchpad-nav-link`} href={`${location.origin}/launchpad`}>
             <Code size={14} />
             Launchpad
-          </MenuItemLast> */}
+          </MenuItemLast>
 
           <MenuItemLast id="link" href="https://zadafinance.gitbook.io/99009900/">
             <BookOpen size={14} />

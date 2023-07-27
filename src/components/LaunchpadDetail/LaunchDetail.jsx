@@ -1,4 +1,4 @@
-import React, {useEffect, useMemo} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import { useWeb3React } from "@web3-react/core"
 import styled from "styled-components";
 import "./LaunchDetail.css";
@@ -10,7 +10,7 @@ import LaunchStatus from './LaunchStatus'
 import LaunchTotal from './LaunchTotal'
 import LaunchMy from './My'
 import LaunchBottom from './bottom'
-import {useLocation} from "react-router-dom";
+import {useLocation, useHistory} from "react-router-dom";
 import SvgIcon from "../SvgIcon";
 import BigNumber from 'bignumber.js'
 const TitleDiv = styled.div`
@@ -19,6 +19,7 @@ const TitleDiv = styled.div`
   padding:10px 0;
   width:100%
   box-sizing:border-box;
+  cursor:pointer;
   ${({theme}) => theme.mediaWidth.upToSmall`
     font-size:24px;
     padding: 20px 10px;
@@ -127,6 +128,7 @@ const ContentDiv = styled.div`
 
 export default function LaunchDetail() {
   let location = useLocation()
+  let history = useHistory()
   let projectAddress = useMemo(() => {
     return getQuery().projectAddress || '0x9100bdc539F69969a731d2dbDDA5e15E3e9dda60'
   }, [location.search])
@@ -158,23 +160,30 @@ export default function LaunchDetail() {
     let val2 = new BigNumber(tokenPrice || '0')
     return val1.multipliedBy(val2).toNumber()
   },[investNum, tokenPrice])
+  let temObjStr = localStorage.getItem(process.env.NODE_ENV+'_'+projectAddress)||'{}'
 
-  
+  let [detailsInfo, setDetailsInfo] = useState(JSON.parse(temObjStr));
+  // setDetailsInfo()
+  // const detailsInfo = localStorage.getItem(process.env.NODE_ENV+'_'+projectAddress)
+console.log(detailsInfo)
 
   
   console.log('launchpadDetail default function LaunchDetail()');
   // getPadContractData();
   // getProjectData('0x9100bdc539F69969a731d2dbDDA5e15E3e9dda60');
-  
+  const backHandler = ()=>{
+    history.goBack()
+    localStorage.removeItem(process.env.NODE_ENV+'_'+projectAddress)
+  }
 
   return (<ContentDiv>
-    <TitleDiv>
+    <TitleDiv onClick={backHandler}>
       &lt;Back to list
     </TitleDiv>
     <MainDiv>
       <LeftDiv>
-        <p className="MainTitle">XXX auction</p>
-        <p className="DesTitle">Penpie is a next-generation DeFi product created by Magpie to provide Pendle Finance users with yield and veTokenomics boosting services. Integrated with Pendle Finance, Penpie focuses on locking PENDLE tokens to obtain governance rights and enhanced yield benefits within Pendle Finance. Penpie revolutionizes the way users can maximize returns on their investments and monetize their governance power.</p>
+        <p className="MainTitle">{`${detailsInfo.project_name} auction`}</p>
+        <p className="DesTitle">{detailsInfo.project_description}</p>
       </LeftDiv>
       <RightDiv></RightDiv>
 
@@ -212,7 +221,7 @@ export default function LaunchDetail() {
         toCoin={toCoinCurrency}
         curStatus={curStatus}/>
     </InfoDiv>
-    <LaunchBottom/>
+    {/* <LaunchBottom/> */}
     <p className="FooterText">Zada  是一套去中心化合约，旨在支持 Arbitrum 本地构建器。作为一种无需许可的协议，Zada 对使用其合约购买的任何代币不承担任何责任。所有用户都对他们了解所涉及的相关风险承担全部责任，并且他们参与的代币是完全独立的，与 Zada 没有任何关联。Zada 应用程序上的社交媒体帖子和可见信息绝不算作 Zada 团队对协议的认可，在任何 Zada 媒体上发布或分享的任何内容都不是推荐或财务建议。</p>
   </ContentDiv>
 

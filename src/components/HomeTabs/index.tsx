@@ -101,9 +101,9 @@ export function HomeTabs() {
       <DocuA href={`${window.location.origin}/orbiter`}  className={`${pathname.indexOf('orbiter')>-1?'active':''}`}  rel="noopener noreferrer" >
         Bridge
       </DocuA>
-      {/* <DocuA href={`${window.location.origin}/launchpad`} className={`${pathname.indexOf('launchpad')>-1?'active':''}`}  rel="noopener noreferrer" >
+      <DocuA href={`${window.location.origin}/launchpad`} className={`${pathname.indexOf('launchpad')>-1?'active':''}`}  rel="noopener noreferrer" >
         Launchpad
-      </DocuA> */}
+      </DocuA>
       <DocuA href="https://zadafinance.gitbook.io/99009900/" target="_blank" rel="noopener noreferrer">
         Docs
       </DocuA>

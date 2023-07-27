@@ -74,7 +74,12 @@ const BodyWrapper = styled.div`
 const Marginer = styled.div`
   margin-top: 5rem;
 `
-
+function NotFound() {
+  return (<div>
+    <h1>404 - Not Found</h1>
+    <p>The page you are looking for does not exist.</p>
+  </div>);
+}
 
 export default function App() {
   return (
@@ -112,7 +117,7 @@ export default function App() {
                 <Route exact strict path="/remove/:currencyIdA/:currencyIdB" component={RemoveLiquidity} />
                 <Route exact strict path="/migrate/v1" component={MigrateV1} />
                 <Route exact strict path="/migrate/v1/:address" component={MigrateV1Exchange} />
-                <Route component={RedirectPathToSwapOnly} />
+                <Route component={NotFound} />
               </Switch>
             </Web3ReactManager>
             <Marginer />

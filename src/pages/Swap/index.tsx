@@ -5,7 +5,7 @@ import ReactGA from 'react-ga'
 import { Text } from 'rebass'
 import { ThemeContext } from 'styled-components'
 import AddressInputPanel from '../../components/AddressInputPanel'
-import { ButtonError, ButtonLight, ButtonPrimary, ButtonConfirmed } from '../../components/Button'
+import { ButtonError, ButtonLight, ButtonPrimary, ButtonConfirmed,ButtonRadio } from '../../components/Button'
 import Card, { GreyCard } from '../../components/Card'
 import { AutoColumn } from '../../components/Column'
 import ConfirmSwapModal from '../../components/swap/ConfirmSwapModal'
@@ -44,8 +44,20 @@ import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices'
 import AppBody from '../AppBody'
 import { ClickableText } from '../Pool/styleds'
 import Loader from '../../components/Loader'
+import BigNumber from 'bignumber.js'
 
 export default function Swap() {
+  let percentConfig = [{
+    label:'25%', value:0.25
+  },
+  {
+    label:'50%', value:0.5
+  },{
+    label:'75%', value:0.75
+  },{
+    label:'100%', value:1
+  }]
+  let [curPercent, setCurPercent] = useState(0)
   const loadedUrlParams = useDefaultsFromURLSearch()
 
   // token warning stuff
@@ -269,6 +281,24 @@ export default function Swap() {
   const handleOutputSelect = useCallback(outputCurrency => onCurrencySelection(Field.OUTPUT, outputCurrency), [
     onCurrencySelection
   ])
+  const handlePercentInput = useCallback(()=>{
+    if(maxAmountInput){
+      let tempValue = maxAmountInput.toExact()
+      tempValue = new BigNumber(tempValue).multipliedBy(curPercent).toString()
+      onUserInput(Field.INPUT, tempValue)
+    }
+   
+  },[curPercent,maxAmountInput, onUserInput])
+  const changePercent = (value:number)=>{
+    setCurPercent((preState) => preState = value)
+  }
+  useEffect(()=>{
+    handlePercentInput()
+  },[curPercent])
+
+  useEffect(()=>{
+    handlePercentInput()
+  },[currencies[Field.INPUT]])
 
   return (
     <>
@@ -306,6 +336,22 @@ export default function Swap() {
               otherCurrency={currencies[Field.OUTPUT]}
               id="swap-currency-input"
             />
+            <AutoRow justify="space-between" style={{ padding: '0 1rem' }}>
+              {
+                percentConfig.map((item)=>{
+                  return (<ButtonRadio 
+                    key={item.value+'-'+item.label} 
+                  width={'24%'} 
+                  padding="4px 0px"
+                  active={curPercent === item.value?true: false}
+                  onClick={()=>changePercent(item.value)}>
+                    {item.label}
+                  </ButtonRadio>)
+                })
+              }
+             
+            </AutoRow>
+            {/* <div>percent</div> */}
             <AutoColumn justify="space-between">
               <AutoRow justify={isExpertMode ? 'space-between' : 'center'} style={{ padding: '0 1rem' }}>
                 <ArrowWrapper clickable onClick={() => {

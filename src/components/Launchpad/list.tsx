@@ -65,7 +65,8 @@ type DataItemType = {
   purchased_min_limit?: number,
   purchased_max_limit?: number,
   white_list_max_limit?: number,
-
+  project_title?: string,
+  project_pic_url?:string,
 
   name: string,
   // hardcap: number, // 1 correct  2 incorrect

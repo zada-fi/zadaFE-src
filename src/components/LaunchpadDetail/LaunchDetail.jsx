@@ -64,6 +64,7 @@ const RightDiv = styled.div`
   flex:none;
   width: 580px;
   border-radius: 14px;
+  overflow:hidden;
   ${({theme}) => theme.mediaWidth.upToLarge`
     font-size:14px;
     width: 48%;
@@ -185,18 +186,23 @@ console.log(detailsInfo)
         <p className="MainTitle">{`${detailsInfo.project_name} auction`}</p>
         <p className="DesTitle">{detailsInfo.project_description}</p>
       </LeftDiv>
-      <RightDiv></RightDiv>
+      <RightDiv>
+        <img className="pic" src={detailsInfo.project_pic_url} referrerpolicy={"no-referrer"}></img>
+      </RightDiv>
 
     </MainDiv>
     <SubDiv className="desc1">
-      $xxx 在 xxx 上的初始 DEX 发行 (IDO) 是一项高风险的投资活动。该项目仍处于早期阶段，存在资金损失的可能性。强烈建议投资者进行尽职调查，只投资他们愿意损失的东西。$XXX 无意构成任何司法管辖区的证券。本公告不构成任何类型的招股说明书或要约文件，也无意构成任何司法管辖区的证券要约或证券投资招揽。请注意，交易加密货币涉及重大风险，并可能导致您的投资资本损失。
+      {detailsInfo.project_title}
+      
     </SubDiv>
-    <SubDiv  className="desc2">
+    <br/>
+    <br/>
+    {/* <SubDiv  className="desc2">
       请确保您在继续之前了解公开销售的机制和条款，存入的金额不能提取。
       最初，拍卖将以 100 万美元的完全稀释估值 (FDV) 开始，为 $PNP 确定 0.1 美元的底价，并在筹集到前 20 万美元后增加。一旦达到 200k，我们将进入价格发现阶段，代币价格将在每次购买时持续上涨。
       <br /><SvgIcon className="tips" iconName="tips-default"></SvgIcon> 无论您何时参与，每个人都将以相同的最终价格获得 $XXX 代币。
       <br /><SvgIcon className="tips" iconName="tips-default"></SvgIcon>您的分配将由 30% $XXX 和 70% $XXX（超过 1 年的 $PNP 线性归属的收据代币）组成。请查看
-    </SubDiv>
+    </SubDiv> */}
     <InfoDiv>
       <InfoLeftDiv>
         <LaunchStatus curStatus={curStatus}></LaunchStatus>
@@ -222,7 +228,7 @@ console.log(detailsInfo)
         curStatus={curStatus}/>
     </InfoDiv>
     {/* <LaunchBottom/> */}
-    <p className="FooterText">Zada  是一套去中心化合约，旨在支持 Arbitrum 本地构建器。作为一种无需许可的协议，Zada 对使用其合约购买的任何代币不承担任何责任。所有用户都对他们了解所涉及的相关风险承担全部责任，并且他们参与的代币是完全独立的，与 Zada 没有任何关联。Zada 应用程序上的社交媒体帖子和可见信息绝不算作 Zada 团队对协议的认可，在任何 Zada 媒体上发布或分享的任何内容都不是推荐或财务建议。</p>
+    <p className="FooterText">ZadaFinance is the first decentralized order book exchange on Scroll that supports cross-Rollup transactions. Its Lanchpad aims to foster the development of projects within the Scroll ecosystem and discover high-quality assets. As a permissionless protocol, ZadaFinance assumes no responsibility for any tokens purchased using its contracts. All users are fully liable for understanding the associated risks, and their participation in any tokens is completely independent and unrelated to ZadaFinance. Any statements and visible information on ZadaFinance's social media application should not be construed as an endorsement of the protocol by the ZadaFinance team. Any content shared or posted on any ZadaFinance media is not intended as a recommendation or financial advice.</p>
   </ContentDiv>
 
   )

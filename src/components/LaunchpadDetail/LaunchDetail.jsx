@@ -228,7 +228,7 @@ console.log(detailsInfo)
         curStatus={curStatus}/>
     </InfoDiv>
     {/* <LaunchBottom/> */}
-    <p className="FooterText">ZadaFinance is the first decentralized order book exchange on Scroll that supports cross-Rollup transactions. Its Lanchpad aims to foster the development of projects within the Scroll ecosystem and discover high-quality assets. As a permissionless protocol, ZadaFinance assumes no responsibility for any tokens purchased using its contracts. All users are fully liable for understanding the associated risks, and their participation in any tokens is completely independent and unrelated to ZadaFinance. Any statements and visible information on ZadaFinance's social media application should not be construed as an endorsement of the protocol by the ZadaFinance team. Any content shared or posted on any ZadaFinance media is not intended as a recommendation or financial advice.</p>
+    <p className="FooterText">ZadaFinance is the first decentralized order book exchange on Scroll that supports cross-Rollup transactions. Its Lanchpad aims to foster the development of projects within the Scroll ecosystem and discover high-quality assets. As a permissionless protocol, ZadaFinance assumes no responsibility for any tokens purchased using its contracts. All users are fully liable for understanding the associated risks, and their participation in any tokens is completely independent and unrelated to ZadaFinance.</p>
   </ContentDiv>
 
   )

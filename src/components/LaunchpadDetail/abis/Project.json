@@ -65,7 +65,7 @@
 	},
 	{
 		"inputs": [],
-		"name": "ERC20Interface",
+		"name": "receiveToken",
 		"outputs": [
 			{
 				"internalType": "contract IERC20",

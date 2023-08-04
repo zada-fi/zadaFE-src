@@ -35,7 +35,7 @@ export function getProjectCommonData(projectAddress){
   const projectContract = new Contract(projectAddress, PROJECT_INTERFACE);
   const res = useSingleContractMultipleMethodData(projectContract, ['minUserCap',
    'maxUserCap','tokenPrice',
-   'ERC20Interface','tokenAddress',
+   'receiveToken','tokenAddress',
    'totalUSDCReceived','maxCap',
    'saleStart', 'saleEnd'], [[], [],[],[],[],[],[],[],[]]);
   console.log('getProjectCommonData- res-', res)

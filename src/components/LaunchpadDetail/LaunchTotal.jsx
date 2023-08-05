@@ -45,7 +45,7 @@ export default function LaunchTotal(props){
   let realPrice = useMemo(()=>{
     if (props.fromCoin && props.toCoin){
       let a = new BigNumber(props.price)
-      // .shiftedBy(props.fromCoin.decimals - props.toCoin.decimals)
+      .shiftedBy(0-props.toCoin.decimals)
       return `1.0${fromCoinName} = ${a.toString()}${toCoinName}` 
     }
     else {

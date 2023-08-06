@@ -72,6 +72,7 @@ const MyBotButton = (props) => {
 }
 
 export default function LaunchMy(props) {
+  console.log('unction LaunchMy(props) {', props)
   let [submitErrorMsg, setSubmitErrorMsg] = useState('')
   let [inputInvestNum, setInvestNum] = useState('')
   const {active, account, library} = useWeb3React()
@@ -140,13 +141,13 @@ export default function LaunchMy(props) {
   }, [props.toCoin])
 
   let realAvailClaimNum = useMemo(()=>{
-    if(props.toCoin){
-      let a = new BigNumber(props.availClaimNum).shiftedBy(0-props.toCoin.decimals)
+    if(props.toCoin && props.fromCoin){
+      let a = new BigNumber(props.availClaimNum).shiftedBy(0-props.toCoin.decimals-props.fromCoin.decimals)
       return a.toString()
     }else{
       return ''
     }
-  },[props.toCoin, props.availClaimNum])
+  },[props.toCoin, props.availClaimNum, props.fromCoin])
   let realPrice = useMemo(() => {
     if (props.fromCoin && props.toCoin) {
       let a = new BigNumber(props.price)

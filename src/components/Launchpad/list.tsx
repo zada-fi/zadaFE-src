@@ -139,6 +139,9 @@ export default function List(){
     getTableData(page)
   }
   const getTableData = async (page = curPage) => {
+    let originResList: any[] = []
+    let resData: any = {}
+    try{
     let response = await fetch(`${process.env.REACT_APP_ANALYTICS}/get_all_projects?pg_no=${page}`)
     let resData = await response.json()
     console.log('getTableData--', resData)
@@ -176,11 +179,15 @@ export default function List(){
     //     total_raised: 1000
     //   }]]
     // }
-    let originResList: any[] = []
+    
     if (resData.code === 'Ok') {
       // @ts-ignore 
       originResList = resData.data[1] || []
     }
+  }catch{
+
+  }
+    
 
     let tempResList:Array<DataItemType>  = originResList.reduce((res:Array<DataItemType>, item)=>{
       let obj = {

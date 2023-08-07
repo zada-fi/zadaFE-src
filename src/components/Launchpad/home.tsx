@@ -61,7 +61,7 @@ export default function LaunchHome(){
     <TotalItem title="Total Funds Raised" idKey="total-funds-raised"  amount={totalDats.fundsRaised}  unit="$"/>
     <TotalItem title="Total Coins Market Cap" idKey="total-coins-market-cap" amount={totalDats.coinsMarketCap} unit="$"></TotalItem>
     <TotalItem title="Total Assets"  idKey="total-assets" amount={totalDats.assets} unit=""></TotalItem>
-    <TotalItem title="All time Unique Participants" idKey="all-time-unique-participants" amount={totalDats.participants}></TotalItem>
+    <TotalItem title="All time Unique Participants" idKey="all-time-unique-participants" amount={totalDats.participants} unit=""></TotalItem>
   </TotalContentDiv>
   <List></List>
 

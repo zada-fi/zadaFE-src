@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { useCountUp } from 'react-countup'
 import BigNumber from 'bignumber.js'
@@ -61,13 +61,30 @@ type PropsType = {
   unit?: string
 }
 export default function TotalItem(props: PropsType){
+  const fn = useCallback((num:number)=>{
+    //k,m,b,t,q 
+    if (num > 1e18){
+      return `${props.unit}${(num / 1e15).toFixed(4)}Q`;
+    }else if (num > 1e15){
+      return `${props.unit}${(num / 1e12).toFixed(4)}T`;
+    }else if (num > 1e12){
+      return `${props.unit}${(num / 1e9).toFixed(4)}B`;
+    }else if (num > 1e9){
+      return `${props.unit}${(num / 1e6).toFixed(4)}M`;
+    }else if (num > 1e6){
+      return `${props.unit}${(num / 1e3).toFixed(3)}K`;
+    }
+    return `${props.unit}${num }`
+  },[props.amount, props.unit]);
   const {  update } = useCountUp({
     ref:props.idKey,
     start:0,
     end: props.amount? new BigNumber(props.amount).toNumber() : 0,
     delay: 2,
     duration: 5,
-    prefix: props.unit
+    prefix: props.unit,
+    formattingFn:fn,
+    decimals:2
   })  
   useEffect(()=>{
     if(props.amount){

@@ -145,17 +145,32 @@ export default function LaunchStatus(props) {
       }
       
     </div>
-    {
+    {/* {
       props.curStatus !== 2 && (<div className='prog-intro'>
       <span className='left'>Claims open in</span>
       <span className='right'>TBA soon</span>
     </div>)
+    } */}
+    {
+      props.curStatus === 0 && (<p className='claim-intro'>
+        Whitelist investment stage
+      </p>)
     }
     {
+      props.curStatus === 1 && (<p className='claim-intro'>
+        Public sale stage
+      </p>)
+    }
+    {
+      props.curStatus === 2 && (<p className='claim-intro'>
+        Claim your tokens
+      </p>)
+    }
+    {/* {
       props.curStatus === 2 && (<p className='claim-intro'>
         Public sale has ended<br/>
         Contributions are now claimable
       </p>)
-    }
+    } */}
   </InfoLeftTopDiv>)
 }

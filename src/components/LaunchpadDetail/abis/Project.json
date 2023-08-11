@@ -1,5 +1,10 @@
 [
 	{
+		"inputs": [],
+		"name": "MaxWhiteListLenLimit",
+		"type": "error"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -60,21 +65,27 @@
 				"type": "uint256"
 			}
 		],
-		"name": "UserInvestment",
+		"name": "UserClaim",
 		"type": "event"
 	},
 	{
-		"inputs": [],
-		"name": "receiveToken",
-		"outputs": [
+		"anonymous": false,
+		"inputs": [
 			{
-				"internalType": "contract IERC20",
-				"name": "",
+				"indexed": false,
+				"internalType": "address",
+				"name": "user",
 				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
 			}
 		],
-		"stateMutability": "view",
-		"type": "function"
+		"name": "UserInvestment",
+		"type": "event"
 	},
 	{
 		"inputs": [
@@ -148,49 +159,66 @@
 				"type": "string"
 			},
 			{
-				"internalType": "uint256",
-				"name": "_maxCap",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_saleStart",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_saleEnd",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_minUserCap",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_maxUserCap",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "_tokenAddress",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_tokenPrice",
-				"type": "uint256"
-			},
-			{
-				"internalType": "address",
-				"name": "_projectOwner",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "_receiveToken",
-				"type": "address"
+				"components": [
+					{
+						"internalType": "uint256",
+						"name": "maxCap",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "preSaleStart",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "preSaleEnd",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "pubSaleEnd",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "minUserCap",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "maxUserCap",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "tokenAddress",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "tokenPrice",
+						"type": "uint256"
+					},
+					{
+						"internalType": "address",
+						"name": "projectOwner",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "receiveToken",
+						"type": "address"
+					},
+					{
+						"internalType": "uint16",
+						"name": "maxWhiteListLen",
+						"type": "uint16"
+					}
+				],
+				"internalType": "struct IProject.ProjectInfo",
+				"name": "project",
+				"type": "tuple"
 			}
 		],
 		"name": "init",
@@ -219,6 +247,19 @@
 				"internalType": "uint256",
 				"name": "",
 				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "maxWhiteListLen",
+		"outputs": [
+			{
+				"internalType": "uint16",
+				"name": "",
+				"type": "uint16"
 			}
 		],
 		"stateMutability": "view",
@@ -285,7 +326,59 @@
 	},
 	{
 		"inputs": [],
+		"name": "preSaleEnd",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "preSaleStart",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
 		"name": "projectOwner",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "pubSaleEnd",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "receiveToken",
 		"outputs": [
 			{
 				"internalType": "address",
@@ -314,32 +407,6 @@
 		"name": "renounceOwnership",
 		"outputs": [],
 		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "saleEnd",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "saleStart",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
 		"type": "function"
 	},
 	{
@@ -418,11 +485,11 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "newSaleEnd",
+				"name": "_maxCap",
 				"type": "uint256"
 			}
 		],
-		"name": "updateEndTime",
+		"name": "updateMaxCap",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -431,11 +498,24 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "_maxCap",
+				"name": "newSaleEnd",
 				"type": "uint256"
 			}
 		],
-		"name": "updateMaxCap",
+		"name": "updatePreEndTime",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "newSaleStart",
+				"type": "uint256"
+			}
+		],
+		"name": "updatePreStartTime",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -457,11 +537,11 @@
 		"inputs": [
 			{
 				"internalType": "uint256",
-				"name": "newsaleStart",
+				"name": "newSaleEnd",
 				"type": "uint256"
 			}
 		],
-		"name": "updateStartTime",
+		"name": "updatePubEndTime",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -538,6 +618,19 @@
 				"internalType": "bool",
 				"name": "",
 				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "whiteListLen",
+		"outputs": [
+			{
+				"internalType": "uint16",
+				"name": "",
+				"type": "uint16"
 			}
 		],
 		"stateMutability": "view",

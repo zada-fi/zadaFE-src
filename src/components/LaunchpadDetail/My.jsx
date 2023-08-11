@@ -58,6 +58,7 @@ const ClaimCenterDiv = styled.div`
 `
 
 const MyBotButton = (props) => {
+  console.log('mybotton props=',props)
   const toggleWalletModal = useWalletModalToggle()
   if (!props.walletIsLogin) {
     return (<button className={`bot-button ${props.btnCls}`} onClick={toggleWalletModal}>
@@ -72,7 +73,7 @@ const MyBotButton = (props) => {
 }
 
 export default function LaunchMy(props) {
-  console.log('unction LaunchMy(props) {', props)
+  console.log('function LaunchMy(props) {', props)
   let [submitErrorMsg, setSubmitErrorMsg] = useState('')
   let [inputInvestNum, setInvestNum] = useState('')
   const {active, account, library} = useWeb3React()
@@ -107,16 +108,15 @@ export default function LaunchMy(props) {
     } else {
       if (props.curStatus === 0) {
         return 'Approve'
-      } else if (props.curStatus === 1) {
+      } else if (props.curStatus === 1 || props.curStatus === 2) {
         if (props.allowance == '0') {
           return 'Approve'
         }
         if (netInputInvestNum.comparedTo(props.allowance) <= 0) {
           return 'Buy'
-
         }
         return 'Approve'
-      } else if (props.curStatus === 2) {
+      } else if (props.curStatus === 3) {
         if (props.isClaimed) {
           return 'Claimed'
         } else {
@@ -188,10 +188,13 @@ export default function LaunchMy(props) {
     if (!walletIsLogin) {
       return 'disable'
     } else {
+      if(btnText === 'Approve'){
+        return ''
+      }
       if (props.curStatus === 0) {
         return 'disable'
-      } else if (props.curStatus === 1) {
-        if (!props.iswhite) {
+      } else if (props.curStatus === 1 || props.curStatus === 2) {
+        if (!props.iswhite && props.curStatus === 1) {
           return 'disable'
         } else {
           if (inputInvestNum === '') {
@@ -209,7 +212,7 @@ export default function LaunchMy(props) {
             }
           }
         }
-      } else if (props.curStatus === 2) {
+      } else if (props.curStatus === 3) {
         if (props.isClaimed) {
           return 'disable'
         } else {
@@ -254,7 +257,7 @@ export default function LaunchMy(props) {
 
 
         }
-      } else if (props.curStatus === 2) {
+      } else if (props.curStatus === 3) {
         if (props.availClaimNum && new BigNumber(props.availClaimNum).comparedTo(0) === 1) {
           return ''
         } else {
@@ -268,12 +271,25 @@ export default function LaunchMy(props) {
     inputInvestNum, realBalance, realMax, realMin])
 
   const clickHandler = () => {
+    console.log('clickHandler')
     if (btnCls === 'disable') {
       console.log('btnCls===disable');
       return
     }
+    if (btnText == 'Approve') {
+      console.log('else if (btnText == ')
+      sendApprove(props.fromCoin.address, props.projectAddress, library.getSigner()).then((res) => {
+        console.log(res);
+        setSubmitErrorMsg('')
+      }).catch((err) => {
+        setSubmitErrorMsg(err.reason)
+        console.log(err);
+      });
+      return
+
+    }
     // buy or claim
-    if (props.curStatus === 2) {
+    if (props.curStatus === 3) {
       // claim
       sendClaim(props.projectAddress, library.getSigner()).then((res) => {
         console.log(res);
@@ -282,7 +298,7 @@ export default function LaunchMy(props) {
         setSubmitErrorMsg(err.reason)
         console.log(err.reason);
       });
-    } else if (props.curStatus === 1) {
+    } else if (props.curStatus === 1 || props.curStatus === 2) {
       if (btnText == 'Buy') {
         sendBuy(props.projectAddress, netInputInvestNum.toString(), library.getSigner()).then((res) => {
           console.log(res);
@@ -291,31 +307,22 @@ export default function LaunchMy(props) {
           setSubmitErrorMsg(err.reason)
           console.log(err);
         });
-      } else if (btnText == 'Approve') {
-        sendApprove(props.fromCoin.address, props.projectAddress, library.getSigner()).then((res) => {
-          console.log(res);
-          setSubmitErrorMsg('')
-        }).catch((err) => {
-          setSubmitErrorMsg(err.reason)
-          console.log(err);
-        });
-
-      }
+      } 
 
     }
   }
 
 
   return (<InfoRightDiv>
-    <p className="ClaimTitle">{props.curStatus === 2 ? `Claim ${toCoinName} Token` : `Invest in ${toCoinName} Token`}</p>
+    <p className="ClaimTitle">{props.curStatus === 3 ? `Claim ${toCoinName} Token` : `Invest in ${toCoinName} Token`}</p>
     {
-      props.curStatus === 2 && (<ClaimCenterDiv>
+      props.curStatus === 3 && (<ClaimCenterDiv>
         <p className="ClaimSubTitle">Claim available</p>
         <div className="ClaimAmountTitle">{walletIsLogin ? realAvailClaimNum : 0.0000}</div>
       </ClaimCenterDiv>)
     }
     {
-      props.curStatus !== 2 && (<>
+      props.curStatus !== 3 && (<>
         <div className='item invest-item'>
           <div className='left'>
             <span className='key'>Investment</span>

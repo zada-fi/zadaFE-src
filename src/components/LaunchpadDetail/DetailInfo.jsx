@@ -4,10 +4,12 @@ import "./DetailInfo.css";
 
 const MainDiv = styled.div`
   display:flex;
-  flex-flow:row nowrap
+  flex-flow:column nowrap
   box-sizing:border-box;
+  justify-content:center;
   align-items: center;
-  height:90px;
+  min-height:190px;
+  height: 100%;
   width: 50%;
   ${({theme}) => theme.mediaWidth.upToSmall`
   width: 100%;

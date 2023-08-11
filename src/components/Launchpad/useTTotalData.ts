@@ -47,10 +47,10 @@ const tempRes = resData.data;
     // "total_addresses": 800, --所有参与用户地址数
 
     setTotalDats(draf=>{
-      draf.fundsRaised = formateVal(tempRes.total_amount) 
+      draf.fundsRaised = formateVal(tempRes.total_raised) 
       draf.coinsMarketCap = formateVal(tempRes.total_amount)
-      draf.assets = formateVal(tempRes.projects_count)
-      draf.participants = formateVal(tempRes.users_count)
+      draf.assets = formateVal(tempRes.total_projects)
+      draf.participants = formateVal(tempRes.total_addresses)
     })
   }
   useEffect(()=>{

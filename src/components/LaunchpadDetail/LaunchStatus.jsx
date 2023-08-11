@@ -3,6 +3,7 @@ import styled from 'styled-components'
 const InfoLeftTopDiv = styled.div`
   flex:1;
   width:100%;
+  min-height:190px;
   background:#26326D;
   border-radius: 14px;
   ${({theme}) => theme.mediaWidth.upToSmall`
@@ -23,17 +24,15 @@ const InfoLeftTopDiv = styled.div`
     background:#4A68FF;
   }
   .line.line-1{
-    width: 15%;
+    width: 13%;
   }
   .line.line-2{
-    width: 30%;
+    width: 35%;
   }
   .line.line-3{
-    width: 24%;
+    width: 35%;
   }
-  .line.line-4{
-    width: 20%;
-  }
+  
   .line.line-5{
     flex: auto;
   }
@@ -103,7 +102,7 @@ const InfoLeftTopDiv = styled.div`
 
 `
 export default function LaunchStatus(props) {
-  let configArr = ['Whitelist stage','Public stage','End','Claims']
+  let configArr = ['Whitelist stage','Public stage','Claims']
   let progLineData = useMemo(()=>{
     return configArr.reduce((result,item, index)=>{
       let obj = {
@@ -113,16 +112,24 @@ export default function LaunchStatus(props) {
         obj.lineCls = ''
         obj.labelCls = ''
       }else if(props.curStatus === 1){
-        if(index < 3){
+        if(index < 1){
           obj.lineCls = 'active'
-          obj.labelCls = index === 2?'active':'pointer-active'
+          obj.labelCls = 'active'//index === 2?'active':'pointer-active'
         }else {
           obj.lineCls = ''
           obj.labelCls = ''
         }
       }else if(props.curStatus === 2){
+        if(index < 2){
+          obj.lineCls = 'active'
+          obj.labelCls = 'active'//index === 2?'active':'pointer-active'
+        }else {
+          obj.lineCls = ''
+          obj.labelCls = ''
+        }
+      }else if(props.curStatus === 3){
         obj.lineCls = 'active'
-        obj.labelCls = index === 3?'active':'pointer-active'
+        obj.labelCls = 'active'//index === 3?'active':'pointer-active'
       }
       result.push(obj)
       return result
@@ -138,7 +145,7 @@ export default function LaunchStatus(props) {
             <span key={`${item}-${index}-line`} className={`line line-${index+1} ${item.lineCls}`}></span>
             <span key={`${item}-${index}-pointer`} className={`pointer pointer-${index+1} ${item.labelCls}`} data-txt={item.txt}></span>
             {
-              index === 3 && (<span key={`${item}-${index}-line-5`}  className={`line line-5 ${props.curStatus === 2?'active':''} `} ></span>)
+              index === 2 && (<span key={`${item}-${index}-line-5`}  className={`line line-5 ${props.curStatus === 3?'active':''} `} ></span>)
             }
           </>)
         })
@@ -153,16 +160,21 @@ export default function LaunchStatus(props) {
     } */}
     {
       props.curStatus === 0 && (<p className='claim-intro'>
-        Whitelist investment stage
+        Unstart stage
       </p>)
     }
     {
       props.curStatus === 1 && (<p className='claim-intro'>
-        Public sale stage
+        Whitelist investment stage
       </p>)
     }
     {
       props.curStatus === 2 && (<p className='claim-intro'>
+        Public sale stage
+      </p>)
+    }
+    {
+      props.curStatus === 3 && (<p className='claim-intro'>
         Claim your tokens
       </p>)
     }

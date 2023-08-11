@@ -13,6 +13,10 @@ import LaunchBottom from './bottom'
 import {useLocation, useHistory} from "react-router-dom";
 import SvgIcon from "../SvgIcon";
 import BigNumber from 'bignumber.js'
+import link1Img from './images/link1.png'
+import link2Img from './images/link2.png'
+import link3Img from './images/link3.png'
+import link4Img from './images/link4.png'
 const TitleDiv = styled.div`
   font-size: 10px;
   color:#566188;
@@ -45,6 +49,9 @@ const LeftDiv = styled.div`
   box-sizing:border-box;
   flex: none;
   width: 580px;
+  .link-wrap{
+    width: 280px;
+  }
   ${({theme}) => theme.mediaWidth.upToLarge`
     font-size:14px;
     width: 48%;
@@ -52,6 +59,13 @@ const LeftDiv = styled.div`
   ${({theme}) => theme.mediaWidth.upToMedium`
     font-size:14px;
     width: 100%;
+    .link-wrap{
+      width: 100%;
+    }
+    .link-wrap{
+      padding-bottom: 30px;
+      box-sizing:border-box;
+    }
   `};
 `
 
@@ -133,7 +147,7 @@ export default function LaunchDetail() {
   let projectAddress = useMemo(() => {
     return getQuery().projectAddress || '0x9100bdc539F69969a731d2dbDDA5e15E3e9dda60'
   }, [location.search])
-  let [minUserCap, maxUserCap, tokenPrice, fromAddress, toAddress, totalRaise, hardcap, startTime, endTime] =  getProjectCommonData(projectAddress)
+  let [minUserCap, maxUserCap, tokenPrice, fromAddress, toAddress, totalRaise, hardcap, preStartTime, preEndTime,pubEndTime] =  getProjectCommonData(projectAddress)
   let fromCoinCurrency = useCurrency(fromAddress)
   let toCoinCurrency = useCurrency(toAddress)
   let { account } = useWeb3React()
@@ -145,17 +159,19 @@ export default function LaunchDetail() {
   
   // let [startTime, endTime] = getProjectTime(projectAddress)
   let curStatus = useMemo(()=>{
-    console.log('curStatus--useMemo-', startTime, endTime)
+    console.log('curStatus--useMemo-', preStartTime, preEndTime,pubEndTime)
     let now = Date.now()
-    if(!startTime || now < startTime){
+    if(!preStartTime || now < preStartTime){
       return 0 // 
-    }else if(now >= startTime && now < endTime){
+    }else if(now >= preStartTime && now < preEndTime){
       return 1 
-    }else {
+    }else if(now >= preEndTime && now < pubEndTime) {
       return 2
+    }else {
+      return 3
     }
 
-  },[startTime, endTime])
+  },[preStartTime, preEndTime, pubEndTime])
   let availClaimNum = useMemo(()=>{
     let val1 = new BigNumber(investNum||'0')
     let val2 = new BigNumber(tokenPrice || '0')
@@ -185,6 +201,12 @@ console.log(detailsInfo)
       <LeftDiv>
         <p className="MainTitle">{`${detailsInfo.project_name} auction`}</p>
         <p className="DesTitle">{detailsInfo.project_description}</p>
+        <div className="link-wrap">
+          <a className="link-img-wrap" target="_blank" href={detailsInfo.project_links.twitter_url}><img className="link-img-item" src={link1Img}/></a>
+          <a className="link-img-wrap" target="_blank" href={detailsInfo.project_links.tg_url}><img className="link-img-item" src={link2Img}/></a>
+          <a className="link-img-wrap" target="_blank" href={detailsInfo.project_links.dc_url}><img className="link-img-item" src={link3Img}/></a>
+          <a className="link-img-wrap" target="_blank" href={detailsInfo.project_links.web_url}><img className="link-img-item" src={link4Img}/></a>
+        </div>
       </LeftDiv>
       <RightDiv>
         <img className="pic" src={detailsInfo.project_pic_url} referrerpolicy={"no-referrer"}></img>

@@ -20,6 +20,19 @@
   line-height: 24px;
   margin-top: 34px;
 }
+.link-wrap{
+  display: flex;
+  justify-content: space-between;
+}
+.link-wrap .link-img-wrap{
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+.link-wrap .link-img-item{
+  width: 40px;
+  height: 40px;
+}
 
 .FooterText {
   font-size: 14px;

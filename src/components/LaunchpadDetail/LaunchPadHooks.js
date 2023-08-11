@@ -37,7 +37,7 @@ export function getProjectCommonData(projectAddress){
    'maxUserCap','tokenPrice',
    'receiveToken','tokenAddress',
    'totalUSDCReceived','maxCap',
-   'saleStart', 'saleEnd'], [[], [],[],[],[],[],[],[],[]]);
+   'preSaleStart', 'preSaleEnd','pubSaleEnd'], [[], [],[],[],[],[],[],[],[],[]]);
   console.log('getProjectCommonData- res-', res)
   
   return useMemo(()=>{
@@ -45,13 +45,13 @@ export function getProjectCommonData(projectAddress){
       if(item.result&&item.result.length){
         if(index === 3 || index === 4){
           result.push(item.result[0])
-        }else if(index === 7 || index === 8){
+        }else if(index === 7 || index === 8 || index === 9){
           result.push(item.result[0].toNumber()* 1000)
         }else{
           result.push(item.result[0].toString())
         }
       }else{
-        if(index === 7 || index === 8){
+        if(index === 7 || index === 8 || index === 9){
           result.push(0)
         }else{
           result.push('')

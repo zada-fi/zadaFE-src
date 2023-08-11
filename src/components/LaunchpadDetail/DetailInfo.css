@@ -6,6 +6,7 @@
   font-family: Arial;
   font-weight: 400;
   color: #878C99;
+  text-align: center;
 
 }
 
@@ -21,5 +22,6 @@
   word-wrap: nowrap;
   word-break: keep-all;
   white-space: nowrap;
+  text-align: center;
 
 }

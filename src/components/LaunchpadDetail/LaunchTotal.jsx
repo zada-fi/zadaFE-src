@@ -22,6 +22,8 @@ const DetailInfoContainerDiv = styled.div`
   flex-flow:row wrap;
   flex:1 ;
   width:100%;
+  height: 100%;
+  align-items: center;
   box-sizing:border-box;
   ${({theme}) => theme.mediaWidth.upToSmall`
 
@@ -58,10 +60,10 @@ export default function LaunchTotal(props){
       <DetailInfo avatarImg={Img1} label={`Total raised/ Hardcap`} value={value1}></DetailInfo>
       <DetailInfo avatarImg={Img2} label={`$${toCoinName} price `} value={realPrice}></DetailInfo>
     </DetailInfoContainerDiv>
-    <DetailInfoContainerDiv>
+    {/* <DetailInfoContainerDiv> */}
       {/* <DetailInfo avatarImg={Img3} label={`Circ. marketcap (min/max)`} value={`-/-`}></DetailInfo> */}
       {/* <DetailInfo avatarImg={Img4} label={`FDV (min/max)`} value={`-/-`}></DetailInfo> */}
-    </DetailInfoContainerDiv>
+    {/* </DetailInfoContainerDiv> */}
 
   </InfoLeftBottomDiv>)
 }

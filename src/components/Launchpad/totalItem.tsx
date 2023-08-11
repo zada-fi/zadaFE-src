@@ -84,7 +84,6 @@ export default function TotalItem(props: PropsType){
     duration: 5,
     prefix: props.unit,
     formattingFn:fn,
-    decimals:2
   })  
   useEffect(()=>{
     if(props.amount){

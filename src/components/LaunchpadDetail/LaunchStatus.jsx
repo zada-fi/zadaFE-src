@@ -3,15 +3,17 @@ import styled from 'styled-components'
 const InfoLeftTopDiv = styled.div`
   flex:1;
   width:100%;
-  min-height:190px;
+  // min-height:190px;
   background:#26326D;
   border-radius: 14px;
+  padding-bottom: 30px;
+  box-sizing: border-box;
   ${({theme}) => theme.mediaWidth.upToSmall`
   `};
   .prog-line{
     display: flex;
     align-items: center;
-    padding: 85px 30px 34px 30px;
+    padding: 85px 30px 84px 30px;
     box-sizing: border-box;
   }
   .line{
@@ -60,6 +62,21 @@ const InfoLeftTopDiv = styled.div`
     top: -38px;
     transform: translate(-50%, 0%)
   }
+  .pointer::after{
+    position:absolute;
+    content: attr(data-btxt);
+    min-width: 100px;
+    // word-break:keep-all;
+    // white-space: nowrap;
+    font-size: 16px;
+    line-height: 1;
+    color: #878C99;
+    display:inline-block
+    text-align:center;
+    left: 50%;
+    bottom: -18px;
+    transform: translate(-50%, 100%)
+  }
   .pointer.active{
     background:#4A68FF;
   }
@@ -67,6 +84,9 @@ const InfoLeftTopDiv = styled.div`
     background:#4A68FF;
   }
   .pointer.active::before{
+    color: #4A68FF;
+  }
+  .pointer.active::after{
     color: #4A68FF;
   }
   .prog-intro{
@@ -103,6 +123,19 @@ const InfoLeftTopDiv = styled.div`
 `
 export default function LaunchStatus(props) {
   let configArr = ['Whitelist stage','Public stage','Claims']
+  let dateArr = useMemo(()=>{
+    let arr = ['','','']
+    if(props.preStartTime){
+      arr[0] = new Date(props.preStartTime).toUTCString()
+    }
+    if(props.pubEndTime){
+      arr[1] = new Date(props.pubEndTime).toUTCString()
+    }
+    if(props.preEndTime){
+      arr[2] = new Date(props.preEndTime).toUTCString()
+    }
+    return arr//[props.preStartTime, props.preEndTime, props.pubEndTime]
+  },[props.preStartTime, props.preEndTime, props.pubEndTime])
   let progLineData = useMemo(()=>{
     return configArr.reduce((result,item, index)=>{
       let obj = {
@@ -143,7 +176,10 @@ export default function LaunchStatus(props) {
         progLineData.map((item, index)=>{
           return (<>
             <span key={`${item}-${index}-line`} className={`line line-${index+1} ${item.lineCls}`}></span>
-            <span key={`${item}-${index}-pointer`} className={`pointer pointer-${index+1} ${item.labelCls}`} data-txt={item.txt}></span>
+            <span key={`${item}-${index}-pointer`} 
+            className={`pointer pointer-${index+1} ${item.labelCls}`} 
+            data-txt={item.txt}
+            data-btxt={dateArr[index]}></span>
             {
               index === 2 && (<span key={`${item}-${index}-line-5`}  className={`line line-5 ${props.curStatus === 3?'active':''} `} ></span>)
             }

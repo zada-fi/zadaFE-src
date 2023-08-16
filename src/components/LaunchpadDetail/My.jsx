@@ -272,10 +272,7 @@ export default function LaunchMy(props) {
 
   const clickHandler = () => {
     console.log('clickHandler')
-    if (btnCls === 'disable') {
-      console.log('btnCls===disable');
-      return
-    }
+
     if (btnText == 'Approve') {
       console.log('else if (btnText == ')
       sendApprove(props.fromCoin.address, props.projectAddress, library.getSigner()).then((res) => {
@@ -287,6 +284,10 @@ export default function LaunchMy(props) {
       });
       return
 
+    }
+    if (btnCls === 'disable') {
+      console.log('btnCls===disable');
+      return
     }
     // buy or claim
     if (props.curStatus === 3) {

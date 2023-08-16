@@ -202,10 +202,10 @@ console.log(detailsInfo)
         <p className="MainTitle">{`${detailsInfo.project_name} auction`}</p>
         <p className="DesTitle">{detailsInfo.project_description}</p>
         <div className="link-wrap">
-          <a className="link-img-wrap" target="_blank" href={detailsInfo.project_links.twitter_url}><img className="link-img-item" src={link1Img}/></a>
-          <a className="link-img-wrap" target="_blank" href={detailsInfo.project_links.tg_url}><img className="link-img-item" src={link2Img}/></a>
-          <a className="link-img-wrap" target="_blank" href={detailsInfo.project_links.dc_url}><img className="link-img-item" src={link3Img}/></a>
-          <a className="link-img-wrap" target="_blank" href={detailsInfo.project_links.web_url}><img className="link-img-item" src={link4Img}/></a>
+          <a className="link-img-wrap" target="_blank" href={detailsInfo?.project_links?.twitter_url||''}><img className="link-img-item" src={link1Img}/></a>
+          <a className="link-img-wrap" target="_blank" href={detailsInfo?.project_links?.tg_url||''}><img className="link-img-item" src={link2Img}/></a>
+          <a className="link-img-wrap" target="_blank" href={detailsInfo?.project_links?.dc_url||''}><img className="link-img-item" src={link3Img}/></a>
+          <a className="link-img-wrap" target="_blank" href={detailsInfo?.project_links?.web_url||''}><img className="link-img-item" src={link4Img}/></a>
         </div>
       </LeftDiv>
       <RightDiv>
@@ -227,7 +227,11 @@ console.log(detailsInfo)
     </SubDiv> */}
     <InfoDiv>
       <InfoLeftDiv>
-        <LaunchStatus curStatus={curStatus}></LaunchStatus>
+        <LaunchStatus
+        preStartTime={preStartTime}
+         preEndTime={preEndTime}
+          pubEndTime={pubEndTime}
+         curStatus={curStatus}></LaunchStatus>
         <LaunchTotal
         price={tokenPrice}
         totalRaise={totalRaise}

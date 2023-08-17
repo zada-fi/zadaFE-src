@@ -37,7 +37,7 @@ export function getProjectCommonData(projectAddress){
    'maxUserCap','tokenPrice',
    'receiveToken','tokenAddress',
    'totalUSDCReceived','maxCap',
-   'preSaleStart', 'preSaleEnd','pubSaleEnd'], [[], [],[],[],[],[],[],[],[],[]]);
+   'preSaleStart', 'preSaleEnd','pubSaleEnd', 'projectOwner'], [[], [],[],[],[],[],[],[],[],[],[]]);
   console.log('getProjectCommonData- res-', res)
   
   return useMemo(()=>{

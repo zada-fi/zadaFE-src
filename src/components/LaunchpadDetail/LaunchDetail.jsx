@@ -5,12 +5,13 @@ import "./LaunchDetail.css";
 import { useCurrency } from "../../hooks/Tokens";
 
 import {getQuery} from '../../utils/orbiter-tool'
-import { getProjectCommonData, getProjectUserData, getTokenAllowanceAndBalance} from './LaunchPadHooks'
+import { getProjectCommonData, getProjectUserData, getTokenAllowanceAndBalance, sendApprove} from './LaunchPadHooks'
 import LaunchStatus from './LaunchStatus'
 import LaunchTotal from './LaunchTotal'
 import LaunchMy from './My'
 import LaunchBottom from './bottom'
 import {useLocation, useHistory} from "react-router-dom";
+import { message } from 'antd';
 import SvgIcon from "../SvgIcon";
 import BigNumber from 'bignumber.js'
 import link1Img from './images/link1.png'
@@ -147,10 +148,11 @@ export default function LaunchDetail() {
   let projectAddress = useMemo(() => {
     return getQuery().projectAddress || '0x9100bdc539F69969a731d2dbDDA5e15E3e9dda60'
   }, [location.search])
-  let [minUserCap, maxUserCap, tokenPrice, fromAddress, toAddress, totalRaise, hardcap, preStartTime, preEndTime,pubEndTime] =  getProjectCommonData(projectAddress)
+  let [minUserCap, maxUserCap, tokenPrice, fromAddress, toAddress, totalRaise, hardcap, preStartTime, preEndTime,pubEndTime,projectOwner] =  getProjectCommonData(projectAddress)
+  console.log('projectOwner', projectOwner);
   let fromCoinCurrency = useCurrency(fromAddress)
   let toCoinCurrency = useCurrency(toAddress)
-  let { account } = useWeb3React()
+  let { account, library } = useWeb3React()
   let [allowance, balance] = getTokenAllowanceAndBalance(fromAddress, projectAddress, account)
   // let [allowance, balance] = ['0', '0'];
     // let [allowance, balance] = getTokenAllowanceAndBalance('0x58e460dEE0bFAd1E40F959dEbef4B096177feedb', '0xEE5970AE95C802F8BbabeB7b93F0A3482837F244', '0xCe7BAa4cd38574ECc8C2D05f55f0e6E69087B76f');
@@ -191,6 +193,14 @@ console.log(detailsInfo)
   const backHandler = ()=>{
     history.goBack()
     localStorage.removeItem(process.env.NODE_ENV+'_'+projectAddress)
+  }
+  const bottmHandler = () =>{
+    sendApprove(toAddress, projectAddress, library.getSigner()).then((res) => {
+      message.success(res.hash);
+    }).catch((error) => {
+      console.log(error)
+      message.error(error.reason);
+    })
   }
 
   return (<ContentDiv>
@@ -253,6 +263,9 @@ console.log(detailsInfo)
         toCoin={toCoinCurrency}
         curStatus={curStatus}/>
     </InfoDiv>
+    {
+      (account === projectOwner) && <button className="bot_button" onClick = {bottmHandler}>Approve For Owner</button>
+    }
     {/* <LaunchBottom/> */}
     <p className="FooterText">ZadaFinance is the first decentralized order book exchange on Scroll that supports cross-Rollup transactions. Its Lanchpad aims to foster the development of projects within the Scroll ecosystem and discover high-quality assets. As a permissionless protocol, ZadaFinance assumes no responsibility for any tokens purchased using its contracts. All users are fully liable for understanding the associated risks, and their participation in any tokens is completely independent and unrelated to ZadaFinance.</p>
   </ContentDiv>

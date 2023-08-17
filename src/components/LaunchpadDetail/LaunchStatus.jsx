@@ -1,5 +1,9 @@
 import React, { useEffect, useMemo } from 'react'
 import styled from 'styled-components'
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc)
 const InfoLeftTopDiv = styled.div`
   flex:1;
   width:100%;
@@ -126,13 +130,15 @@ export default function LaunchStatus(props) {
   let dateArr = useMemo(()=>{
     let arr = ['','','']
     if(props.preStartTime){
-      arr[0] = new Date(props.preStartTime).toUTCString()
-    }
-    if(props.pubEndTime){
-      arr[1] = new Date(props.pubEndTime).toUTCString()
+      
+      arr[0] = `${dayjs(parseInt(props.preStartTime)).utc().format('DD/MM HH:mm' )}(UTC)`
+      console.log('arr0',dayjs(parseInt(props.preStartTime)).utc())
     }
     if(props.preEndTime){
-      arr[2] = new Date(props.preEndTime).toUTCString()
+      arr[1] = `${dayjs(parseInt(props.preEndTime)).utc().format('DD/MM HH:mm' )}(UTC)`
+    }
+    if(props.pubEndTime){
+      arr[2] = `${dayjs(parseInt(props.pubEndTime)).utc().format('DD/MM HH:mm' )}(UTC)`
     }
     return arr//[props.preStartTime, props.preEndTime, props.pubEndTime]
   },[props.preStartTime, props.preEndTime, props.pubEndTime])

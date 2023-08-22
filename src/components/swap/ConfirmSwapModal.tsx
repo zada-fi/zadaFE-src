@@ -1,4 +1,4 @@
-import { currencyEquals, Trade } from 'zdfnswap-sdk'
+import { currencyEquals, Trade } from 'zdnfsdk'
 import React, { useCallback, useMemo } from 'react'
 import TransactionConfirmationModal, {
   ConfirmationModalContent,

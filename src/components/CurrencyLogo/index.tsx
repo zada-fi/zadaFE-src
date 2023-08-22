@@ -1,4 +1,4 @@
-import { Currency, ETHER, Token } from 'zdfnswap-sdk'
+import { Currency, ETHER, Token } from 'zdnfsdk'
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 

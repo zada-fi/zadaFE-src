@@ -1,4 +1,4 @@
-import { Currency, CurrencyAmount, Pair, Token, Trade } from 'zdfnswap-sdk'
+import { Currency, CurrencyAmount, Pair, Token, Trade } from 'zdnfsdk'
 import flatMap from 'lodash.flatmap'
 import { useMemo } from 'react'
 

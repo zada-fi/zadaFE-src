@@ -1,4 +1,4 @@
-import { ChainId, Currency, currencyEquals, JSBI, Price, WETH } from 'zdfnswap-sdk'
+import { ChainId, Currency, currencyEquals, JSBI, Price, WETH } from 'zdnfsdk'
 import { useMemo } from 'react'
 import { USDC } from '../constants'
 import { PairState, usePairs } from '../data/Reserves'

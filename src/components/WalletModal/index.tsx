@@ -19,7 +19,7 @@ import { OVERLAY_READY } from '../../connectors/Fortmatic'
 import { WalletConnectConnector } from '@web3-react/walletconnect-connector'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 import { darken } from 'polished'
-import { ChainId } from 'zdfnswap-sdk'
+import { ChainId } from 'zdnfsdk'
 
 const CloseIcon = styled.div`
   position: absolute;

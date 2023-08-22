@@ -1,4 +1,4 @@
-import { Token, TokenAmount } from 'zdfnswap-sdk'
+import { Token, TokenAmount } from 'zdnfsdk'
 import { useMemo } from 'react'
 
 import { useTokenContract } from '../hooks/useContract'

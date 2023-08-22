@@ -1,4 +1,4 @@
-import { ChainId } from 'zdfnswap-sdk'
+import { ChainId } from 'zdnfsdk'
 import React, { useContext } from 'react'
 import styled, { ThemeContext } from 'styled-components'
 import Modal from '../Modal'

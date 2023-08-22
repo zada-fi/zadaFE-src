@@ -1,6 +1,6 @@
 import React, { useContext, useMemo,useState } from 'react'
 import styled, { ThemeContext } from 'styled-components'
-import { Pair } from 'zdfnswap-sdk'
+import { Pair } from 'zdnfsdk'
 // import { Link } from 'react-router-dom'
 import { SwapPoolTabs, PoolSubTabs } from '../../components/NavigationTabs'
 

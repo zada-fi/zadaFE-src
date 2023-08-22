@@ -1,4 +1,4 @@
-import { Currency, ETHER, JSBI, TokenAmount } from 'zdfnswap-sdk'
+import { Currency, ETHER, JSBI, TokenAmount } from 'zdnfsdk'
 import React, { useCallback, useEffect, useState } from 'react'
 import { Plus } from 'react-feather'
 import { Text } from 'rebass'

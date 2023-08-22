@@ -1,4 +1,4 @@
-import { JSBI, Pair, Percent } from 'zdfnswap-sdk'
+import { JSBI, Pair, Percent } from 'zdnfsdk'
 import { darken } from 'polished'
 import React, { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'react-feather'

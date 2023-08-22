@@ -1,4 +1,4 @@
-import { CurrencyAmount, ETHER, JSBI } from 'zdfnswap-sdk'
+import { CurrencyAmount, ETHER, JSBI } from 'zdnfsdk'
 import { MIN_ETH } from '../constants'
 
 /**

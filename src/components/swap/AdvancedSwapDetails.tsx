@@ -1,4 +1,4 @@
-import { Trade, TradeType } from 'zdfnswap-sdk'
+import { Trade, TradeType } from 'zdnfsdk'
 import React, { useContext } from 'react'
 import { ThemeContext } from 'styled-components'
 import { Field } from '../../state/swap/actions'

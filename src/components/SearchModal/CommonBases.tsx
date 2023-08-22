@@ -1,6 +1,6 @@
 import React from 'react'
 import { Text } from 'rebass'
-import { ChainId, Currency, currencyEquals, ETHER, Token } from 'zdfnswap-sdk'
+import { ChainId, Currency, currencyEquals, ETHER, Token } from 'zdnfsdk'
 import styled from 'styled-components'
 
 import { SUGGESTED_BASES } from '../../constants'

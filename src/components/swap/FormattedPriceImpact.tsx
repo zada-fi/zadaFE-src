@@ -1,4 +1,4 @@
-import { Percent } from 'zdfnswap-sdk'
+import { Percent } from 'zdnfsdk'
 import React from 'react'
 import { ONE_BIPS } from '../../constants'
 import { warningSeverity } from '../../utils/prices'

@@ -1,4 +1,4 @@
-import { CurrencyAmount, JSBI, Token, Trade } from 'zdfnswap-sdk'
+import { CurrencyAmount, JSBI, Token, Trade } from 'zdnfsdk'
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { ArrowDown,ArrowUp} from 'react-feather'
 import ReactGA from 'react-ga'

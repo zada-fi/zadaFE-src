@@ -1,4 +1,4 @@
-import { Currency } from 'zdfnswap-sdk'
+import { Currency } from 'zdnfsdk'
 import React from 'react'
 import styled from 'styled-components'
 import CurrencyLogo from '../CurrencyLogo'

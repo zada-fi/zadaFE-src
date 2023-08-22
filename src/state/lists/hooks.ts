@@ -1,4 +1,4 @@
-import { ChainId, Token } from 'zdfnswap-sdk'
+import { ChainId, Token } from 'zdnfsdk'
 import { Tags, TokenInfo, TokenList } from '@uniswap/token-lists'
 import { useMemo } from 'react'
 import { useSelector } from 'react-redux'
@@ -36,7 +36,8 @@ const EMPTY_LIST: TokenAddressMap = {
   [ChainId.ROPSTEN]: {},
   [ChainId.GÖRLI]: {},
   [ChainId.MAINNET]: {},
-  [ChainId.SCROLL_ALPHA]: {}
+  [ChainId.SCROLL_ALPHA]: {},
+  [ChainId.SCROLL_SEPOLIA]: {}
 }
 
 const listCache: WeakMap<TokenList, TokenAddressMap> | null =

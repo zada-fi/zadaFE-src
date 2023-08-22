@@ -1,4 +1,4 @@
-import { Currency, CurrencyAmount, Fraction, Percent } from 'zdfnswap-sdk'
+import { Currency, CurrencyAmount, Fraction, Percent } from 'zdnfsdk'
 import React from 'react'
 import { Text } from 'rebass'
 import { ButtonPrimary } from '../../components/Button'

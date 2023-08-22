@@ -1,4 +1,4 @@
-import { Currency, ETHER, Token } from 'zdfnswap-sdk'
+import { Currency, ETHER, Token } from 'zdnfsdk'
 
 export function currencyId(currency: Currency): string {
   if (currency === ETHER) return 'ETH'

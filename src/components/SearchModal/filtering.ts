@@ -1,5 +1,5 @@
 import { isAddress } from '../../utils'
-import { Token } from 'zdfnswap-sdk'
+import { Token } from 'zdnfsdk'
 
 export function filterTokens(tokens: Token[], search: string): Token[] {
   if (search.length === 0) return tokens

@@ -1,4 +1,4 @@
-import { ChainId } from 'zdfnswap-sdk'
+import { ChainId } from 'zdnfsdk'
 import React from 'react'
 import { isMobile } from 'react-device-detect'
 import { Text } from 'rebass'
@@ -136,6 +136,7 @@ const NETWORK_LABELS: { [chainId in ChainId]: string | null } = {
   // [ChainId.GÖRLI]: 'Görli',
   // [ChainId.KOVAN]: 'Kovan',
   [ChainId.SCROLL_ALPHA]: 'Scroll Alpha',
+  [ChainId.SCROLL_SEPOLIA]: 'Scroll Sepolia',
   [ChainId.MAINNET]: null,
   [ChainId.GÖRLI]: null,
   [ChainId.RINKEBY]: null,

@@ -1,4 +1,4 @@
-import { Currency, Percent, Price } from 'zdfnswap-sdk'
+import { Currency, Percent, Price } from 'zdnfsdk'
 import React, { useContext } from 'react'
 import { Text } from 'rebass'
 import { ThemeContext } from 'styled-components'

@@ -6,7 +6,7 @@ import AppBody from '../AppBody'
 //import ZADA_FAUCET_ABI from '../../constants/abis/zada_faucet.json'
 import { useActiveWeb3React } from '../../hooks'
 import { darken } from 'polished'
-import { ChainId } from 'zdfnswap-sdk'
+import { ChainId } from 'zdnfsdk'
 
 //import {useWalletModalToggle } from '../../state/application/hooks'
 

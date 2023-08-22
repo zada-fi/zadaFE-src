@@ -1,9 +1,9 @@
-import { ChainId, JSBI, Percent, Token, WETH } from 'zdfnswap-sdk'
+import { ChainId, JSBI, Percent, Token, WETH } from 'zdnfsdk'
 import { AbstractConnector } from '@web3-react/abstract-connector'
 
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 
-export const ROUTER_ADDRESS = '0x0cfd11ac90992872d62a439bF0ED01EFA583d8Dc'
+export const ROUTER_ADDRESS = '0x3687eE3fb77C299e287d7A7fD4467623a4E49C4c'
 
 // a list of tokens by chain
 type ChainTokenList = {
@@ -23,7 +23,8 @@ const WETH_ONLY: ChainTokenList = {
   [ChainId.RINKEBY]: [WETH[ChainId.RINKEBY]],
   [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [WETH[ChainId.KOVAN]],
-  [ChainId.SCROLL_ALPHA]: [WETH[ChainId.SCROLL_ALPHA]]
+  [ChainId.SCROLL_ALPHA]: [WETH[ChainId.SCROLL_ALPHA]],
+  [ChainId.SCROLL_SEPOLIA]: [WETH[ChainId.SCROLL_SEPOLIA]]
 }
 
 // used to construct intermediary pairs for trading

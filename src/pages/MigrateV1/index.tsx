@@ -1,4 +1,4 @@
-import { JSBI, Token } from 'zdfnswap-sdk'
+import { JSBI, Token } from 'zdnfsdk'
 import React, { useCallback, useContext, useMemo, useState, useEffect } from 'react'
 import { ThemeContext } from 'styled-components'
 import { AutoColumn } from '../../components/Column'

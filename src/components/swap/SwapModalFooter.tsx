@@ -1,4 +1,4 @@
-import { Trade, TradeType } from 'zdfnswap-sdk'
+import { Trade, TradeType } from 'zdnfsdk'
 import React, { useContext, useMemo, useState } from 'react'
 import { Repeat } from 'react-feather'
 import { Text } from 'rebass'

@@ -1,4 +1,4 @@
-import { Currency, Pair } from 'zdfnswap-sdk'
+import { Currency, Pair } from 'zdnfsdk'
 import React, { useState, useContext, useCallback } from 'react'
 import styled, { ThemeContext } from 'styled-components'
 import { darken } from 'polished'

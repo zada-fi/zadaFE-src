@@ -1,4 +1,4 @@
-import { ChainId, JSBI, Pair, Route, Token, TokenAmount, Trade, TradeType } from 'zdfnswap-sdk'
+import { ChainId, JSBI, Pair, Route, Token, TokenAmount, Trade, TradeType } from 'zdnfsdk'
 import { computeTradePriceBreakdown } from './prices'
 
 describe('prices', () => {

@@ -243,9 +243,9 @@ export default function LaunchMy(props) {
           if (inputInvestNum === '') {
             return 'Please input invest amount'
           } else {
-            if (realMin && inputInvestNum && new BigNumber(realMin).comparedTo(inputInvestNum) > -1) {
+            if (realMin && inputInvestNum && new BigNumber(realMin).comparedTo(inputInvestNum) === 1) {
               return 'Invest amount need be greater than minimum'
-            } else if (realMax && inputInvestNum && new BigNumber(inputInvestNum).comparedTo(realMax) > -1) {
+            } else if (realMax && inputInvestNum && new BigNumber(inputInvestNum).comparedTo(realMax) === 1) {
               return 'Invest amount need be lesser than maxmum'
             } else
               if (inputInvestNum && new BigNumber(inputInvestNum).comparedTo(realBalance) === 1) {
@@ -275,12 +275,20 @@ export default function LaunchMy(props) {
 
     if (btnText == 'Approve') {
       console.log('else if (btnText == ')
+      if(props.fromCoin == undefined || props.projectAddress == undefined) {
+        return ;
+      }
       sendApprove(props.fromCoin.address, props.projectAddress, library.getSigner()).then((res) => {
         console.log(res);
         setSubmitErrorMsg('')
       }).catch((err) => {
-        setSubmitErrorMsg(err.reason)
-        console.log(err);
+        
+        if (err.reason == undefined) {
+          setSubmitErrorMsg(`${err.data.message}`)
+        }else {
+          setSubmitErrorMsg(`${err.reason}`)
+        }
+        
       });
       return
 

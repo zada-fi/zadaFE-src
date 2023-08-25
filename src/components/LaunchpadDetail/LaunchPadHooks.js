@@ -12,7 +12,7 @@ import BigNumber from 'bignumber.js'
 const LAUNCHPAD_INTERFACE = new Interface(LAUNCHPAD_ABI);
 const PROJECT_INTERFACE = new Interface(PROJECT_ABI);
 const ERC20_INTERFACE = new Interface(ERC20_ABI);
-const LAUNCHPAD_ADDRESS = '0x14666f1f898aF8F76c9e40Df3a0Cb62F1455f1bA';
+const LAUNCHPAD_ADDRESS = '0xd1aBd7623d7d5243aF5AAf78CD6329B99670D381';
 export function getPadContractData(){
   console.log('function getPadContractData(){');
   const launchContract = new Contract(LAUNCHPAD_ADDRESS, LAUNCHPAD_INTERFACE);

@@ -134,7 +134,7 @@ export function Faucet() {
       <FaucetTips>
         Funds you receive through the Zada faucet are not real funds. Request tokens every 24h and receive 10 ZDA per request. Please click the Retweet button bellow then retweet to get 10 ZDA.
       </FaucetTips>
-      <DocuA href="https://blockscout.scroll.io/address/0x457F5Bacd72a096B78CAA6E4cC27c1b5175746c3" target="_blank" rel="noopener noreferrer">
+      <DocuA href="https://sepolia-blockscout.scroll.io/address/0x4aD2BdF35091A6FD0621b62Cd8091104e62aDeB4" target="_blank" rel="noopener noreferrer">
         ZDA Contract Address
       </DocuA>
       <ButtonLight onClick={() => { requestTokens() }}>Retweet</ButtonLight>

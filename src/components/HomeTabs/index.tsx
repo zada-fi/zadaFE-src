@@ -10,7 +10,8 @@ const Tabs = styled.div`
   justify-content: center;
   height: 3rem;
 
-${({ theme }) => theme.mediaWidth.upToMedium`
+  
+${({ theme }) => theme.mediaWidth.upToLarge`
   display: none;
 `};
 `

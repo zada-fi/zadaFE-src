@@ -153,7 +153,7 @@ export default function Header() {
   return (
     <HeaderFrame>
       <RowBetween style={{ alignItems: 'flex-start' }} padding="1rem 1rem 0 1rem">
-        <HeaderElement style={{width: '350px'}}>
+        <HeaderElement style={{width: '360px'}}>
           <Title href=".">
             <UniIcon>
               {/* <img src={isDark ? LogoDark : Logo} alt="logo" /> */}
@@ -165,7 +165,7 @@ export default function Header() {
           </Title>
         </HeaderElement>
         <HomeTabs/>
-        <HeaderControls style={{width: '350px', justifyContent:'flex-end'}}>
+        <HeaderControls style={{width: '360px', justifyContent:'flex-end'}}>
           <HeaderElement>
             <TestnetWrapper>
               {!isMobile && chainId && NETWORK_LABELS[chainId] && <NetworkCard>{NETWORK_LABELS[chainId]}</NetworkCard>}

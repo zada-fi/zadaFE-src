@@ -310,7 +310,7 @@ export default function WalletModal({
   }
 
   const switchChianId = async () => {
-    var scrollchainId = '0x' + ChainId.SCROLL_ALPHA.toString(16)
+    var scrollchainId = '0x' + ChainId.SCROLL_SEPOLIA.toString(16)
     console.log(scrollchainId)
     try {
       await (window.ethereum as any)?.request({
@@ -353,7 +353,7 @@ export default function WalletModal({
           <HeaderRow>{error instanceof UnsupportedChainIdError ? 'Wrong Network' : 'Error connecting'}</HeaderRow>
           <ContentWrapper>
             {error instanceof UnsupportedChainIdError ? (
-              <AddScrollAlphaChain onClick={()=>{switchChianId()}}>Click here to add the Scroll Alpha network to your wallet.</AddScrollAlphaChain>
+              <AddScrollAlphaChain onClick={()=>{switchChianId()}}>Click here to add the Scroll Sepolia network to your wallet.</AddScrollAlphaChain>
             ) : (
               'Error connecting. Try refreshing the page.'
             )}

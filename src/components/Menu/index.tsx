@@ -49,8 +49,8 @@ const StyledMenu = styled.div`
   border: none;
   text-align: left;
   display: none ;
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-  display: flex
+  ${({ theme }) => theme.mediaWidth.upToLarge`
+    display: flex
 `};
 `
 

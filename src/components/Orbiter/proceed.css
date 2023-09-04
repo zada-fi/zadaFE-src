@@ -115,6 +115,9 @@
   width: 128px;
   height: 100%;
   z-index: 3;
+  display: block;
+  background: transparent;
+  padding: 0;
 }
 
 .proceed-box .ProceedContent .chainDataContent .item .chain-name {

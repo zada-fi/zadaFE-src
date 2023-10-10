@@ -34,13 +34,13 @@ console.log('injected---',window.location.href);
 let a = window.location.href;
 if (a.indexOf('orbiter') > -1){
   return  new InjectedConnector({
-    supportedChainIds: [ChainId.SCROLL_ALPHA,ChainId.SCROLL_SEPOLIA,ChainId.MAINNET,ChainId.GÖRLI]
+    supportedChainIds: [ChainId.BASE_GOERLI,ChainId.SCROLL_ALPHA,ChainId.SCROLL_SEPOLIA,ChainId.MAINNET,ChainId.GÖRLI]
     // supportedChainIds: [ChainId.SCROLL_ALPHA]
   })
 }else {
   return  new InjectedConnector({
     // supportedChainIds: [ChainId.SCROLL_ALPHA,ChainId.MAINNET,ChainId.GÖRLI]
-    supportedChainIds: [ChainId.SCROLL_SEPOLIA]
+    supportedChainIds: [ChainId.BASE_GOERLI]
   })
 }
 

@@ -310,8 +310,9 @@ export default function WalletModal({
   }
 
   const switchChianId = async () => {
-    var scrollchainId = '0x' + ChainId.SCROLL_SEPOLIA.toString(16)
+    var scrollchainId = '0x' + ChainId.BASE_GOERLI.toString(16)
     console.log(scrollchainId)
+    console.log(ChainId.BASE_GOERLI)
     try {
       await (window.ethereum as any)?.request({
         method: 'wallet_switchEthereumChain',
@@ -353,7 +354,7 @@ export default function WalletModal({
           <HeaderRow>{error instanceof UnsupportedChainIdError ? 'Wrong Network' : 'Error connecting'}</HeaderRow>
           <ContentWrapper>
             {error instanceof UnsupportedChainIdError ? (
-              <AddScrollAlphaChain onClick={()=>{switchChianId()}}>Click here to add the Scroll Sepolia network to your wallet.</AddScrollAlphaChain>
+              <AddScrollAlphaChain onClick={()=>{switchChianId()}}>Click here to add the Base Goerli network to your wallet.</AddScrollAlphaChain>
             ) : (
               'Error connecting. Try refreshing the page.'
             )}

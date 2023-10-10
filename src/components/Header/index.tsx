@@ -137,6 +137,7 @@ const NETWORK_LABELS: { [chainId in ChainId]: string | null } = {
   // [ChainId.KOVAN]: 'Kovan',
   [ChainId.SCROLL_ALPHA]: 'Scroll Alpha',
   [ChainId.SCROLL_SEPOLIA]: 'Scroll Sepolia',
+  [ChainId.BASE_GOERLI]: 'Base Goerli',
   [ChainId.MAINNET]: null,
   [ChainId.GÖRLI]: null,
   [ChainId.RINKEBY]: null,

@@ -24,7 +24,8 @@ const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
   5: 'goerli.etherscan.io',
   42: 'kovan.etherscan.io',
   534353: 'blockscout.scroll.io',
-  534351: 'sepolia-blockscout.scroll.io'
+  534351: 'sepolia-blockscout.scroll.io',
+  84531: 'goerli.basescan.org'
 }
 
 export function getEtherscanLink(chainId: ChainId, data: string, type: 'transaction' | 'token' | 'address'): string {

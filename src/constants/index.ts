@@ -3,7 +3,7 @@ import { AbstractConnector } from '@web3-react/abstract-connector'
 
 import { fortmatic, injected, portis, walletconnect, walletlink } from '../connectors'
 
-export const ROUTER_ADDRESS = '0x3687eE3fb77C299e287d7A7fD4467623a4E49C4c'
+export const ROUTER_ADDRESS = '0xC344D6690D8239a780b38295C349327ae291666c'
 
 // a list of tokens by chain
 type ChainTokenList = {
@@ -11,7 +11,7 @@ type ChainTokenList = {
 }
 
 export const DAI = new Token(ChainId.MAINNET, '0x6B175474E89094C44Da98b954EedeAC495271d0F', 18, 'DAI', 'Dai Stablecoin')
-export const USDC = new Token(ChainId.MAINNET, '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48', 6, 'USDC', 'USD//C')
+export const USDC = new Token(ChainId.BASE_GOERLI, '0x2e668bb88287675e34c8df82686dfd0b7f0c0383', 6, 'USDC', 'USD//C')
 export const USDT = new Token(ChainId.MAINNET, '0xdAC17F958D2ee523a2206206994597C13D831ec7', 6, 'USDT', 'Tether USD')
 export const COMP = new Token(ChainId.MAINNET, '0xc00e94Cb662C3520282E6f5717214004A7f26888', 18, 'COMP', 'Compound')
 export const MKR = new Token(ChainId.MAINNET, '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', 18, 'MKR', 'Maker')
@@ -24,7 +24,8 @@ const WETH_ONLY: ChainTokenList = {
   [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [WETH[ChainId.KOVAN]],
   [ChainId.SCROLL_ALPHA]: [WETH[ChainId.SCROLL_ALPHA]],
-  [ChainId.SCROLL_SEPOLIA]: [WETH[ChainId.SCROLL_SEPOLIA]]
+  [ChainId.SCROLL_SEPOLIA]: [WETH[ChainId.SCROLL_SEPOLIA]],
+  [ChainId.BASE_GOERLI]: [WETH[ChainId.BASE_GOERLI]]
 }
 
 // used to construct intermediary pairs for trading

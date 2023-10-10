@@ -113,7 +113,7 @@ export default function LaunchMy(props) {
           return 'Approve'
         }
         if (netInputInvestNum.comparedTo(props.allowance) <= 0) {
-          return 'Buy'
+          return 'Mint'
         }
         return 'Approve'
       } else if (props.curStatus === 3) {
@@ -308,7 +308,7 @@ export default function LaunchMy(props) {
         console.log(err.reason);
       });
     } else if (props.curStatus === 1 || props.curStatus === 2) {
-      if (btnText == 'Buy') {
+      if (btnText == 'Mint') {
         sendBuy(props.projectAddress, netInputInvestNum.toString(), library.getSigner()).then((res) => {
           console.log(res);
           setSubmitErrorMsg('')
